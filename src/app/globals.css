@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+/*
+ * Sky DR — "Soter Labs" editorial theme.
+ * Warm paper, dark navy ink, gold accents, serif headings, monospace data.
+ * All colours are driven by CSS variables so this tab can be re-themed to
+ * match the host site by overriding :root.
+ */
+@theme inline {
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-serif: var(--font-serif);
+
+  --color-paper: var(--paper);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-ink-deep: var(--ink-deep);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-thead: var(--thead);
+  --color-track: var(--track);
+  --color-ondark: var(--ondark);
+  --color-ondark-muted: var(--ondark-muted);
+  --color-success: var(--success);
+}
+
+:root {
+  --paper: #f0ebe1;
+  --card: #f8f4ec;
+  --ink: #1a2530;
+  --ink-deep: #101a28;
+  --gold: #b0863a;
+  --gold-soft: #c2a15a;
+  --muted: #8a8374;
+  --faint: #b6ad9c;
+  --line: #e4dbca;
+  --line-strong: #d8cdb6;
+  --thead: #eae2d4;
+  --track: #e7dfce;
+  --ondark: #ece6da;
+  --ondark-muted: #8b95a1;
+  --success: #5f8e54;
+
+  /* partner-group colours */
+  --group-skybase: #2f4a68;
+  --group-spark: #c07a3e;
+  --group-grove: #5e7a50;
+  --group-keel: #3c5a86;
+  --group-osero: #6e5a86;
+  --group-other: #8a8474;
+  --group-unassigned: #a8a192;
+
+  /* rate-family colours */
+  --rate-xr: #5e7a50;
+  --rate-xrstar: #3c5a86;
+  --rate-stusds: #6e5a86;
+}
+
+@layer base {
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+  }
+  /* Tabular figures for all monospace data so columns line up. */
+  .font-mono {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Thin custom scrollbar inside scrollable tables. */
+.dr-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+.dr-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.dr-scroll::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 4px;
+}
