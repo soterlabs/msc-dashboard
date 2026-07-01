@@ -285,7 +285,6 @@ function RefCodeDetail({
   note: string;
 }) {
   const series = seriesForRefCode(refCode);
-  const maxToken = Math.max(1, ...series.map((s) => s.total ?? 0));
 
   // Code-level monthly totals across the full history (sum of tokens).
   const history = HISTORY_MONTHS.map((m) => ({
@@ -298,6 +297,26 @@ function RefCodeDetail({
     (best, h) => (h.v > best.v ? h : best),
     history[0] ?? { m: "", v: 0 }
   );
+
+  // Month filter for the token breakdown. "all" = full-history totals; any
+  // other value scopes the composition to a single month. Only months that
+  // actually carry DR for this code are offered (latest first).
+  const [month, setMonth] = React.useState<string>("all");
+  const activeMonthKeys = history.filter((h) => h.v > 0).map((h) => h.m);
+  const monthOptions = ["all", ...[...activeMonthKeys].reverse()];
+
+  const tokenValue = (s: (typeof series)[number]) =>
+    month === "all" ? s.total ?? 0 : s.monthly[month] ?? 0;
+
+  const shownTokens = [...series]
+    .map((s) => ({ token: s.token, value: tokenValue(s) }))
+    .sort((a, b) => b.value - a.value);
+  const maxToken = Math.max(1, ...shownTokens.map((t) => t.value));
+  const monthTotal =
+    month === "all"
+      ? series.reduce((acc, s) => acc + (s.total ?? 0), 0)
+      : history.find((h) => h.m === month)?.v ?? 0;
+  const compositionLabel = month === "all" ? "full history" : monthLong(month);
 
   return (
     <div className="grid gap-6 px-6 py-5 lg:grid-cols-[1fr_360px]">
@@ -317,11 +336,20 @@ function RefCodeDetail({
         )}
 
         <div>
-          <p className="mb-2 font-mono text-[10px] font-medium tracking-[0.16em] text-muted uppercase">
-            Token composition · full history
-          </p>
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <p className="font-mono text-[10px] font-medium tracking-[0.16em] text-muted uppercase">
+              Token composition · {compositionLabel}
+            </p>
+            <StyledSelect
+              label="month"
+              value={month}
+              onChange={setMonth}
+              options={monthOptions}
+              render={(v) => (v === "all" ? "All history" : monthLong(v))}
+            />
+          </div>
           <div className="space-y-1.5">
-            {series.map((s) => (
+            {shownTokens.map((s) => (
               <div
                 key={s.token}
                 className="grid grid-cols-[120px_1fr_92px] items-center gap-3"
@@ -332,13 +360,9 @@ function RefCodeDetail({
                     {s.token}
                   </span>
                 </span>
-                <Bar
-                  value={s.total ?? 0}
-                  max={maxToken}
-                  color={tokenColor(s.token)}
-                />
+                <Bar value={s.value} max={maxToken} color={tokenColor(s.token)} />
                 <span className="text-right font-mono text-[11px] text-muted tabular-nums">
-                  {formatUSD2(s.total)}
+                  {formatUSD2(s.value)}
                 </span>
               </div>
             ))}
@@ -348,27 +372,53 @@ function RefCodeDetail({
               </p>
             ) : null}
           </div>
+          {series.length > 0 ? (
+            <div className="mt-2 flex items-center justify-between border-t border-line pt-2 font-mono text-[10px] text-faint">
+              <span>
+                Total · {month === "all" ? "full history" : monthLong(month)}
+              </span>
+              <span className="text-muted tabular-nums">
+                {formatUSD2(monthTotal)}
+              </span>
+            </div>
+          ) : null}
         </div>
       </div>
 
       {/* right: history sparkbars + stats */}
       <div className="space-y-3">
         <p className="font-mono text-[10px] font-medium tracking-[0.16em] text-muted uppercase">
-          DR history · monthly
+          DR history · monthly{" "}
+          <span className="text-faint normal-case tracking-normal">
+            (click a bar to filter)
+          </span>
         </p>
         <div className="flex h-24 items-end gap-[2px]">
-          {history.map((h) => (
-            <div
-              key={h.m}
-              title={`${monthLong(h.m)} · ${formatUSD2(h.v)}`}
-              className="flex-1 rounded-[1px]"
-              style={{
-                height: `${Math.max(2, (h.v / maxHist) * 100)}%`,
-                background: groupColor(group),
-                opacity: h.v > 0 ? 0.85 : 0.18,
-              }}
-            />
-          ))}
+          {history.map((h) => {
+            const selected = month === h.m;
+            const active = h.v > 0;
+            return (
+              <button
+                key={h.m}
+                type="button"
+                disabled={!active}
+                onClick={() =>
+                  setMonth((cur) => (cur === h.m ? "all" : h.m))
+                }
+                title={`${monthLong(h.m)} · ${formatUSD2(h.v)}`}
+                className={cn(
+                  "flex-1 rounded-[1px] transition-opacity",
+                  active ? "cursor-pointer hover:opacity-100" : "cursor-default",
+                  selected && "ring-1 ring-gold"
+                )}
+                style={{
+                  height: `${Math.max(2, (h.v / maxHist) * 100)}%`,
+                  background: groupColor(group),
+                  opacity: selected ? 1 : active ? 0.85 : 0.18,
+                }}
+              />
+            );
+          })}
         </div>
         <div className="flex justify-between font-mono text-[10px] text-faint">
           <span>{monthShort(HISTORY_MONTHS[0])} ’{HISTORY_MONTHS[0].slice(2, 4)}</span>
