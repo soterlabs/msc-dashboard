@@ -407,13 +407,17 @@ function RefCodeDetail({
                 }
                 title={`${monthLong(h.m)} · ${formatUSD2(h.v)}`}
                 className={cn(
-                  "flex-1 rounded-[1px] transition-opacity",
-                  active ? "cursor-pointer hover:opacity-100" : "cursor-default",
-                  selected && "ring-1 ring-gold"
+                  "flex-1 rounded-[1px] transition-[background-color,opacity]",
+                  active ? "cursor-pointer hover:opacity-100" : "cursor-default"
                 )}
                 style={{
                   height: `${Math.max(2, (h.v / maxHist) * 100)}%`,
-                  background: groupColor(group),
+                  // Selection is signalled purely by colour — a darker shade of
+                  // the bar's own group colour. Height stays value-driven, so
+                  // the bar never grows.
+                  background: selected
+                    ? `color-mix(in srgb, ${groupColor(group)} 80%, #000)`
+                    : groupColor(group),
                   opacity: selected ? 1 : active ? 0.85 : 0.18,
                 }}
               />
