@@ -26,6 +26,7 @@
   --color-ondark: var(--ondark);
   --color-ondark-muted: var(--ondark-muted);
   --color-success: var(--success);
+  --color-loss: var(--loss);
 }
 
 :root {
@@ -44,6 +45,7 @@
   --ondark: #ece6da;
   --ondark-muted: #8b95a1;
   --success: #5f8e54;
+  --loss: #b0402f;
 
   /* partner-group colours */
   --group-skybase: #2f4a68;
@@ -51,6 +53,7 @@
   --group-grove: #5e7a50;
   --group-keel: #3c5a86;
   --group-osero: #6e5a86;
+  --group-obex: #4a7d82;
   --group-other: #8a8474;
   --group-unassigned: #a8a192;
 
