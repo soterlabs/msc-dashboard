@@ -3,14 +3,19 @@ export type SsrMonth = string;
 
 export type SsrPartner = "grove" | "keel" | "obex" | "spark";
 
+/** Mirrors the summary.md headline: prime side (demand + supply) and sky side. */
 export interface SsrHeadline {
   agentRate: number | null;
   distributionRewards: number | null;
-  primeAgentNetRevenue: number | null;
-  primeSideSkyDirectExposure: number | null;
+  /** Prime demand-side revenue (= agent rate + distribution rewards). */
+  demandSideRevenue: number | null;
+  /** Prime supply-side revenue. */
+  primeSupplySideRevenue: number | null;
+  /** Derived: demand-side + supply-side revenue (total prime-side result). */
   primeAgentProfit: number | null;
   primeCostOfFunds: number | null;
-  skySideSkyDirectExposure: number | null;
+  skyDirectExposure: number | null;
+  /** Sky supply-side revenue (Sky's total take for the month). */
   skyRevenue: number | null;
 }
 

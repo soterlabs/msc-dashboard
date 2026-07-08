@@ -118,11 +118,17 @@ export function ssrKpis(): SsrKpis {
   };
 }
 
-export function partnerMonthlySky(p: SsrPartner): { month: string; v: number }[] {
-  return SSR_MONTHS.map((m) => ({
-    month: m,
-    v: reportFor(p, m)?.headline.skyRevenue ?? 0,
-  }));
+export function partnerMonthlyRevenues(
+  p: SsrPartner
+): { month: string; sky: number; prime: number }[] {
+  return SSR_MONTHS.map((m) => {
+    const h = reportFor(p, m)?.headline;
+    return {
+      month: m,
+      sky: h?.skyRevenue ?? 0,
+      prime: h?.primeAgentProfit ?? 0,
+    };
+  });
 }
 
 export function venuesFor(p: SsrPartner, month: string): SsrVenue[] {
