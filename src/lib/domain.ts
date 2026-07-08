@@ -208,21 +208,22 @@ export const RATE_FAMILIES: RateFamily[] = [
   {
     key: "XR",
     apy: 0.005,
-    title: "Full rate",
-    blurb: "USDS & sUSDS family — the headline 0.50% exchange-rate reward.",
+    title: "DR boosted rate",
+    blurb: "Default rate for USDS and sUSDS deposits.",
     colorVar: "--rate-xr",
   },
   {
     key: "XR*",
     apy: 0.002,
-    title: "Spark wrapped",
-    blurb: "Spark-wrapped collateral (sUSDC, spUSDC/T, …) at the reduced rate.",
+    title: "DR basic rate",
+    blurb:
+      "Rate of tokens held by Prime Agents, like sUSDS held by Spark Liquidity Layer.",
     colorVar: "--rate-xrstar",
   },
   {
     key: "XR-stUSDS",
     apy: 0.001,
-    title: "Staked USDS",
+    title: "DR rate for stUSDS",
     blurb: "stUSDS earns the lowest exchange-rate tier.",
     colorVar: "--rate-stusds",
   },
@@ -248,12 +249,3 @@ export function tokenColor(token: string): string {
   return fam ? `var(${fam.colorVar})` : "var(--faint)";
 }
 
-/** Tokens grouped under each rate family, in dataset order. */
-export function tokensByFamily(): Record<string, string[]> {
-  const out: Record<string, string[]> = {};
-  for (const f of RATE_FAMILIES) out[f.key] = [];
-  for (const r of tokenRates) {
-    (out[r.rateType] ??= []).push(r.token);
-  }
-  return out;
-}

@@ -20,7 +20,6 @@ import {
   DarkBar,
   FilterButton,
   NoteTag,
-  NoteText,
   Pill,
   SectionTitle,
   Swatch,
@@ -159,7 +158,7 @@ export function RefCodesView({
             </span>
           </>
         }
-        note="click a row for the per-token history & note"
+        note="click a row for the per-token history"
       />
 
       <Card className="overflow-hidden">
@@ -243,7 +242,7 @@ export function RefCodesView({
                     {isOpen ? (
                       <tr className="border-b border-line bg-paper/40">
                         <td colSpan={REPORT_MONTHS.length + 4} className="p-0">
-                          <RefCodeDetail refCode={r.refCode} group={r.group} note={r.notes} />
+                          <RefCodeDetail refCode={r.refCode} group={r.group} />
                         </td>
                       </tr>
                     ) : null}
@@ -275,15 +274,7 @@ export function RefCodesView({
 
 /* ----------------------------------------------------------- detail panel */
 
-function RefCodeDetail({
-  refCode,
-  group,
-  note,
-}: {
-  refCode: string;
-  group: string;
-  note: string;
-}) {
+function RefCodeDetail({ refCode, group }: { refCode: string; group: string }) {
   const series = seriesForRefCode(refCode);
 
   // Code-level monthly totals across the full history (sum of tokens).
@@ -320,21 +311,8 @@ function RefCodeDetail({
 
   return (
     <div className="grid gap-6 px-6 py-5 lg:grid-cols-[1fr_360px]">
-      {/* left: note + token composition */}
+      {/* left: token composition */}
       <div className="space-y-4">
-        {note ? (
-          <div className="rounded-md border border-gold/30 bg-gold/5 px-4 py-3">
-            <p className="mb-1 font-mono text-[10px] font-medium tracking-[0.16em] text-gold uppercase">
-              Methodology note
-            </p>
-            <NoteText note={note} className="text-ink/80" />
-          </div>
-        ) : (
-          <p className="font-mono text-[11px] text-faint">
-            No methodology note for this code.
-          </p>
-        )}
-
         <div>
           <div className="mb-2 flex items-center justify-between gap-2">
             <p className="font-mono text-[10px] font-medium tracking-[0.16em] text-muted uppercase">
