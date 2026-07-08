@@ -5,7 +5,6 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import { SSR_MONTH_LABELS, SSR_MONTHS } from "@/lib/ssr-data";
 import {
-  grandPrimeProfit,
   grandSkyRevenue,
   monthSkyRevenues,
   orderedPartners,
@@ -41,7 +40,6 @@ import {
   Eyebrow,
   DisplayTitle,
   FilterButton,
-  KpiCard,
   LeaderRow,
   MetaItem,
   NoteText,
@@ -119,38 +117,8 @@ function Summary({
   const totals = monthSkyRevenues();
   const maxPartner = Math.max(1, ...partners.map((p) => partnerSkyRevenue(p)));
 
-  const mom =
-    kpis.prevSky > 0
-      ? ((kpis.latestSky - kpis.prevSky) / kpis.prevSky) * 100
-      : 0;
-
   return (
     <div className="space-y-10">
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <KpiCard
-          label="Sky revenue · window"
-          value={formatCompactUSD(grand)}
-          note="Jan–May 2026 · all primes (excl. Skybase)"
-        />
-        <KpiCard
-          label={`Latest · ${monthLong(kpis.latestMonth)}`}
-          value={formatCompactUSD(kpis.latestSky)}
-          accent
-          note={`${mom >= 0 ? "+" : ""}${mom.toFixed(1)}% vs prior month`}
-        />
-        <KpiCard
-          label="Prime agent profit"
-          value={formatCompactUSD(grandPrimeProfit())}
-          note="Agent rate + DR + net revenue + SDE"
-        />
-        <KpiCard
-          label="Primes"
-          value={kpis.partnerCount}
-          unit="active"
-          note={`${kpis.venueCount} venues tracked · latest month`}
-        />
-      </div>
-
       <section>
         <SectionTitle
           title="Sky revenue by prime"
@@ -560,7 +528,7 @@ function RateBuildSection({
   return (
     <section>
       <SectionTitle
-        title="How Sky's take is built"
+        title="Parameters & accords"
         note="rate, subsidy & cost-of-funds composition"
       />
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
@@ -772,13 +740,28 @@ function ExcludedSection({ rows }: { rows: SsrExcludedVenue[] }) {
 }
 
 function RefCodesSection({ rows }: { rows: SsrRefCode[] }) {
+  const [onlyEarning, setOnlyEarning] = React.useState(true);
   const sorted = [...rows].sort((a, b) => (b.dr ?? 0) - (a.dr ?? 0));
+  const shown = onlyEarning ? sorted.filter((rc) => (rc.dr ?? 0) !== 0) : sorted;
   return (
     <section>
       <SectionTitle
         title="DR per ref code"
         note="distribution rewards in this report · also in the Distribution Rewards section"
       />
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <FilterButton
+          active={onlyEarning}
+          onClick={() => setOnlyEarning((v) => !v)}
+        >
+          Hide $0 revenue
+        </FilterButton>
+        <span className="font-mono text-[10.5px] text-muted">
+          {onlyEarning
+            ? `hiding ${sorted.length - shown.length} zero-DR codes`
+            : `showing all ${sorted.length} codes`}
+        </span>
+      </div>
       <Card className="overflow-hidden">
         <div className="dr-scroll max-h-[420px] overflow-auto">
           <table className="w-full min-w-[520px] border-collapse text-left">
@@ -790,7 +773,7 @@ function RefCodesSection({ rows }: { rows: SsrRefCode[] }) {
               </tr>
             </thead>
             <tbody>
-              {sorted.map((rc) => (
+              {shown.map((rc) => (
                 <tr
                   key={rc.refCode}
                   className="border-b border-line transition-colors hover:bg-paper/60"

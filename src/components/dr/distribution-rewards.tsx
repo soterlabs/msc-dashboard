@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import { l2Addresses, tokenRates } from "@/lib/data";
+import { tokenRates } from "@/lib/data";
 import {
   RATE_FAMILIES,
   allTokens,
@@ -13,13 +13,12 @@ import {
 } from "@/lib/domain";
 import { formatCompactUSD } from "@/lib/format";
 
-import { AddressesView } from "./addresses-view";
 import { DisplayTitle, Eyebrow, FilterButton, MetaItem } from "./primitives";
 import { RatesView } from "./rates-view";
 import { RefCodesView } from "./ref-codes-view";
 import { SummaryView } from "./summary-view";
 
-type Tab = "summary" | "refcodes" | "rates" | "addresses";
+type Tab = "summary" | "refcodes" | "rates";
 
 /** Every group present in the ledger (used for select-all / all-selected). */
 const ALL_GROUPS = Array.from(
@@ -63,7 +62,7 @@ export function DistributionRewards() {
       key: "refcodes",
       label: "By ref code",
       eyebrow: "Distribution rewards · ledger",
-      title: "Soter ledger —",
+      title: "DR ledger —",
       accent: "every ref code.",
       meta: [
         { label: "codes", value: visibleRefCodeRows.length },
@@ -74,7 +73,7 @@ export function DistributionRewards() {
     },
     {
       key: "rates",
-      label: "Soter rates",
+      label: "Sky rates",
       eyebrow: "Distribution rewards · methodology",
       title: "Rate card —",
       accent: "the methodology.",
@@ -82,21 +81,6 @@ export function DistributionRewards() {
         { label: "tokens", value: tokenRates.length },
         { label: "families", value: RATE_FAMILIES.length },
         { label: "window", value: "Jan–May 2026" },
-      ],
-    },
-    {
-      key: "addresses",
-      label: "L2 addresses",
-      eyebrow: "Distribution rewards · reference",
-      title: "L2 sUSDS —",
-      accent: "filtered addresses.",
-      meta: [
-        { label: "addresses", value: l2Addresses.length },
-        {
-          label: "chains",
-          value: new Set(l2Addresses.map((a) => a.chain)).size,
-        },
-        { label: "→ code", value: "10001" },
       ],
     },
   ];
@@ -159,7 +143,6 @@ export function DistributionRewards() {
           />
         )}
         {tab === "rates" && <RatesView />}
-        {tab === "addresses" && <AddressesView />}
       </div>
     </div>
   );
