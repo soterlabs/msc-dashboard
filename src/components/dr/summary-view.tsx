@@ -7,7 +7,6 @@ import { MONTH_LABELS, REPORT_MONTHS } from "@/lib/data";
 import {
   grandTotal,
   groupColor,
-  groupMeta,
   monthTotals,
   orderedGroups,
   refCodeKpis,
@@ -22,7 +21,6 @@ import {
 import { cn } from "@/lib/utils";
 
 import {
-  Bar,
   Card,
   DarkBar,
   KpiCard,
@@ -42,7 +40,6 @@ export function SummaryView({
   const grand = grandTotal();
   const kpis = summaryKpis();
   const refKpis = refCodeKpis();
-  const maxTotal = Math.max(...groups.map((g) => g.total ?? 0));
 
   const mom =
     kpis.prevTotal > 0
@@ -136,11 +133,7 @@ export function SummaryView({
         />
         <Card className="overflow-hidden">
           <div className="dr-scroll overflow-x-auto">
-            <DistributionTable
-              groups={groups}
-              maxTotal={maxTotal}
-              grand={grand}
-            />
+            <DistributionTable groups={groups} grand={grand} />
           </div>
         </Card>
         <div className="mt-3">
@@ -178,11 +171,9 @@ export function SummaryView({
 
 function DistributionTable({
   groups,
-  maxTotal,
   grand,
 }: {
   groups: ReturnType<typeof orderedGroups>;
-  maxTotal: number;
   grand: number;
 }) {
   const [open, setOpen] = React.useState<Record<string, boolean>>({});
@@ -193,7 +184,6 @@ function DistributionTable({
       <thead>
         <tr className="bg-thead">
           <Th className="w-[230px]">Group</Th>
-          <Th className="w-[150px]">Distribution</Th>
           {REPORT_MONTHS.map((m) => (
             <Th key={m} className="text-right">
               {MONTH_LABELS[m]}
@@ -227,13 +217,6 @@ function DistributionTable({
                     </span>
                   </div>
                 </Td>
-                <Td>
-                  <Bar
-                    value={g.total ?? 0}
-                    max={maxTotal}
-                    color={groupColor(g.group)}
-                  />
-                </Td>
                 {REPORT_MONTHS.map((m) => (
                   <Td key={m} className="text-right text-muted">
                     {fmtCell(g.monthly[m])}
@@ -258,9 +241,6 @@ function DistributionTable({
                         </span>
                         {rc.notes ? <NoteTag note={rc.notes} /> : null}
                       </div>
-                    </Td>
-                    <Td className="text-[10px] text-faint">
-                      {groupMeta(g.group).label.toLowerCase()}
                     </Td>
                     {REPORT_MONTHS.map((m) => (
                       <Td key={m} className="text-right text-muted">
