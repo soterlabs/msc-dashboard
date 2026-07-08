@@ -20,6 +20,9 @@
 # production
 /build
 
+# data source checkouts used by scripts/generate-data.mjs
+/.data-sources/
+
 # misc
 .DS_Store
 *.pem

@@ -5,13 +5,8 @@
  * that attributes monthly DR (USD) across referral codes, grouped by partner.
  */
 
-/** Reporting window currently surfaced across the KPI/summary views. */
-export type ReportMonth =
-  | "2026-01"
-  | "2026-02"
-  | "2026-03"
-  | "2026-04"
-  | "2026-05";
+/** A `YYYY-MM` month in the reporting window (driven by REPORT_MONTHS in data.ts). */
+export type ReportMonth = string;
 
 /** Map of `YYYY-MM` → DR in USD. `null` = no data reported for that month. */
 export type MonthlyMap = Record<string, number | null>;
