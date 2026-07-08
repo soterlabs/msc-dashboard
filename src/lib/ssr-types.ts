@@ -1,4 +1,5 @@
-export type SsrMonth = "2026-01" | "2026-02" | "2026-03" | "2026-04" | "2026-05";
+/** A `YYYY-MM` month with settlement reports (driven by SSR_MONTHS in ssr-data.ts). */
+export type SsrMonth = string;
 
 export type SsrPartner = "grove" | "keel" | "obex" | "spark";
 
