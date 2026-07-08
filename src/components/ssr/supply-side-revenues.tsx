@@ -18,7 +18,6 @@ import {
   venuesFor,
 } from "@/lib/ssr-domain";
 import type {
-  SsrDebtDay,
   SsrExcludedVenue,
   SsrPartner,
   SsrRateBuild,
@@ -495,10 +494,6 @@ function PartnerBreakdown({
         <RateBuildSection rb={report.rateBuild} />
       ) : null}
 
-      {report && report.debtDaily.length > 0 ? (
-        <DebtDailySection days={report.debtDaily} partner={partner} />
-      ) : null}
-
       {report && report.skyDirect.length > 0 ? (
         <SkyDirectSection rows={report.skyDirect} />
       ) : null}
@@ -594,46 +589,6 @@ function Formula({ label, expr }: { label: string; expr: string }) {
       </p>
       <p className="mt-1 font-mono text-xs font-medium text-ink">{expr}</p>
     </div>
-  );
-}
-
-function DebtDailySection({
-  days,
-  partner,
-}: {
-  days: SsrDebtDay[];
-  partner: SsrPartner;
-}) {
-  const max = Math.max(1, ...days.map((d) => d.dailySkyCharge));
-  const total = days.reduce((a, d) => a + d.dailySkyCharge, 0);
-  return (
-    <section>
-      <SectionTitle
-        title="Daily Sky charge"
-        note="on-chain ilk-debt cost of funds, per day"
-      />
-      <Card className="px-5 py-4">
-        <div className="flex h-24 items-end gap-[3px]">
-          {days.map((d) => (
-            <div
-              key={d.date}
-              title={`${d.date} · ${formatUSD(d.dailySkyCharge)} · utilized ${formatCompactUSD(d.utilized)}`}
-              className="flex-1 rounded-[1px]"
-              style={{
-                height: `${Math.max(2, (d.dailySkyCharge / max) * 100)}%`,
-                background: partnerColor(partner),
-                opacity: 0.85,
-              }}
-            />
-          ))}
-        </div>
-        <div className="mt-2 flex justify-between font-mono text-[10px] text-faint">
-          <span>{days[0]?.date}</span>
-          <span className="text-muted">Σ {formatUSD(total)} · month CoF</span>
-          <span>{days[days.length - 1]?.date}</span>
-        </div>
-      </Card>
-    </section>
   );
 }
 
