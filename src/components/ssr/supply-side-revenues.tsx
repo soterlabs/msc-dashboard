@@ -5,13 +5,12 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import { SSR_MONTH_LABELS, SSR_MONTHS } from "@/lib/ssr-data";
 import {
-  grandPrimeProfit,
   grandSkyRevenue,
   monthSkyRevenues,
   orderedPartners,
   partnerColor,
   partnerMeta,
-  partnerMonthlySky,
+  partnerMonthlyRevenues,
   partnerPrimeProfit,
   partnerSkyRevenue,
   reportFor,
@@ -41,7 +40,6 @@ import {
   Eyebrow,
   DisplayTitle,
   FilterButton,
-  KpiCard,
   LeaderRow,
   MetaItem,
   NoteText,
@@ -119,38 +117,8 @@ function Summary({
   const totals = monthSkyRevenues();
   const maxPartner = Math.max(1, ...partners.map((p) => partnerSkyRevenue(p)));
 
-  const mom =
-    kpis.prevSky > 0
-      ? ((kpis.latestSky - kpis.prevSky) / kpis.prevSky) * 100
-      : 0;
-
   return (
     <div className="space-y-10">
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <KpiCard
-          label="Sky revenue · window"
-          value={formatCompactUSD(grand)}
-          note="Jan–May 2026 · all primes (excl. Skybase)"
-        />
-        <KpiCard
-          label={`Latest · ${monthLong(kpis.latestMonth)}`}
-          value={formatCompactUSD(kpis.latestSky)}
-          accent
-          note={`${mom >= 0 ? "+" : ""}${mom.toFixed(1)}% vs prior month`}
-        />
-        <KpiCard
-          label="Prime agent profit"
-          value={formatCompactUSD(grandPrimeProfit())}
-          note="Agent rate + DR + net revenue + SDE"
-        />
-        <KpiCard
-          label="Primes"
-          value={kpis.partnerCount}
-          unit="active"
-          note={`${kpis.venueCount} venues tracked · latest month`}
-        />
-      </div>
-
       <section>
         <SectionTitle
           title="Sky revenue by prime"
@@ -310,14 +278,14 @@ function PartnerBreakdown({
 
   const report = reportFor(partner, month);
   const h = report?.headline;
-  const monthly = partnerMonthlySky(partner);
-  const maxMonthly = Math.max(1, ...monthly.map((x) => x.v));
+  const monthly = partnerMonthlyRevenues(partner);
+  // Negative prime months contribute no stacked segment, only tooltip detail.
+  const maxMonthly = Math.max(1, ...monthly.map((x) => x.sky + Math.max(0, x.prime)));
 
   const venues = venuesFor(partner, month);
   const shownVenues = onlyEarning
     ? venues.filter((v) => v.revenue !== 0)
     : venues;
-  const maxVenueRev = Math.max(1, ...shownVenues.map((v) => Math.abs(v.revenue)));
 
   return (
     <div className="space-y-8">
@@ -343,10 +311,10 @@ function PartnerBreakdown({
         <HeadlineCard
           title="Prime side"
           rows={[
-            ["agent rate", h?.agentRate],
-            ["distribution rewards", h?.distributionRewards],
-            ["prime agent net revenue", h?.primeAgentNetRevenue],
-            ["sky direct exposure", h?.primeSideSkyDirectExposure],
+            ["demand-side revenue", h?.demandSideRevenue, "sum"],
+            ["agent rate", h?.agentRate, "sub"],
+            ["distribution rewards", h?.distributionRewards, "sub"],
+            ["+ supply-side revenue", h?.primeSupplySideRevenue, "sum"],
           ]}
           total={["prime agent profit", h?.primeAgentProfit]}
           color={partnerColor(partner)}
@@ -354,8 +322,8 @@ function PartnerBreakdown({
         <HeadlineCard
           title="Sky side"
           rows={[
-            ["prime cost of funds", h?.primeCostOfFunds],
-            ["sky direct exposure", h?.skySideSkyDirectExposure],
+            ["prime cost of funds", h?.primeCostOfFunds, "sum"],
+            ["sky direct exposure", h?.skyDirectExposure, "sum"],
           ]}
           total={["sky revenue", h?.skyRevenue]}
           accentTotal
@@ -364,32 +332,59 @@ function PartnerBreakdown({
 
       <section>
         <SectionTitle
-          title="Sky revenue · monthly"
+          title="Prime and Sky revenues · monthly"
           note="click a bar to change month"
         />
         <Card className="px-5 py-4">
+          <div className="mb-3 flex items-center gap-4 font-mono text-[10px] text-muted">
+            <span className="flex items-center gap-1.5">
+              <Swatch color="var(--gold)" /> sky revenue
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Swatch color={partnerColor(partner)} /> prime revenue
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Swatch color="var(--loss)" /> negative prime revenue
+            </span>
+          </div>
           <div className="flex items-end gap-2">
             {monthly.map((x) => {
               const selected = month === x.month;
+              const seg = (v: number, c: string) => ({
+                height: `${Math.max(v > 0 ? 3 : 0, (Math.max(0, v) / maxMonthly) * 100)}%`,
+                background: selected ? `color-mix(in srgb, ${c} 80%, #000)` : c,
+                opacity: selected ? 1 : 0.8,
+              });
               return (
                 <button
                   key={x.month}
                   type="button"
                   onClick={() => setMonth(x.month)}
-                  title={`${monthLong(x.month)} · ${formatUSD(x.v)}`}
+                  title={`${monthLong(x.month)} · sky ${formatUSD(x.sky)} · prime ${formatUSD(x.prime)}`}
                   className="flex flex-1 flex-col items-center gap-2"
                 >
-                  <div className="flex h-24 w-full items-end">
+                  <div className="flex h-24 w-full flex-col justify-end gap-px">
                     <div
-                      className="w-full rounded-[2px] transition-[background-color]"
-                      style={{
-                        height: `${Math.max(3, (x.v / maxMonthly) * 100)}%`,
-                        background: selected
-                          ? `color-mix(in srgb, ${partnerColor(partner)} 80%, #000)`
-                          : partnerColor(partner),
-                        opacity: selected ? 1 : 0.8,
-                      }}
+                      className="w-full rounded-t-[2px] transition-[background-color]"
+                      style={seg(x.prime, partnerColor(partner))}
                     />
+                    {/* Negative prime months: the loss shows as a red zone eating
+                        into the top of the sky segment. */}
+                    <div
+                      className="relative w-full overflow-hidden rounded-b-[2px] transition-[background-color]"
+                      style={seg(x.sky, "var(--gold)")}
+                    >
+                      {x.prime < 0 && (
+                        <div
+                          className="absolute inset-x-0 top-0"
+                          style={{
+                            height: `${Math.min(100, (-x.prime / Math.max(x.sky, 1)) * 100)}%`,
+                            background: "var(--loss)",
+                            opacity: 0.85,
+                          }}
+                        />
+                      )}
+                    </div>
                   </div>
                   <span
                     className={cn(
@@ -448,10 +443,8 @@ function PartnerBreakdown({
                     <tr className="bg-thead">
                       <Th className="w-[60px]">Venue</Th>
                       <Th className="min-w-[260px]">Deployment</Th>
-                      <Th className="text-right">AUM · eom</Th>
+                      <Th className="text-right">NAV · eom</Th>
                       <Th className="text-right">Inflow</Th>
-                      <Th className="w-[150px]">Revenue</Th>
-                      <Th className="text-right">SD</Th>
                     </tr>
                   </thead>
                   <tbody>
@@ -481,35 +474,6 @@ function PartnerBreakdown({
                             </span>
                           )}
                         </Td>
-                        <Td>
-                          <div className="flex items-center gap-2">
-                            <Bar
-                              value={Math.abs(v.revenue)}
-                              max={maxVenueRev}
-                              color={
-                                v.revenue < 0 ? "var(--loss)" : partnerColor(partner)
-                              }
-                              className="w-[80px]"
-                            />
-                            <span
-                              className={cn(
-                                "tabular-nums",
-                                v.revenue < 0 ? "text-loss" : "text-ink"
-                              )}
-                            >
-                              {formatCompactUSD(v.revenue)}
-                            </span>
-                          </div>
-                        </Td>
-                        <Td className="text-right">
-                          {v.sdShare > 0 ? (
-                            <Pill color="var(--group-osero)">
-                              {(v.sdShare * 100).toFixed(0)}%
-                            </Pill>
-                          ) : (
-                            <span className="text-faint">—</span>
-                          )}
-                        </Td>
                       </tr>
                     ))}
                   </tbody>
@@ -518,16 +482,17 @@ function PartnerBreakdown({
             </Card>
             <div className="mt-3">
               <DarkBar
-                left={`${partnerMeta(partner).label} · ${monthLong(month)}`}
-                right={`${formatUSD(h?.skyRevenue ?? 0)} sky revenue`}
+                left={`total NAV · ${formatUSD(shownVenues.reduce((a, v) => a + v.valueEom, 0))}`}
+                right={`total inflows · ${formatUSD(shownVenues.reduce((a, v) => a + v.periodInflow, 0))}`}
               />
             </div>
           </>
         )}
       </section>
 
-      {report?.rateBuild ? (
-        <RateBuildSection rb={report.rateBuild} skyRevenue={h?.skyRevenue ?? 0} />
+      {/* Subsidized borrowing only applies to the debt-drawing primes. */}
+      {(partner === "spark" || partner === "grove") && report?.rateBuild ? (
+        <RateBuildSection rb={report.rateBuild} />
       ) : null}
 
       {report && report.debtDaily.length > 0 ? (
@@ -549,92 +514,86 @@ function PartnerBreakdown({
   );
 }
 
-function RateBuildSection({
-  rb,
-  skyRevenue,
-}: {
-  rb: SsrRateBuild;
-  skyRevenue: number;
-}) {
+function RateBuildSection({ rb }: { rb: SsrRateBuild }) {
   const hasRates = rb.baseRate != null;
+  if (!hasRates) return null;
   return (
     <section>
       <SectionTitle
-        title="How Sky's take is built"
+        title="Subsidized borrowing"
         note="rate, subsidy & cost-of-funds composition"
       />
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-        {hasRates ? (
-          <Card className="px-5 py-4">
-            <p className="mb-3 font-mono text-[11px] font-medium tracking-[0.14em] text-muted uppercase">
-              Rates &amp; subsidy
-            </p>
-            <div className="space-y-2.5">
-              <LeaderRow label="base rate · BR" value={formatRatePercent(rb.baseRate)} />
-              <LeaderRow
-                label={`reference rate${rb.referenceRateKind ? ` · ${rb.referenceRateKind}` : ""}`}
-                value={formatRatePercent(rb.referenceRate)}
-              />
-              <LeaderRow
-                label="subsidised rate · BR*"
-                value={formatRatePercent(rb.subsidisedRate)}
-              />
-              <LeaderRow
-                label="effective blended"
-                value={formatRatePercent(rb.effectiveRate)}
-                valueClassName="text-gold"
-              />
-              <LeaderRow
-                label="diff vs base"
-                value={
-                  rb.diffVsBaseBps != null
-                    ? `${rb.diffVsBaseBps.toFixed(1)} bps`
-                    : "—"
-                }
-              />
-              <LeaderRow
-                label="time-weighted utilized"
-                value={formatCompactUSD(rb.timeWeightedUtilized)}
-              />
-              <LeaderRow
-                label="subsidy benefit to prime"
-                value={formatCompactUSD(rb.subsidyBenefit)}
-              />
-            </div>
-          </Card>
-        ) : null}
-
         <Card className="px-5 py-4">
           <p className="mb-3 font-mono text-[11px] font-medium tracking-[0.14em] text-muted uppercase">
-            Component build
+            Rates &amp; subsidy
           </p>
           <div className="space-y-2.5">
             <LeaderRow
-              label="CoF on utilized debt"
-              value={formatUSD(rb.cofOnUtilized)}
+              label="SR (subsidized rate)"
+              value={formatRatePercent(rb.subsidisedRate)}
             />
             <LeaderRow
-              label="+ Sky-Direct revenue"
-              value={formatUSD(rb.skyDirectComponent)}
+              label={`TR (target rate${rb.referenceRateKind ? `: ${rb.referenceRateKind}` : ": EFFR or T-Bills"})`}
+              value={formatRatePercent(rb.referenceRate)}
+            />
+            <LeaderRow label="BR (base rate)" value={formatRatePercent(rb.baseRate)} />
+            <LeaderRow
+              label="ER (effective rate)"
+              value={formatRatePercent(rb.effectiveRate)}
+              valueClassName="text-gold"
+            />
+            <LeaderRow
+              label="ER − BR"
+              value={
+                rb.diffVsBaseBps != null
+                  ? `${rb.diffVsBaseBps.toFixed(1)} bps`
+                  : "—"
+              }
+            />
+            <LeaderRow
+              label="time-weighted utilized"
+              value={formatCompactUSD(rb.timeWeightedUtilized)}
+            />
+            <LeaderRow
+              label="subsidy benefit to prime"
+              value={formatCompactUSD(rb.subsidyBenefit)}
             />
           </div>
-          <div className="mt-4 flex items-baseline justify-between border-t border-line-strong pt-3">
-            <span className="font-mono text-[11px] font-medium tracking-[0.1em] text-muted uppercase">
-              = sky revenue
-            </span>
-            <span className="font-mono text-lg font-semibold text-gold tabular-nums">
-              {formatUSD(skyRevenue)}
-            </span>
+        </Card>
+
+        <Card className="px-5 py-4">
+          <p className="mb-3 font-mono text-[11px] font-medium tracking-[0.14em] text-muted uppercase">
+            Formulas
+          </p>
+          <div className="space-y-4">
+            <Formula
+              label="subsidized rate (24-month ramp)"
+              expr="SR = TR + ((BR − TR) × T / 24)"
+            />
+            <Formula
+              label="cost of funds — subsidy only applies to the first $1B utilized"
+              expr="CoF = SR × min(U, $1B) + BR × max(U − $1B, 0)"
+            />
+            <Formula label="effective rate" expr="ER = CoF / U" />
           </div>
-          {rb.skyRevenueMax != null ? (
-            <p className="mt-3 font-mono text-[10.5px] text-faint">
-              max (BR × full debt, no deductions):{" "}
-              {formatCompactUSD(rb.skyRevenueMax)}
-            </p>
-          ) : null}
+          <p className="mt-4 border-t border-line pt-3 font-mono text-[10.5px] text-faint">
+            U = time-weighted utilized debt · T = months since program start
+          </p>
         </Card>
       </div>
     </section>
+  );
+}
+
+function Formula({ label, expr }: { label: string; expr: string }) {
+  return (
+    <div>
+      <p className="font-mono text-[10.5px] tracking-[0.08em] text-muted uppercase">
+        {label}
+      </p>
+      <p className="mt-1 font-mono text-xs font-medium text-ink">{expr}</p>
+    </div>
   );
 }
 
@@ -772,13 +731,28 @@ function ExcludedSection({ rows }: { rows: SsrExcludedVenue[] }) {
 }
 
 function RefCodesSection({ rows }: { rows: SsrRefCode[] }) {
+  const [onlyEarning, setOnlyEarning] = React.useState(true);
   const sorted = [...rows].sort((a, b) => (b.dr ?? 0) - (a.dr ?? 0));
+  const shown = onlyEarning ? sorted.filter((rc) => (rc.dr ?? 0) !== 0) : sorted;
   return (
     <section>
       <SectionTitle
         title="DR per ref code"
         note="distribution rewards in this report · also in the Distribution Rewards section"
       />
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <FilterButton
+          active={onlyEarning}
+          onClick={() => setOnlyEarning((v) => !v)}
+        >
+          Hide $0 revenue
+        </FilterButton>
+        <span className="font-mono text-[10.5px] text-muted">
+          {onlyEarning
+            ? `hiding ${sorted.length - shown.length} zero-DR codes`
+            : `showing all ${sorted.length} codes`}
+        </span>
+      </div>
       <Card className="overflow-hidden">
         <div className="dr-scroll max-h-[420px] overflow-auto">
           <table className="w-full min-w-[520px] border-collapse text-left">
@@ -790,7 +764,7 @@ function RefCodesSection({ rows }: { rows: SsrRefCode[] }) {
               </tr>
             </thead>
             <tbody>
-              {sorted.map((rc) => (
+              {shown.map((rc) => (
                 <tr
                   key={rc.refCode}
                   className="border-b border-line transition-colors hover:bg-paper/60"
@@ -812,6 +786,10 @@ function RefCodesSection({ rows }: { rows: SsrRefCode[] }) {
   );
 }
 
+/**
+ * Accounting-statement card: "sub" rows are indented components of the
+ * following "sum" row; bold "sum" rows are the operands of the ruled total.
+ */
 function HeadlineCard({
   title,
   rows,
@@ -820,7 +798,7 @@ function HeadlineCard({
   accentTotal,
 }: {
   title: string;
-  rows: [string, number | null | undefined][];
+  rows: [string, number | null | undefined, ("sub" | "sum")?][];
   total: [string, number | null | undefined];
   color?: string;
   accentTotal?: boolean;
@@ -834,8 +812,33 @@ function HeadlineCard({
         </span>
       </div>
       <div className="mt-4 space-y-2.5">
-        {rows.map(([label, value]) => (
-          <LeaderRow key={label} label={label} value={fmtHeadline(value)} />
+        {rows.map(([label, value, kind]) => (
+          <LeaderRow
+            key={label}
+            label={
+              kind === "sub" ? (
+                <span className="pl-4">{label}</span>
+              ) : kind === "sum" ? (
+                // A leading "+ " hangs in the card padding so sum labels align.
+                <span className="relative font-semibold text-ink">
+                  {label.startsWith("+ ") ? (
+                    <>
+                      <span className="absolute -left-3 font-normal text-muted">+</span>
+                      {label.slice(2)}
+                    </>
+                  ) : (
+                    label
+                  )}
+                </span>
+              ) : (
+                label
+              )
+            }
+            value={fmtHeadline(value)}
+            valueClassName={
+              kind === "sum" ? "font-semibold" : kind === "sub" ? "font-normal" : undefined
+            }
+          />
         ))}
       </div>
       <div className="mt-4 flex items-baseline justify-between border-t border-line-strong pt-3">

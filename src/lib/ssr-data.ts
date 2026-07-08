@@ -31,12 +31,12 @@ export const ssrReports: SsrReport[] = [
     "headline": {
       "agentRate": 6275.53,
       "distributionRewards": 0,
-      "primeAgentNetRevenue": null,
-      "primeSideSkyDirectExposure": null,
-      "primeAgentProfit": null,
+      "demandSideRevenue": 6275.53,
+      "primeSupplySideRevenue": -52691.17,
       "primeCostOfFunds": 3322924.21,
-      "skySideSkyDirectExposure": null,
-      "skyRevenue": null
+      "skyDirectExposure": 2954411.88,
+      "skyRevenue": 6277336.09,
+      "primeAgentProfit": -46415.64
     },
     "venues": [
       {
@@ -730,12 +730,12 @@ export const ssrReports: SsrReport[] = [
     "headline": {
       "agentRate": 5809.87,
       "distributionRewards": 0,
-      "primeAgentNetRevenue": null,
-      "primeSideSkyDirectExposure": null,
-      "primeAgentProfit": null,
+      "demandSideRevenue": 5809.87,
+      "primeSupplySideRevenue": 2883563.03,
       "primeCostOfFunds": 2998286.45,
-      "skySideSkyDirectExposure": null,
-      "skyRevenue": null
+      "skyDirectExposure": 3138915.45,
+      "skyRevenue": 6137201.9,
+      "primeAgentProfit": 2889372.9
     },
     "venues": [
       {
@@ -1411,12 +1411,12 @@ export const ssrReports: SsrReport[] = [
     "headline": {
       "agentRate": 6287.12,
       "distributionRewards": 191719.25,
-      "primeAgentNetRevenue": null,
-      "primeSideSkyDirectExposure": null,
-      "primeAgentProfit": null,
+      "demandSideRevenue": 198006.37,
+      "primeSupplySideRevenue": -2000509.4,
       "primeCostOfFunds": 3056810.76,
-      "skySideSkyDirectExposure": null,
-      "skyRevenue": null
+      "skyDirectExposure": 3251383.75,
+      "skyRevenue": 6308194.51,
+      "primeAgentProfit": -1802503.03
     },
     "venues": [
       {
@@ -2110,12 +2110,12 @@ export const ssrReports: SsrReport[] = [
     "headline": {
       "agentRate": 45332.83,
       "distributionRewards": 125090.17,
-      "primeAgentNetRevenue": null,
-      "primeSideSkyDirectExposure": null,
-      "primeAgentProfit": null,
+      "demandSideRevenue": 170423,
+      "primeSupplySideRevenue": 3682517.18,
       "primeCostOfFunds": 2940291.82,
-      "skySideSkyDirectExposure": null,
-      "skyRevenue": null
+      "skyDirectExposure": 6395006.5,
+      "skyRevenue": 9335298.32,
+      "primeAgentProfit": 3852940.18
     },
     "venues": [
       {
@@ -2803,12 +2803,12 @@ export const ssrReports: SsrReport[] = [
     "headline": {
       "agentRate": 71960.6,
       "distributionRewards": 20518.52,
-      "primeAgentNetRevenue": null,
-      "primeSideSkyDirectExposure": null,
-      "primeAgentProfit": null,
+      "demandSideRevenue": 92479.12,
+      "primeSupplySideRevenue": 289318.76,
       "primeCostOfFunds": 3345973.19,
-      "skySideSkyDirectExposure": null,
-      "skyRevenue": null
+      "skyDirectExposure": 5242531.29,
+      "skyRevenue": 8588504.48,
+      "primeAgentProfit": 381797.88
     },
     "venues": [
       {
@@ -3502,12 +3502,12 @@ export const ssrReports: SsrReport[] = [
     "headline": {
       "agentRate": 66624.62,
       "distributionRewards": 55456.33,
-      "primeAgentNetRevenue": null,
-      "primeSideSkyDirectExposure": null,
-      "primeAgentProfit": null,
+      "demandSideRevenue": 122080.95,
+      "primeSupplySideRevenue": -397306.08,
       "primeCostOfFunds": 3291039.78,
-      "skySideSkyDirectExposure": null,
-      "skyRevenue": null
+      "skyDirectExposure": 4709026.18,
+      "skyRevenue": 8000065.96,
+      "primeAgentProfit": -275225.13
     },
     "venues": [
       {
@@ -4195,12 +4195,12 @@ export const ssrReports: SsrReport[] = [
     "headline": {
       "agentRate": 0,
       "distributionRewards": 28435.59,
-      "primeAgentNetRevenue": null,
-      "primeSideSkyDirectExposure": null,
-      "primeAgentProfit": null,
+      "demandSideRevenue": 28435.59,
+      "primeSupplySideRevenue": 0,
       "primeCostOfFunds": 0,
-      "skySideSkyDirectExposure": null,
-      "skyRevenue": null
+      "skyDirectExposure": 0,
+      "skyRevenue": 0,
+      "primeAgentProfit": 28435.59
     },
     "venues": [],
     "refCodes": [
@@ -4247,12 +4247,12 @@ export const ssrReports: SsrReport[] = [
     "headline": {
       "agentRate": 0,
       "distributionRewards": 25260.48,
-      "primeAgentNetRevenue": null,
-      "primeSideSkyDirectExposure": null,
-      "primeAgentProfit": null,
+      "demandSideRevenue": 25260.48,
+      "primeSupplySideRevenue": 0,
       "primeCostOfFunds": 0,
-      "skySideSkyDirectExposure": null,
-      "skyRevenue": null
+      "skyDirectExposure": 0,
+      "skyRevenue": 0,
+      "primeAgentProfit": 25260.48
     },
     "venues": [],
     "refCodes": [
@@ -4299,12 +4299,12 @@ export const ssrReports: SsrReport[] = [
     "headline": {
       "agentRate": 2126.8,
       "distributionRewards": 29059.5,
-      "primeAgentNetRevenue": null,
-      "primeSideSkyDirectExposure": null,
-      "primeAgentProfit": null,
+      "demandSideRevenue": 31186.3,
+      "primeSupplySideRevenue": 0,
       "primeCostOfFunds": 0,
-      "skySideSkyDirectExposure": null,
-      "skyRevenue": null
+      "skyDirectExposure": 0,
+      "skyRevenue": 0,
+      "primeAgentProfit": 31186.3
     },
     "venues": [],
     "refCodes": [
@@ -4351,12 +4351,12 @@ export const ssrReports: SsrReport[] = [
     "headline": {
       "agentRate": 31676.69,
       "distributionRewards": 23206.77,
-      "primeAgentNetRevenue": null,
-      "primeSideSkyDirectExposure": null,
-      "primeAgentProfit": null,
+      "demandSideRevenue": 54883.46,
+      "primeSupplySideRevenue": 0,
       "primeCostOfFunds": 0,
-      "skySideSkyDirectExposure": null,
-      "skyRevenue": null
+      "skyDirectExposure": 0,
+      "skyRevenue": 0,
+      "primeAgentProfit": 54883.46
     },
     "venues": [],
     "refCodes": [
@@ -4403,12 +4403,12 @@ export const ssrReports: SsrReport[] = [
     "headline": {
       "agentRate": 32278.71,
       "distributionRewards": 22600.1,
-      "primeAgentNetRevenue": null,
-      "primeSideSkyDirectExposure": null,
-      "primeAgentProfit": null,
+      "demandSideRevenue": 54878.81,
+      "primeSupplySideRevenue": 0,
       "primeCostOfFunds": 0,
-      "skySideSkyDirectExposure": null,
-      "skyRevenue": null
+      "skyDirectExposure": 0,
+      "skyRevenue": 0,
+      "primeAgentProfit": 54878.81
     },
     "venues": [],
     "refCodes": [
@@ -4455,12 +4455,12 @@ export const ssrReports: SsrReport[] = [
     "headline": {
       "agentRate": 32198.13,
       "distributionRewards": 19571.76,
-      "primeAgentNetRevenue": null,
-      "primeSideSkyDirectExposure": null,
-      "primeAgentProfit": null,
+      "demandSideRevenue": 51769.89,
+      "primeSupplySideRevenue": 0,
       "primeCostOfFunds": 0,
-      "skySideSkyDirectExposure": null,
-      "skyRevenue": null
+      "skyDirectExposure": 0,
+      "skyRevenue": 0,
+      "primeAgentProfit": 51769.89
     },
     "venues": [],
     "refCodes": [
@@ -4507,12 +4507,12 @@ export const ssrReports: SsrReport[] = [
     "headline": {
       "agentRate": 73520.27,
       "distributionRewards": 0,
-      "primeAgentNetRevenue": null,
-      "primeSideSkyDirectExposure": null,
-      "primeAgentProfit": null,
+      "demandSideRevenue": 73520.27,
+      "primeSupplySideRevenue": 439227.68,
       "primeCostOfFunds": 2110933.27,
-      "skySideSkyDirectExposure": null,
-      "skyRevenue": null
+      "skyDirectExposure": 0,
+      "skyRevenue": 2110933.27,
+      "primeAgentProfit": 512747.95
     },
     "venues": [
       {
@@ -4743,12 +4743,12 @@ export const ssrReports: SsrReport[] = [
     "headline": {
       "agentRate": 67754.17,
       "distributionRewards": 0,
-      "primeAgentNetRevenue": null,
-      "primeSideSkyDirectExposure": null,
-      "primeAgentProfit": null,
+      "demandSideRevenue": 67754.17,
+      "primeSupplySideRevenue": 170350.31,
       "primeCostOfFunds": 1948739.35,
-      "skySideSkyDirectExposure": null,
-      "skyRevenue": null
+      "skyDirectExposure": 0,
+      "skyRevenue": 1948739.35,
+      "primeAgentProfit": 238104.48
     },
     "venues": [
       {
@@ -4961,12 +4961,12 @@ export const ssrReports: SsrReport[] = [
     "headline": {
       "agentRate": 72061.47,
       "distributionRewards": 0,
-      "primeAgentNetRevenue": null,
-      "primeSideSkyDirectExposure": null,
-      "primeAgentProfit": null,
+      "demandSideRevenue": 72061.47,
+      "primeSupplySideRevenue": 153517.58,
       "primeCostOfFunds": 2073865.93,
-      "skySideSkyDirectExposure": null,
-      "skyRevenue": null
+      "skyDirectExposure": 0,
+      "skyRevenue": 2073865.93,
+      "primeAgentProfit": 225579.05
     },
     "venues": [
       {
@@ -5197,12 +5197,12 @@ export const ssrReports: SsrReport[] = [
     "headline": {
       "agentRate": 68358.25,
       "distributionRewards": 0,
-      "primeAgentNetRevenue": null,
-      "primeSideSkyDirectExposure": null,
-      "primeAgentProfit": null,
+      "demandSideRevenue": 68358.25,
+      "primeSupplySideRevenue": 262250.32,
       "primeCostOfFunds": 1968813.08,
-      "skySideSkyDirectExposure": null,
-      "skyRevenue": null
+      "skyDirectExposure": 0,
+      "skyRevenue": 1968813.08,
+      "primeAgentProfit": 330608.57
     },
     "venues": [
       {
@@ -5427,12 +5427,12 @@ export const ssrReports: SsrReport[] = [
     "headline": {
       "agentRate": 69563.01,
       "distributionRewards": 0,
-      "primeAgentNetRevenue": null,
-      "primeSideSkyDirectExposure": null,
-      "primeAgentProfit": null,
+      "demandSideRevenue": 69563.01,
+      "primeSupplySideRevenue": 456640.85,
       "primeCostOfFunds": 2005204.07,
-      "skySideSkyDirectExposure": null,
-      "skyRevenue": null
+      "skyDirectExposure": 0,
+      "skyRevenue": 2005204.07,
+      "primeAgentProfit": 526203.86
     },
     "venues": [
       {
@@ -5663,12 +5663,12 @@ export const ssrReports: SsrReport[] = [
     "headline": {
       "agentRate": 69775.65,
       "distributionRewards": 0,
-      "primeAgentNetRevenue": null,
-      "primeSideSkyDirectExposure": null,
-      "primeAgentProfit": null,
+      "demandSideRevenue": 69775.65,
+      "primeSupplySideRevenue": 414440.24,
       "primeCostOfFunds": 1997989.05,
-      "skySideSkyDirectExposure": null,
-      "skyRevenue": null
+      "skyDirectExposure": 0,
+      "skyRevenue": 1997989.05,
+      "primeAgentProfit": 484215.89
     },
     "venues": [
       {
@@ -5893,12 +5893,12 @@ export const ssrReports: SsrReport[] = [
     "headline": {
       "agentRate": 106392.55,
       "distributionRewards": 1154488.13,
-      "primeAgentNetRevenue": null,
-      "primeSideSkyDirectExposure": null,
-      "primeAgentProfit": null,
+      "demandSideRevenue": 1260880.68,
+      "primeSupplySideRevenue": -318866.82,
       "primeCostOfFunds": 7822171.39,
-      "skySideSkyDirectExposure": null,
-      "skyRevenue": null
+      "skyDirectExposure": 2023.08,
+      "skyRevenue": 7824194.47,
+      "primeAgentProfit": 942013.86
     },
     "venues": [
       {
@@ -7013,12 +7013,12 @@ export const ssrReports: SsrReport[] = [
     "headline": {
       "agentRate": 114973.5,
       "distributionRewards": 1022253.36,
-      "primeAgentNetRevenue": null,
-      "primeSideSkyDirectExposure": null,
-      "primeAgentProfit": null,
+      "demandSideRevenue": 1137226.86,
+      "primeSupplySideRevenue": 2805156.84,
       "primeCostOfFunds": 7486257.24,
-      "skySideSkyDirectExposure": null,
-      "skyRevenue": null
+      "skyDirectExposure": 3731.28,
+      "skyRevenue": 7489988.52,
+      "primeAgentProfit": 3942383.7
     },
     "venues": [
       {
@@ -8115,12 +8115,12 @@ export const ssrReports: SsrReport[] = [
     "headline": {
       "agentRate": 122911.67,
       "distributionRewards": 1412270.82,
-      "primeAgentNetRevenue": null,
-      "primeSideSkyDirectExposure": null,
-      "primeAgentProfit": null,
+      "demandSideRevenue": 1535182.49,
+      "primeSupplySideRevenue": 2350300.04,
       "primeCostOfFunds": 7801904.96,
-      "skySideSkyDirectExposure": null,
-      "skyRevenue": null
+      "skyDirectExposure": 5979.89,
+      "skyRevenue": 7807884.85,
+      "primeAgentProfit": 3885482.53
     },
     "venues": [
       {
@@ -9235,12 +9235,12 @@ export const ssrReports: SsrReport[] = [
     "headline": {
       "agentRate": 115391.31,
       "distributionRewards": 1506065.38,
-      "primeAgentNetRevenue": null,
-      "primeSideSkyDirectExposure": null,
-      "primeAgentProfit": null,
+      "demandSideRevenue": 1621456.69,
+      "primeSupplySideRevenue": 834856.97,
       "primeCostOfFunds": 9251643.97,
-      "skySideSkyDirectExposure": null,
-      "skyRevenue": null
+      "skyDirectExposure": 12587.56,
+      "skyRevenue": 9264231.53,
+      "primeAgentProfit": 2456313.66
     },
     "venues": [
       {
@@ -10349,12 +10349,12 @@ export const ssrReports: SsrReport[] = [
     "headline": {
       "agentRate": 118578.18,
       "distributionRewards": 1632540.8,
-      "primeAgentNetRevenue": null,
-      "primeSideSkyDirectExposure": null,
-      "primeAgentProfit": null,
+      "demandSideRevenue": 1751118.98,
+      "primeSupplySideRevenue": 2768356.15,
       "primeCostOfFunds": 10640588.59,
-      "skySideSkyDirectExposure": null,
-      "skyRevenue": null
+      "skyDirectExposure": 40533.96,
+      "skyRevenue": 10681122.55,
+      "primeAgentProfit": 4519475.13
     },
     "venues": [
       {
@@ -11469,12 +11469,12 @@ export const ssrReports: SsrReport[] = [
     "headline": {
       "agentRate": 114862.81,
       "distributionRewards": 1650764.59,
-      "primeAgentNetRevenue": null,
-      "primeSideSkyDirectExposure": null,
-      "primeAgentProfit": null,
+      "demandSideRevenue": 1765627.4,
+      "primeSupplySideRevenue": 2334896.25,
       "primeCostOfFunds": 8938388.1,
-      "skySideSkyDirectExposure": null,
-      "skyRevenue": null
+      "skyDirectExposure": 21041.5,
+      "skyRevenue": 8959429.6,
+      "primeAgentProfit": 4100523.65
     },
     "venues": [
       {

@@ -30,13 +30,17 @@ export function formatUSD2(value: number | null | undefined): string {
 }
 
 /**
- * Compact headline money: "$6.73M", "$797K", "$842".
+ * Compact headline money: "$1.07B", "$6.73M", "$797K", "$842".
  * Sub-$1 values that are not exactly zero collapse to "<$1".
  */
 export function formatCompactUSD(value: number | null | undefined): string {
   if (value == null) return "—";
   const sign = value < 0 ? "-" : "";
   const abs = Math.abs(value);
+  if (abs >= 1_000_000_000) {
+    const b = abs / 1_000_000_000;
+    return `${sign}$${b < 10 ? b.toFixed(2) : b.toFixed(1)}B`;
+  }
   if (abs >= 1_000_000) {
     const m = abs / 1_000_000;
     return `${sign}$${m < 10 ? m.toFixed(2) : m.toFixed(1)}M`;

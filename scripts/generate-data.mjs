@@ -5,12 +5,14 @@
  *   - github.com/soterlabs/settle-dr-dune      → dune-results/dr_comparison_latest.xlsx → data.ts
  *   - github.com/soterlabs/settlement-reports  → reports/<partner>/<month>/             → ssr-data.ts
  *
- * Sources are shallow-cloned/pulled into .data-sources/ (gitignored), or point
- * SETTLE_DR_DUNE_DIR / SETTLEMENT_REPORTS_DIR at existing checkouts. If the
- * sources are unreachable (offline CI) and the generated files already exist,
- * the script warns and exits 0 so the build falls back to the committed data.
+ * Sources are freshly shallow-cloned into .data-sources/ on every run (any
+ * previous checkout is deleted first), or point SETTLE_DR_DUNE_DIR /
+ * SETTLEMENT_REPORTS_DIR at existing checkouts. The script FAILS (nonzero
+ * exit, so `pnpm build` fails) if a source repo can't be cloned or if the
+ * source format changed in a way the parsers don't recognize — serving stale
+ * or silently-wrong revenue numbers is worse than a loud build failure.
  *
- * Usage: node scripts/generate-data.mjs [--offline]
+ * Usage: node scripts/generate-data.mjs
  */
 import { execFileSync } from "node:child_process";
 import * as fs from "node:fs";
@@ -20,7 +22,6 @@ import * as XLSX from "xlsx";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CACHE = path.join(ROOT, ".data-sources");
-const OFFLINE = process.argv.includes("--offline");
 
 /** Partners intentionally excluded from the SSR section. */
 const SSR_EXCLUDED_PARTNERS = new Set(["skybase"]);
@@ -30,30 +31,24 @@ const SSR_KNOWN_PARTNERS = new Set(["grove", "keel", "obex", "spark"]);
 // ---------------------------------------------------------------- sources
 
 function syncRepo(name, sparsePaths) {
-  const envDir = process.env[name.toUpperCase().replaceAll("-", "_") + "_DIR"];
-  if (envDir) return envDir;
+  const envVar = name.toUpperCase().replaceAll("-", "_") + "_DIR";
+  const envDir = process.env[envVar];
+  if (envDir) {
+    if (!fs.existsSync(envDir)) throw new Error(`${envVar} points to a missing directory: ${envDir}`);
+    return envDir;
+  }
+  // Always start from a fresh shallow clone: no stale pulls and no half-cloned
+  // cache to wedge on. Any git failure throws and fails the build.
   const dir = path.join(CACHE, name);
-  try {
-    if (fs.existsSync(path.join(dir, ".git"))) {
-      if (!OFFLINE) execFileSync("git", ["-C", dir, "pull", "--ff-only", "-q"], { stdio: "pipe" });
-    } else {
-      if (OFFLINE) throw new Error("offline and no cache");
-      fs.mkdirSync(CACHE, { recursive: true });
-      const args = ["clone", "--depth", "1", "-q"];
-      if (sparsePaths) args.push("--filter=blob:none", "--no-checkout");
-      args.push(`git@github.com:soterlabs/${name}.git`, dir);
-      execFileSync("git", args, { stdio: "pipe" });
-      if (sparsePaths) {
-        execFileSync("git", ["-C", dir, "sparse-checkout", "set", ...sparsePaths], { stdio: "pipe" });
-        execFileSync("git", ["-C", dir, "checkout", "-q"], { stdio: "pipe" });
-      }
-    }
-  } catch (e) {
-    if (fs.existsSync(dir)) {
-      console.warn(`[generate-data] could not refresh ${name} (${e.message.split("\n")[0]}); using cached copy`);
-    } else {
-      return null;
-    }
+  fs.rmSync(dir, { recursive: true, force: true });
+  fs.mkdirSync(CACHE, { recursive: true });
+  const args = ["clone", "--depth", "1", "-q"];
+  if (sparsePaths) args.push("--filter=blob:none", "--no-checkout");
+  args.push(`git@github.com:soterlabs/${name}.git`, dir);
+  execFileSync("git", args, { stdio: "pipe" });
+  if (sparsePaths) {
+    execFileSync("git", ["-C", dir, "sparse-checkout", "set", ...sparsePaths], { stdio: "pipe" });
+    execFileSync("git", ["-C", dir, "checkout", "-q"], { stdio: "pipe" });
   }
   return dir;
 }
@@ -64,7 +59,7 @@ const round = (v, dp) => Math.round(v * 10 ** dp) / 10 ** dp;
 
 /** Sheet cell → number|null. Sheets store both numbers and numeric strings. */
 function num(v, dp = 2) {
-  if (v === null || v === undefined || v === "") return null;
+  if (v === null || v === undefined || String(v).trim() === "") return null;
   const n = Number(v);
   if (Number.isNaN(n)) return null;
   return dp === null ? n : round(n, dp);
@@ -117,6 +112,9 @@ function generateDr(drDir) {
   const header = sum[0].map(str);
   const totalIdx = header.indexOf("total");
   const reportMonths = header.slice(2, totalIdx);
+  if (totalIdx === -1 || !reportMonths.length || !reportMonths.every((m) => /^\d{4}-\d{2}$/.test(m))) {
+    throw new Error(`dr_comparison Summary sheet format changed — header: ${header.join(", ")}`);
+  }
   const monthlyOf = (row, from, months) =>
     Object.fromEntries(months.map((m, i) => [m, num(row[from + i])]));
 
@@ -150,6 +148,9 @@ function generateDr(drDir) {
   // Soter by Ref Code: flat rows + tokens; group looked up from Summary.
   const byRef = rows(wb.Sheets["Soter by Ref Code"]);
   const brTotalIdx = byRef[0].map(str).indexOf("total");
+  if (brTotalIdx === -1) {
+    throw new Error(`dr_comparison "Soter by Ref Code" sheet format changed — header: ${byRef[0].map(str).join(", ")}`);
+  }
   const refCodeRows = byRef
     .slice(1)
     .filter((r) => str(r[0]) && str(r[0]) !== "Total")
@@ -237,17 +238,18 @@ export const l2Addresses: L2Address[] = ${json(l2Addresses)};
 
 // ---------------------------------------------------------------- SSR (ssr-data.ts)
 
-/** Parse the body rows of the first markdown table following `heading`. */
+/** Markdown tables with the `### `-level section each one sits under. */
 function mdTables(md) {
   const tables = [];
-  const lines = md.split("\n");
   let current = null;
-  for (const line of lines) {
+  let section = "";
+  for (const line of md.split("\n")) {
+    if (line.startsWith("### ") ) section = line.slice(4).trim();
     if (line.trim().startsWith("|")) {
       const cells = line.trim().slice(1, -1).split("|").map((c) => c.trim());
       if (cells.every((c) => /^:?-+:?$/.test(c))) continue; // separator row
       if (!current) {
-        current = { header: cells, rows: [] };
+        current = { section, header: cells, rows: [] };
         tables.push(current);
       } else {
         current.rows.push(cells);
@@ -259,30 +261,40 @@ function mdTables(md) {
   return tables;
 }
 
-const HEADLINE_KEYS = {
+// summary.md headline labels → SsrHeadline fields. "supply-side revenue"
+// appears on both sides, so the enclosing "### Prime side"/"### Sky side"
+// section disambiguates.
+const PRIME_KEYS = {
   "agent rate": "agentRate",
   "distribution rewards": "distributionRewards",
-  "prime agent net revenue": "primeAgentNetRevenue",
-  "prime side sky direct exposure": "primeSideSkyDirectExposure",
-  "prime agent profit": "primeAgentProfit",
-  "prime cost of funds": "primeCostOfFunds",
-  "sky side sky direct exposure": "skySideSkyDirectExposure",
-  "sky revenue": "skyRevenue",
+  "demand-side revenue": "demandSideRevenue",
+  "supply-side revenue": "primeSupplySideRevenue",
 };
+const SKY_KEYS = {
+  "prime cost of funds": "primeCostOfFunds",
+  "sky direct exposure": "skyDirectExposure",
+  "supply-side revenue": "skyRevenue",
+};
+const HEADLINE_FIELDS = [...new Set([...Object.values(PRIME_KEYS), ...Object.values(SKY_KEYS)])];
 
 function parseSummaryMd(md) {
   const periodDays = Number(md.match(/\((\d+) days\)/)?.[1] ?? 0);
 
-  const headline = Object.fromEntries(Object.values(HEADLINE_KEYS).map((k) => [k, null]));
+  const headline = Object.fromEntries(HEADLINE_FIELDS.map((k) => [k, null]));
+  const seen = new Set();
   const venues = [];
   const refCodes = [];
   const excludedVenues = [];
 
   for (const t of mdTables(md)) {
     if (t.header[0] === "Field") {
+      const keys = t.section === "Sky side" ? SKY_KEYS : PRIME_KEYS;
       for (const [field, value] of t.rows) {
-        const key = HEADLINE_KEYS[field.replaceAll("**", "").trim()];
-        if (key) headline[key] = money(value);
+        const key = keys[field.replaceAll("**", "").trim()];
+        if (key) {
+          headline[key] = money(value);
+          seen.add(key);
+        }
       }
     } else if (t.header[0] === "ref_code") {
       for (const r of t.rows) {
@@ -312,6 +324,21 @@ function parseSummaryMd(md) {
       }
     }
   }
+
+  // Fail loudly if the headline format changed: a missing LABEL is a format
+  // change (a missing VALUE, e.g. "TBD", is data and stays null).
+  const missing = HEADLINE_FIELDS.filter((k) => !seen.has(k));
+  if (missing.length) {
+    throw new Error(`summary.md headline format changed — fields not found: ${missing.join(", ")}`);
+  }
+
+  // Derived: total prime-side result, the continuity of the old
+  // "prime agent profit" headline (= demand-side + supply-side revenue).
+  headline.primeAgentProfit =
+    headline.demandSideRevenue !== null && headline.primeSupplySideRevenue !== null
+      ? round(headline.demandSideRevenue + headline.primeSupplySideRevenue, 2)
+      : null;
+
   return { periodDays, headline, venues, refCodes, excludedVenues };
 }
 
@@ -394,8 +421,12 @@ function parseDebtDaily(ws) {
   if (h === -1) return [];
   const header = all[h].map(str);
   // The utilized column is the unnamed one right before "SSR APY".
-  const utilizedIdx = header.indexOf("SSR APY") - 1;
+  const anchorIdx = header.indexOf("SSR APY");
   const chargeIdx = header.indexOf("daily Sky charge");
+  if (anchorIdx === -1 || chargeIdx === -1) {
+    throw new Error(`Debt sheet format changed — expected "SSR APY" and "daily Sky charge" columns, got: ${header.filter(Boolean).join(", ")}`);
+  }
+  const utilizedIdx = anchorIdx - 1;
   const out = [];
   for (const r of all.slice(h + 1)) {
     const date = dateStr(r[0]);
@@ -428,24 +459,29 @@ function generateSsr(reportsDir) {
   for (const partner of partners) {
     const months = fs.readdirSync(path.join(base, partner)).filter((m) => /^\d{4}-\d{2}$/.test(m)).sort();
     for (const month of months) {
-      const dir = path.join(base, partner, month);
-      const md = fs.readFileSync(path.join(dir, "summary.md"), "utf8");
-      const xlsxFile = fs.readdirSync(dir).find((f) => f.endsWith(".xlsx"));
-      const wb = XLSX.read(fs.readFileSync(path.join(dir, xlsxFile)), { cellDates: false });
-      const { periodDays, headline, venues, refCodes, excludedVenues } = parseSummaryMd(md);
-      monthSet.add(month);
-      reports.push({
-        partner,
-        month,
-        periodDays,
-        headline,
-        venues,
-        refCodes,
-        rateBuild: parseRateBuild(wb.Sheets["Sky Revenue"]),
-        skyDirect: parseSkyDirect(wb.Sheets["Sky Direct"]),
-        debtDaily: parseDebtDaily(wb.Sheets["Debt"]),
-        excludedVenues,
-      });
+      try {
+        const dir = path.join(base, partner, month);
+        const md = fs.readFileSync(path.join(dir, "summary.md"), "utf8");
+        const xlsxFile = fs.readdirSync(dir).find((f) => f.endsWith(".xlsx"));
+        if (!xlsxFile) throw new Error("no .xlsx settlement workbook in the report directory");
+        const wb = XLSX.read(fs.readFileSync(path.join(dir, xlsxFile)), { cellDates: false });
+        const { periodDays, headline, venues, refCodes, excludedVenues } = parseSummaryMd(md);
+        monthSet.add(month);
+        reports.push({
+          partner,
+          month,
+          periodDays,
+          headline,
+          venues,
+          refCodes,
+          rateBuild: parseRateBuild(wb.Sheets["Sky Revenue"]),
+          skyDirect: parseSkyDirect(wb.Sheets["Sky Direct"]),
+          debtDaily: parseDebtDaily(wb.Sheets["Debt"]),
+          excludedVenues,
+        });
+      } catch (e) {
+        throw new Error(`settlement-reports ${partner}/${month}: ${e.message}`, { cause: e });
+      }
     }
   }
 
@@ -482,16 +518,11 @@ const reportsDir = syncRepo("settlement-reports");
 const dataOut = path.join(ROOT, "src/lib/data.ts");
 const ssrOut = path.join(ROOT, "src/lib/ssr-data.ts");
 
-if (!drDir || !reportsDir) {
-  if (fs.existsSync(dataOut) && fs.existsSync(ssrOut)) {
-    console.warn("[generate-data] sources unreachable — keeping committed data files");
-    process.exit(0);
-  }
-  console.error("[generate-data] sources unreachable and no committed data files exist");
-  process.exit(1);
-}
-
-fs.writeFileSync(dataOut, generateDr(drDir));
+// Generate both outputs before writing either, so a parse failure never
+// leaves one regenerated file paired with a stale one.
+const dataTs = generateDr(drDir);
+const ssrTs = generateSsr(reportsDir);
+fs.writeFileSync(dataOut, dataTs);
 console.log(`[generate-data] wrote ${path.relative(ROOT, dataOut)}`);
-fs.writeFileSync(ssrOut, generateSsr(reportsDir));
+fs.writeFileSync(ssrOut, ssrTs);
 console.log(`[generate-data] wrote ${path.relative(ROOT, ssrOut)}`);
