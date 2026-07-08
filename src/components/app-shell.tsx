@@ -1,10 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { LogOut } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { logout } from "@/lib/auth-actions";
 import { DistributionRewards } from "./dr/distribution-rewards";
 import { SupplySideRevenues } from "./ssr/supply-side-revenues";
 
@@ -76,18 +74,6 @@ export function AppShell() {
               );
             })}
             </nav>
-            <span className="hidden h-5 w-px bg-line-strong sm:block" />
-            <form action={logout}>
-              <button
-                type="submit"
-                title="Log out"
-                aria-label="Log out"
-                className="inline-flex h-9 items-center gap-1.5 rounded-[6px] px-2.5 font-mono text-[11px] font-medium tracking-wide text-muted transition-colors hover:bg-paper hover:text-ink"
-              >
-                <LogOut className="size-3.5" />
-                <span className="hidden sm:inline">Log out</span>
-              </button>
-            </form>
           </div>
         </div>
       </header>
