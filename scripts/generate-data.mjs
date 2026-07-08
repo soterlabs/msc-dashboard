@@ -44,7 +44,11 @@ function syncRepo(name, sparsePaths) {
   fs.mkdirSync(CACHE, { recursive: true });
   const args = ["clone", "--depth", "1", "-q"];
   if (sparsePaths) args.push("--filter=blob:none", "--no-checkout");
-  args.push(`git@github.com:soterlabs/${name}.git`, dir);
+  // CI/Railway builds have no SSH key — clone over HTTPS with GITHUB_TOKEN.
+  const remote = process.env.GITHUB_TOKEN
+    ? `https://x-access-token:${process.env.GITHUB_TOKEN}@github.com/soterlabs/${name}.git`
+    : `git@github.com:soterlabs/${name}.git`;
+  args.push(remote, dir);
   execFileSync("git", args, { stdio: "pipe" });
   if (sparsePaths) {
     execFileSync("git", ["-C", dir, "sparse-checkout", "set", ...sparsePaths], { stdio: "pipe" });
