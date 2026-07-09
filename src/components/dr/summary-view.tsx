@@ -75,7 +75,7 @@ export function SummaryView({
               >
                 <div className="flex items-center gap-2">
                   <Swatch color={groupColor(g.group)} />
-                  <span className="font-mono text-[10.5px] font-medium tracking-[0.14em] text-muted uppercase">
+                  <span className="font-sans text-[10.5px] font-medium tracking-[0.14em] text-muted uppercase">
                     {g.group}
                   </span>
                 </div>
@@ -99,7 +99,7 @@ export function SummaryView({
                 <button
                   type="button"
                   onClick={() => onViewGroup(g.group)}
-                  className="neu-focus mt-auto inline-flex items-center gap-1.5 self-start rounded-full pt-6 font-mono text-[10.5px] font-semibold tracking-widest text-gold uppercase after:absolute after:inset-0 after:rounded-2xl after:content-['']"
+                  className="neu-focus mt-auto inline-flex items-center gap-1.5 self-start rounded-full pt-6 font-sans text-[10.5px] font-semibold tracking-widest text-gold uppercase after:absolute after:inset-0 after:rounded-2xl after:content-['']"
                 >
                   View codes
                   <ArrowRight className="size-3 transition-transform duration-200 group-hover:translate-x-1" />
@@ -135,7 +135,7 @@ export function SummaryView({
         <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3">
           {REPORT_MONTHS.map((m) => (
             <Card key={m} className="px-4 py-3">
-              <p className="font-mono text-[10.5px] tracking-[0.12em] text-muted uppercase">
+              <p className="font-sans text-[10.5px] tracking-[0.12em] text-muted uppercase">
                 {monthLong(m)}
               </p>
               <p className="mt-1.5 font-mono text-base font-semibold text-ink tabular-nums">
@@ -263,7 +263,7 @@ function Th({
   return (
     <th
       className={cn(
-        "px-3 py-2.5 font-mono text-[10.5px] font-medium tracking-[0.1em] text-muted uppercase",
+        "px-3 py-2.5 font-sans text-[10.5px] font-medium tracking-[0.1em] text-muted uppercase",
         className
       )}
     >

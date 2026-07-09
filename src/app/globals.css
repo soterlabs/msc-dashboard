@@ -14,12 +14,12 @@
  * All colours are CSS variables: override :root to re-theme.
  */
 @theme inline {
-  /* Fraunces for titles; Geist Mono for everything else. `font-sans` and
-   * `font-mono` both resolve to the mono — the body reads in the one monospaced
-   * voice, titles aside. */
-  --font-sans: var(--font-mono-geist);
+  /* Poppins titles, Montserrat labels & prose, Geist Mono for figures only.
+   * `font-sans` carries the reading voice; `font-mono` is reserved for numbers,
+   * so the tabular alignment lands only where it matters. */
+  --font-sans: var(--font-sans-montserrat);
   --font-mono: var(--font-mono-geist);
-  --font-display: var(--font-display-fraunces);
+  --font-display: var(--font-display-poppins);
   --font-brand: var(--font-brand);
 
   --color-paper: var(--paper);
@@ -60,7 +60,9 @@
   /* ink */
   --ink: #2c2820;
   --ink-deep: #1d1a14;
-  --muted: #7a7468;
+  /* Secondary reading text: clears AA (4.5) on --sunken, the darkest surface
+   * it lands on. */
+  --muted: #665f4f;
   --faint: #a8a191;
 
   /* hairlines — used sparingly; depth is carried by shadow */

@@ -130,7 +130,7 @@ function Summary({
               >
                 <div className="flex items-center gap-2">
                   <Swatch color={partnerColor(p)} />
-                  <span className="font-mono text-[10.5px] font-medium tracking-[0.14em] text-muted uppercase">
+                  <span className="font-sans text-[10.5px] font-medium tracking-[0.14em] text-muted uppercase">
                     {meta.label}
                   </span>
                 </div>
@@ -152,7 +152,7 @@ function Summary({
                 </div>
 
                 {/* clamped so a long blurb can't shift the layout of its row */}
-                <p className="mt-5 line-clamp-2 text-[12px] leading-snug text-muted">
+                <p className="mt-5 line-clamp-2 text-[13px] leading-snug text-muted">
                   {meta.blurb}
                 </p>
 
@@ -162,7 +162,7 @@ function Summary({
                 <button
                   type="button"
                   onClick={() => onOpenPartner(p)}
-                  className="neu-focus mt-auto inline-flex items-center gap-1.5 self-start rounded-full pt-6 font-mono text-[10.5px] font-semibold tracking-widest text-gold uppercase after:absolute after:inset-0 after:rounded-2xl after:content-['']"
+                  className="neu-focus mt-auto inline-flex items-center gap-1.5 self-start rounded-full pt-6 font-sans text-[10.5px] font-semibold tracking-widest text-gold uppercase after:absolute after:inset-0 after:rounded-2xl after:content-['']"
                 >
                   View breakdown
                   <ArrowRight className="size-3 transition-transform duration-200 group-hover:translate-x-1" />
@@ -243,7 +243,7 @@ function Summary({
         <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3">
           {SSR_MONTHS.map((m) => (
             <Card key={m} className="px-4 py-3">
-              <p className="font-mono text-[10.5px] tracking-[0.12em] text-muted uppercase">
+              <p className="font-sans text-[10.5px] tracking-[0.12em] text-muted uppercase">
                 {monthLong(m)}
               </p>
               <p className="mt-1.5 font-mono text-base font-semibold text-ink tabular-nums">
@@ -286,11 +286,11 @@ function PartnerBreakdown({
         <button
           type="button"
           onClick={onBack}
-          className="neu-btn neu-focus inline-flex h-10 items-center gap-1.5 rounded-full px-4 font-mono text-[11px] font-medium tracking-wide text-muted hover:text-ink"
+          className="neu-btn neu-focus inline-flex h-10 items-center gap-1.5 rounded-full px-4 font-sans text-[11px] font-medium tracking-wide text-muted hover:text-ink"
         >
           <ArrowLeft className="size-3.5" /> All primes
         </button>
-        <span className="mx-1 font-mono text-[10.5px] tracking-[0.14em] text-muted uppercase">
+        <span className="mx-1 font-sans text-[10.5px] tracking-[0.14em] text-muted uppercase">
           Month
         </span>
         {SSR_MONTHS.map((m) => (
@@ -328,7 +328,7 @@ function PartnerBreakdown({
           title="Prime & Sky revenue"
         />
         <Card className="px-5 py-4">
-          <div className="mb-3 flex items-center gap-4 font-mono text-[10px] text-muted">
+          <div className="mb-3 flex items-center gap-4 font-sans text-[10px] text-muted">
             <span className="flex items-center gap-1.5">
               <Swatch color="var(--sky-revenue)" /> sky revenue
             </span>
@@ -395,7 +395,7 @@ function PartnerBreakdown({
                       pressed-pill idiom the filters use elsewhere. */}
                   <span
                     className={cn(
-                      "rounded-full px-2.5 py-1 font-mono text-[10px] transition-colors",
+                      "rounded-full px-2.5 py-1 font-sans text-[10px] transition-colors",
                       selected
                         ? "neu-btn-pressed font-semibold text-ink"
                         : "text-muted group-hover/bar:text-ink"
@@ -415,7 +415,7 @@ function PartnerBreakdown({
           title={
             <>
               Per-venue breakdown{" "}
-              <span className="font-mono text-xs font-normal text-muted">
+              <span className="font-sans text-xs font-normal text-muted">
                 {monthLong(month)} · {shownVenues.length} venues
               </span>
             </>
@@ -438,7 +438,7 @@ function PartnerBreakdown({
               >
                 Hide $0 revenue
               </FilterButton>
-              <span className="font-mono text-[10.5px] text-muted">
+              <span className="font-sans text-[10.5px] text-muted">
                 {onlyEarning
                   ? `hiding ${venues.length - shownVenues.length} idle venues · negative = loss`
                   : `showing all ${venues.length} venues`}
@@ -529,7 +529,7 @@ function RateBuildSection({ rb }: { rb: SsrRateBuild }) {
       />
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
         <Card className="px-5 py-4">
-          <p className="mb-3 font-mono text-[11px] font-medium tracking-[0.14em] text-muted uppercase">
+          <p className="mb-3 font-sans text-[11px] font-medium tracking-[0.14em] text-muted uppercase">
             Rates &amp; subsidy
           </p>
           <div className="space-y-2.5">
@@ -567,7 +567,7 @@ function RateBuildSection({ rb }: { rb: SsrRateBuild }) {
         </Card>
 
         <Card className="px-5 py-4">
-          <p className="mb-3 font-mono text-[11px] font-medium tracking-[0.14em] text-muted uppercase">
+          <p className="mb-3 font-sans text-[11px] font-medium tracking-[0.14em] text-muted uppercase">
             Formulas
           </p>
           <div className="space-y-4">
@@ -581,7 +581,7 @@ function RateBuildSection({ rb }: { rb: SsrRateBuild }) {
             />
             <Formula label="effective rate" expr="ER = CoF / U" />
           </div>
-          <p className="mt-4 border-t border-line pt-3 font-mono text-[10.5px] text-faint">
+          <p className="mt-4 border-t border-line pt-3 font-sans text-[10.5px] text-faint">
             U = time-weighted utilized debt · T = months since program start
           </p>
         </Card>
@@ -593,7 +593,7 @@ function RateBuildSection({ rb }: { rb: SsrRateBuild }) {
 function Formula({ label, expr }: { label: string; expr: string }) {
   return (
     <div>
-      <p className="font-mono text-[10.5px] tracking-[0.08em] text-muted uppercase">
+      <p className="font-sans text-[10.5px] tracking-[0.08em] text-muted uppercase">
         {label}
       </p>
       <p className="mt-1 font-mono text-xs font-medium text-ink">{expr}</p>
@@ -711,7 +711,7 @@ function RefCodesSection({ rows }: { rows: SsrRefCode[] }) {
         >
           Hide $0 revenue
         </FilterButton>
-        <span className="font-mono text-[10.5px] text-muted">
+        <span className="font-sans text-[10.5px] text-muted">
           {onlyEarning
             ? `hiding ${sorted.length - shown.length} zero-DR codes`
             : `showing all ${sorted.length} codes`}
@@ -771,7 +771,7 @@ function HeadlineCard({
     <Card className="flex flex-col px-5 py-4">
       <div className="flex items-center gap-2">
         {color ? <Swatch color={color} /> : null}
-        <span className="font-mono text-[11px] font-medium tracking-[0.14em] text-muted uppercase">
+        <span className="font-sans text-[11px] font-medium tracking-[0.14em] text-muted uppercase">
           {title}
         </span>
       </div>
@@ -806,7 +806,7 @@ function HeadlineCard({
         ))}
       </div>
       <div className="mt-4 flex items-baseline justify-between border-t border-line-strong pt-3">
-        <span className="font-mono text-[11px] font-medium tracking-[0.1em] text-muted uppercase">
+        <span className="font-sans text-[11px] font-medium tracking-[0.1em] text-muted uppercase">
           {total[0]}
         </span>
         <span
@@ -843,7 +843,7 @@ function Th({
   return (
     <th
       className={cn(
-        "bg-thead px-3 py-2.5 font-mono text-[10.5px] font-medium tracking-[0.1em] text-muted uppercase",
+        "bg-thead px-3 py-2.5 font-sans text-[10.5px] font-medium tracking-[0.1em] text-muted uppercase",
         className
       )}
     >

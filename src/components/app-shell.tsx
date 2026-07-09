@@ -53,7 +53,7 @@ function Sidebar({
       <Brand />
 
       <nav className="mt-9 flex flex-col gap-2">
-        <p className="mb-1 px-3 font-mono text-[10px] font-medium tracking-[0.18em] text-faint uppercase">
+        <p className="mb-1 px-3 font-sans text-[10px] font-medium tracking-[0.18em] text-faint uppercase">
           Reports
         </p>
         {NAV.map((n) => (

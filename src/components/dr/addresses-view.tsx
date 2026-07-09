@@ -20,7 +20,7 @@ export function AddressesView() {
   return (
     <div className="space-y-8">
       <Card className="px-5 py-4">
-        <p className="font-mono text-[10px] font-medium tracking-[0.16em] text-gold uppercase">
+        <p className="font-sans text-[10px] font-medium tracking-[0.16em] text-gold uppercase">
           Why these addresses exist
         </p>
         <NoteText
@@ -45,7 +45,7 @@ export function AddressesView() {
               title={
                 <span className="capitalize">
                   {chain}{" "}
-                  <span className="font-mono text-xs font-normal text-muted">
+                  <span className="font-sans text-xs font-normal text-muted">
                     {rows.length} contracts
                   </span>
                 </span>
@@ -114,7 +114,7 @@ function Th({
   return (
     <th
       className={cn(
-        "px-3 py-2.5 font-mono text-[10.5px] font-medium tracking-[0.1em] text-muted uppercase",
+        "px-3 py-2.5 font-sans text-[10.5px] font-medium tracking-[0.1em] text-muted uppercase",
         className
       )}
     >

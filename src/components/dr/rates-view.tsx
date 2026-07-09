@@ -16,7 +16,7 @@ export function RatesView() {
             <Card key={f.key} className="flex flex-col px-5 py-4">
               <div className="flex items-center gap-2">
                 <Swatch color={`var(${f.colorVar})`} />
-                <span className="font-mono text-[12px] font-semibold tracking-[0.12em] text-ink uppercase">
+                <span className="font-sans text-[12px] font-semibold tracking-[0.12em] text-ink uppercase">
                   {f.title}
                 </span>
                 <span className="ml-auto font-mono text-[10px] text-muted">
@@ -27,7 +27,7 @@ export function RatesView() {
               <p className="mt-3 font-mono text-[2rem] leading-none font-semibold text-ink tabular-nums">
                 {formatRatePercent(f.apy, 2)}
               </p>
-              <p className="mt-1.5 font-mono text-[11px] text-muted">
+              <p className="mt-1.5 font-sans text-[11px] text-muted">
                 annual exchange-rate reward
               </p>
 

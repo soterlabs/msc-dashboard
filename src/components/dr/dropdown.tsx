@@ -107,11 +107,11 @@ export function Dropdown({
       >
         <span
           id={labelId}
-          className="font-mono text-[10px] tracking-[0.14em] text-muted uppercase"
+          className="font-sans text-[10px] tracking-[0.14em] text-muted uppercase"
         >
           {label}
         </span>
-        <span className="font-mono text-[11px] font-medium whitespace-nowrap text-ink">
+        <span className="font-sans text-[11px] font-medium whitespace-nowrap text-ink">
           {show(value)}
         </span>
         <ChevronDown
@@ -142,7 +142,7 @@ export function Dropdown({
                 onMouseEnter={() => setActive(i)}
                 onClick={() => commit(i)}
                 className={cn(
-                  "flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-left font-mono text-[11px] whitespace-nowrap transition-colors",
+                  "flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-left font-sans text-[11px] whitespace-nowrap transition-colors",
                   i === active ? "bg-sunken" : "bg-transparent",
                   selected ? "font-semibold text-ink" : "text-muted"
                 )}

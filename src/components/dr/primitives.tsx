@@ -21,11 +21,11 @@ export function DisplayTitle({
 }) {
   return (
     <div className={cn("flex flex-col", className)}>
-      <h1 className="font-display text-[2rem] leading-[1.1] font-semibold tracking-tight text-ink sm:text-[2.4rem]">
+      <h1 className="font-display text-[2rem] leading-tight font-semibold text-ink sm:text-[2.4rem]">
         {children}
       </h1>
       {accent ? (
-        <p className="mt-1.5 font-display text-[1.15rem] leading-tight font-normal text-muted sm:text-[1.3rem]">
+        <p className="mt-2 font-display text-[1.15rem] leading-snug font-normal text-muted sm:text-[1.3rem]">
           {accent}
         </p>
       ) : null}
@@ -69,12 +69,12 @@ export function SectionTitle({
         className
       )}
     >
-      <h2 className="flex items-center gap-1.5 font-display text-[16px] font-semibold tracking-tight text-ink">
+      <h2 className="flex items-center gap-1.5 font-sans text-[13px] font-semibold uppercase tracking-[0.13em] text-ink">
         {title}
         {info ? <InfoTip label={info} /> : null}
       </h2>
       {note ? (
-        <p className="font-mono text-[11px] text-muted">{note}</p>
+        <p className="font-sans text-[11px] text-muted">{note}</p>
       ) : null}
     </div>
   );
@@ -240,7 +240,7 @@ export function StatRow({
   value: React.ReactNode;
 }) {
   return (
-    <div className="flex items-baseline justify-between gap-3 font-sans text-[11px]">
+    <div className="flex items-baseline justify-between gap-3 font-sans text-[12px]">
       <span className="text-muted">{label}</span>
       <span className="font-mono font-medium text-ink tabular-nums">{value}</span>
     </div>
@@ -258,10 +258,10 @@ export function LeaderRow({
   valueClassName?: string;
 }) {
   return (
-    <div className="flex items-baseline gap-2 font-mono text-xs">
+    <div className="flex items-baseline gap-2 font-sans text-xs">
       <span className="text-muted">{label}</span>
       <span className="mb-[3px] flex-1 border-b border-dotted border-line-strong" />
-      <span className={cn("font-medium text-ink tabular-nums", valueClassName)}>
+      <span className={cn("font-mono font-medium text-ink tabular-nums", valueClassName)}>
         {value}
       </span>
     </div>
@@ -285,10 +285,10 @@ export function DarkBar({
         className
       )}
     >
-      <span className="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-ondark-muted">
+      <span className="font-sans text-[11px] font-medium uppercase tracking-[0.16em] text-ondark-muted">
         {left}
       </span>
-      <span className="font-mono text-sm font-semibold text-gold-soft">
+      <span className="font-mono text-sm font-semibold text-gold-soft tabular-nums">
         {right}
       </span>
     </div>
@@ -303,7 +303,7 @@ export function NoteTag({ note }: { note: string }) {
   return (
     <span
       title={note}
-      className="inline-flex cursor-help items-center gap-1 rounded-full bg-gold/12 px-2 py-0.5 font-mono text-[10px] font-medium tracking-wide text-gold"
+      className="inline-flex cursor-help items-center gap-1 rounded-full bg-gold/12 px-2 py-0.5 font-sans text-[10px] font-medium tracking-wide text-gold"
     >
       <InfoDot />
       NOTE
@@ -358,7 +358,7 @@ export function FilterButton({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "neu-focus inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-mono text-[11px] font-medium tracking-wide whitespace-nowrap",
+        "neu-focus inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-sans text-[11px] font-medium tracking-wide whitespace-nowrap",
         active
           ? "neu-btn-pressed font-semibold text-ink"
           : "neu-btn text-muted hover:text-ink",
@@ -405,7 +405,7 @@ export function DocLink({
       target="_blank"
       rel="noopener noreferrer"
       className={cn(
-        "inline-flex items-center gap-1 font-mono text-[11px] font-medium text-gold underline-offset-2 hover:underline",
+        "inline-flex items-center gap-1 font-sans text-[11px] font-medium text-gold underline-offset-2 hover:underline",
         className
       )}
     >
