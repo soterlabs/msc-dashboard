@@ -1,18 +1,30 @@
 @import "tailwindcss";
 
 /*
- * Sky DR — "Soter Labs" editorial theme.
- * Warm paper, dark navy ink, gold accents, serif headings, monospace data.
- * All colours are driven by CSS variables so this tab can be re-themed to
- * match the host site by overriding :root.
+ * Sky · Soter console — "Soft Cream" neumorphic theme.
+ *
+ * A single light theme: warm cream substrate, soft extruded surfaces, and a
+ * Sky-gold accent. Depth comes from paired shadows (light top-left, warm dark
+ * bottom-right) rather than borders, so surfaces read as pressed out of — or
+ * into — the page itself.
+ *
+ * Chart colours are built on a wasabi / blue / lavender core, extended with
+ * teal and amber so the eight partner groups stay mutually distinguishable.
+ *
+ * All colours are CSS variables: override :root to re-theme.
  */
 @theme inline {
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-mono);
-  --font-serif: var(--font-serif);
+  /* Fraunces for titles; Geist Mono for everything else. `font-sans` and
+   * `font-mono` both resolve to the mono — the body reads in the one monospaced
+   * voice, titles aside. */
+  --font-sans: var(--font-mono-geist);
+  --font-mono: var(--font-mono-geist);
+  --font-display: var(--font-display-fraunces);
+  --font-brand: var(--font-brand);
 
   --color-paper: var(--paper);
   --color-card: var(--card);
+  --color-sunken: var(--sunken);
   --color-ink: var(--ink);
   --color-ink-deep: var(--ink-deep);
   --color-gold: var(--gold);
@@ -27,40 +39,82 @@
   --color-ondark-muted: var(--ondark-muted);
   --color-success: var(--success);
   --color-loss: var(--loss);
+
+  --color-wasabi: var(--wasabi);
+  --color-wasabi-deep: var(--wasabi-deep);
+  --color-azure: var(--azure);
+  --color-lavender: var(--lavender);
+  --color-sky-revenue: var(--sky-revenue);
 }
 
 :root {
-  --paper: #f0ebe1;
-  --card: #f8f4ec;
-  --ink: #1a2530;
-  --ink-deep: #101a28;
-  --gold: #b0863a;
-  --gold-soft: #c2a15a;
-  --muted: #8a8374;
-  --faint: #b6ad9c;
-  --line: #e4dbca;
-  --line-strong: #d8cdb6;
-  --thead: #eae2d4;
-  --track: #e7dfce;
-  --ondark: #ece6da;
-  --ondark-muted: #8b95a1;
-  --success: #5f8e54;
-  --loss: #b0402f;
+  /* substrate — the whole UI is pressed out of this cream */
+  --paper: #eae4da;
+  --card: #efeae1;
+  --sunken: #e2dbcf;
 
-  /* partner-group colours */
-  --group-skybase: #2f4a68;
-  --group-spark: #c07a3e;
-  --group-grove: #5e7a50;
-  --group-keel: #3c5a86;
-  --group-osero: #6e5a86;
-  --group-obex: #4a7d82;
-  --group-other: #8a8474;
-  --group-unassigned: #a8a192;
+  /* neumorphic shadow pair */
+  --neu-light: #fffdf9;
+  --neu-dark: #c0b5a1;
+
+  /* ink */
+  --ink: #2c2820;
+  --ink-deep: #1d1a14;
+  --muted: #7a7468;
+  --faint: #a8a191;
+
+  /* hairlines — used sparingly; depth is carried by shadow */
+  --line: #ded7ca;
+  --line-strong: #cec6b5;
+  --thead: #e5dfd3;
+  --track: #ded6c8;
+
+  --ondark: #efeae1;
+  --ondark-muted: #9b9587;
+
+  /* Sky's signature gold — the accent that makes the brand recognisable */
+  --gold: #b8862a;
+  --gold-soft: #dfa62c;
+
+  /* semantic — Spark's brand magenta occupies the red/pink end of the wheel, so
+   * loss cannot be a red: it is a deep burgundy instead, separated from Spark by
+   * lightness (2.50 contrast) rather than hue. Negative figures land at 7.61
+   * contrast on cream, comfortably past AA. */
+  --success: #5f8a3a;
+  --loss: #7e2b3f;
+
+  /* chart core — wasabi · blue · lavender */
+  --wasabi: #7f9a3e;
+  /* darker wasabi for icons/text on sunken cream (>= 3:1 / 4.5:1) */
+  --wasabi-deep: #5f7530;
+  --azure: #4a6dd8;
+  --lavender: #9a8dd0;
+
+  /* Sky's own revenue — one constant colour wherever Sky's take is charted.
+   * Pastel lavender: cool against the warm cream substrate, and ≥44° of hue
+   * away from every prime colour, so a Sky segment never blends into the prime
+   * segment stacked on top of it. (A cool blue reads well too, but shares
+   * Keel's exact hue — only lightness separated them.) */
+  --sky-revenue: #b5a8e0;
+
+  /* partner-group colours (kept mutually distinct at small swatch sizes, and
+   * each distinctly warmer or darker than --sky-revenue) */
+  --group-skybase: #3b4f9e;
+  /* Spark is the one prime with a published identity: a magenta→coral→amber
+   * gradient. We take its coral midpoint. Pushing further toward the amber end
+   * collides with --gold (only 23° of hue away), which carries the CTAs. */
+  --group-spark: #e8735f;
+  --group-grove: #7f9a3e;
+  --group-keel: #4e93d6;
+  --group-osero: #9a8dd0;
+  --group-obex: #2f8c86;
+  --group-other: #948d7f;
+  --group-unassigned: #bdb6a7;
 
   /* rate-family colours */
-  --rate-xr: #5e7a50;
-  --rate-xrstar: #3c5a86;
-  --rate-stusds: #6e5a86;
+  --rate-xr: #7f9a3e;
+  --rate-xrstar: #4a6dd8;
+  --rate-stusds: #9a8dd0;
 }
 
 @layer base {
@@ -70,6 +124,116 @@
   /* Tabular figures for all monospace data so columns line up. */
   .font-mono {
     font-variant-numeric: tabular-nums;
+  }
+  /* Tailwind v4's preflight leaves buttons on the default arrow cursor, which
+   * reads as "not clickable". Restore the hand for anything actionable. */
+  button:not(:disabled),
+  [role="button"]:not(:disabled),
+  summary {
+    cursor: pointer;
+  }
+}
+
+/* ---------------------------------------------------------------- depth
+ * Neumorphic surfaces. `raised` sits above the page, `inset` is carved into
+ * it. Shadow spread stays small and low-contrast so the UI reads clean rather
+ * than rubbery, and text contrast is never carried by the shadow.
+ */
+.neu-raised {
+  background: var(--card);
+  box-shadow:
+    6px 6px 14px var(--neu-dark),
+    -6px -6px 14px var(--neu-light);
+}
+
+.neu-raised-sm {
+  background: var(--card);
+  box-shadow:
+    3px 3px 7px var(--neu-dark),
+    -3px -3px 7px var(--neu-light);
+}
+
+.neu-inset {
+  background: var(--sunken);
+  box-shadow:
+    inset 3px 3px 7px var(--neu-dark),
+    inset -3px -3px 7px var(--neu-light);
+}
+
+.neu-inset-sm {
+  background: var(--sunken);
+  box-shadow:
+    inset 2px 2px 4px var(--neu-dark),
+    inset -2px -2px 4px var(--neu-light);
+}
+
+/* A raised surface that is itself a control: lifts further on hover. */
+.neu-raised-interactive {
+  transition:
+    box-shadow 200ms ease,
+    transform 200ms ease;
+}
+.neu-raised-interactive:hover {
+  box-shadow:
+    9px 9px 20px var(--neu-dark),
+    -9px -9px 20px var(--neu-light);
+  transform: translateY(-2px);
+}
+.neu-raised-interactive:active {
+  transform: translateY(0);
+  box-shadow:
+    4px 4px 10px var(--neu-dark),
+    -4px -4px 10px var(--neu-light);
+}
+
+/* Interactive: lifts on hover, presses in when active/selected. */
+.neu-btn {
+  background: var(--card);
+  box-shadow:
+    3px 3px 7px var(--neu-dark),
+    -3px -3px 7px var(--neu-light);
+  transition:
+    box-shadow 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+.neu-btn:hover {
+  box-shadow:
+    4px 4px 9px var(--neu-dark),
+    -4px -4px 9px var(--neu-light);
+}
+.neu-btn:active {
+  box-shadow:
+    inset 2px 2px 5px var(--neu-dark),
+    inset -2px -2px 5px var(--neu-light);
+}
+.neu-btn-pressed {
+  background: var(--sunken);
+  box-shadow:
+    inset 2px 2px 5px var(--neu-dark),
+    inset -2px -2px 5px var(--neu-light);
+}
+.neu-btn-pressed:hover {
+  box-shadow:
+    inset 2px 2px 5px var(--neu-dark),
+    inset -2px -2px 5px var(--neu-light);
+}
+
+/* Keyboard-only focus ring. `:focus-visible` never fires on a mouse click of a
+ * <button>, so pointer users never see a lingering outline. */
+.neu-focus:focus-visible {
+  outline: 2px solid var(--wasabi-deep);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .neu-btn,
+  .neu-raised-interactive {
+    transition: none;
+  }
+  .neu-raised-interactive:hover,
+  .neu-raised-interactive:active {
+    transform: none;
   }
 }
 

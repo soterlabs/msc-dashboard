@@ -14,6 +14,7 @@ import {
 import { formatUSD, formatUSD2, monthLong, monthShort } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
+import { Dropdown } from "./dropdown";
 import {
   Bar,
   Card,
@@ -108,7 +109,7 @@ export function RefCodesView({
 
       {/* toolbar */}
       <div className="flex flex-wrap items-center gap-2">
-        <label className="flex h-9 min-w-[230px] flex-1 items-center gap-2 rounded-[6px] border border-line-strong bg-card px-3">
+        <label className="neu-inset-sm flex h-10 min-w-[230px] flex-1 items-center gap-2 rounded-full px-4">
           <Search className="size-3.5 text-muted" />
           <input
             value={query}
@@ -118,13 +119,13 @@ export function RefCodesView({
           />
         </label>
 
-        <StyledSelect
+        <Dropdown
           label="token"
           value={token}
           onChange={setToken}
           options={tokens}
         />
-        <StyledSelect
+        <Dropdown
           label="sort"
           value={sort}
           onChange={(v) => setSort(v as SortKey)}
@@ -143,7 +144,7 @@ export function RefCodesView({
         <button
           type="button"
           onClick={() => exportCsv(rows)}
-          className="inline-flex h-9 items-center gap-1.5 rounded-[6px] border border-line-strong bg-card px-3 font-mono text-[11px] font-medium tracking-wide text-muted transition-colors hover:border-ink/40 hover:text-ink"
+          className="neu-btn neu-focus inline-flex h-10 items-center gap-1.5 rounded-full px-4 font-mono text-[11px] font-medium tracking-wide text-muted hover:text-ink"
         >
           <Download className="size-3.5" /> Export CSV
         </button>
@@ -158,7 +159,6 @@ export function RefCodesView({
             </span>
           </>
         }
-        note="click a row for the per-token history"
       />
 
       <Card className="overflow-hidden">
@@ -318,7 +318,7 @@ function RefCodeDetail({ refCode, group }: { refCode: string; group: string }) {
             <p className="font-mono text-[10px] font-medium tracking-[0.16em] text-muted uppercase">
               Token composition · {compositionLabel}
             </p>
-            <StyledSelect
+            <Dropdown
               label="month"
               value={month}
               onChange={setMonth}
@@ -330,7 +330,7 @@ function RefCodeDetail({ refCode, group }: { refCode: string; group: string }) {
             {shownTokens.map((s) => (
               <div
                 key={s.token}
-                className="grid grid-cols-[120px_1fr_92px] items-center gap-3"
+                className="grid grid-cols-[104px_1fr_auto] items-center gap-3"
               >
                 <span className="inline-flex items-center gap-1.5">
                   <Swatch color={tokenColor(s.token)} />
@@ -339,7 +339,7 @@ function RefCodeDetail({ refCode, group }: { refCode: string; group: string }) {
                   </span>
                 </span>
                 <Bar value={s.value} max={maxToken} color={tokenColor(s.token)} />
-                <span className="text-right font-mono text-[11px] text-muted tabular-nums">
+                <span className="min-w-28 text-right font-mono text-[11px] whitespace-nowrap text-muted tabular-nums">
                   {formatUSD2(s.value)}
                 </span>
               </div>
@@ -423,7 +423,7 @@ function RefCodeDetail({ refCode, group }: { refCode: string; group: string }) {
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-line bg-card px-3 py-2">
+    <div className="neu-inset-sm rounded-xl px-3 py-2.5">
       <p className="font-mono text-[9.5px] tracking-[0.12em] text-muted uppercase">
         {label}
       </p>
@@ -504,36 +504,3 @@ function Td({
   );
 }
 
-/* native select styled to match the editorial controls */
-function StyledSelect({
-  label,
-  value,
-  onChange,
-  options,
-  render,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  options: string[];
-  render?: (v: string) => string;
-}) {
-  return (
-    <label className="inline-flex h-9 items-center gap-1.5 rounded-[6px] border border-line-strong bg-card px-3">
-      <span className="font-mono text-[10px] tracking-[0.14em] text-muted uppercase">
-        {label}
-      </span>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="cursor-pointer bg-transparent font-mono text-[11px] font-medium text-ink outline-none"
-      >
-        {options.map((o) => (
-          <option key={o} value={o}>
-            {render ? render(o) : o}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}

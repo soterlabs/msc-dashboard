@@ -9,7 +9,7 @@ export function RatesView() {
       <section>
         <SectionTitle
           title="Rate families"
-          note="exchange-rate (XR) reward tiers applied per token"
+          info="Exchange-rate (XR) reward tiers, applied per token."
         />
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           {RATE_FAMILIES.map((f) => (
@@ -31,7 +31,7 @@ export function RatesView() {
                 annual exchange-rate reward
               </p>
 
-              <p className="mt-4 font-serif text-[12.5px] leading-relaxed text-muted italic">
+              <p className="mt-4 text-[12.5px] leading-relaxed text-muted">
                 {f.blurb}
               </p>
             </Card>

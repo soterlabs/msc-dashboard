@@ -36,7 +36,6 @@ import {
   Bar,
   Card,
   DarkBar,
-  Eyebrow,
   DisplayTitle,
   FilterButton,
   LeaderRow,
@@ -44,6 +43,7 @@ import {
   NoteText,
   Pill,
   SectionTitle,
+  StatRow,
   Swatch,
 } from "../dr/primitives";
 
@@ -56,18 +56,13 @@ export function SupplySideRevenues() {
 
   return (
     <div className="space-y-7">
-      <header className="space-y-3">
-        <Eyebrow>
-          {openPartner
-            ? "Supply side revenues · breakdown"
-            : "Supply side revenues · summary"}
-        </Eyebrow>
+      <header>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           {openPartner && meta ? (
-            <DisplayTitle accent={`${meta.label}.`}>Prime breakdown —</DisplayTitle>
+            <DisplayTitle accent={meta.label}>Prime breakdown</DisplayTitle>
           ) : (
-            <DisplayTitle accent="settlement reports.">
-              Supply side revenues —
+            <DisplayTitle accent="settlement reports">
+              Supply side revenues
             </DisplayTitle>
           )}
           <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 lg:justify-end">
@@ -121,7 +116,6 @@ function Summary({
       <section>
         <SectionTitle
           title="Sky revenue by prime"
-          note="click a prime for its per-venue breakdown · Jan–May 2026"
         />
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {partners.map((p) => {
@@ -130,46 +124,48 @@ function Summary({
             const share = grand > 0 ? (sky / grand) * 100 : 0;
             const latest = reportFor(p, kpis.latestMonth)?.headline.skyRevenue ?? 0;
             return (
-              <Card key={p} className="flex flex-col px-5 py-4">
+              <Card
+                key={p}
+                className="neu-raised-interactive group relative flex flex-col p-6"
+              >
                 <div className="flex items-center gap-2">
                   <Swatch color={partnerColor(p)} />
-                  <span className="font-mono text-[11px] font-medium tracking-[0.12em] text-muted uppercase">
+                  <span className="font-mono text-[10.5px] font-medium tracking-[0.14em] text-muted uppercase">
                     {meta.label}
                   </span>
                 </div>
-                <p className="mt-3 font-mono text-[1.5rem] leading-none font-semibold text-ink tabular-nums">
+
+                <p className="mt-5 font-mono text-[1.75rem] leading-none font-semibold text-ink tabular-nums">
                   {formatCompactUSD(sky)}
                 </p>
-                <p className="mt-1.5 font-mono text-[11px] text-muted">
-                  sky revenue · window
-                </p>
 
-                <div className="mt-4 space-y-2 border-t border-line pt-3.5">
-                  <LeaderRow
+                <div className="mt-6 space-y-2.5">
+                  <StatRow
                     label={`latest · ${SSR_MONTH_LABELS[kpis.latestMonth]}`}
                     value={formatCompactUSD(latest)}
                   />
-                  <LeaderRow
-                    label="share of total"
-                    value={`${share.toFixed(1)}%`}
-                    valueClassName="text-gold"
-                  />
-                  <LeaderRow
+                  <StatRow label="share of total" value={`${share.toFixed(1)}%`} />
+                  <StatRow
                     label="prime profit"
                     value={formatCompactUSD(partnerPrimeProfit(p))}
                   />
                 </div>
 
-                <p className="mt-3 font-serif text-[12px] leading-snug text-muted italic">
+                {/* clamped so a long blurb can't shift the layout of its row */}
+                <p className="mt-5 line-clamp-2 text-[12px] leading-snug text-muted">
                   {meta.blurb}
                 </p>
 
+                {/* mt-auto pins the CTA to the card floor, so it lines up across
+                    the row whatever the blurb's length. ::after stretches the
+                    hit area over the whole card. */}
                 <button
                   type="button"
                   onClick={() => onOpenPartner(p)}
-                  className="mt-4 inline-flex items-center gap-1 self-start font-mono text-[11px] font-medium tracking-wide text-gold uppercase transition-opacity hover:opacity-70"
+                  className="neu-focus mt-auto inline-flex items-center gap-1.5 self-start rounded-full pt-6 font-mono text-[10.5px] font-semibold tracking-widest text-gold uppercase after:absolute after:inset-0 after:rounded-2xl after:content-['']"
                 >
-                  View breakdown <ArrowRight className="size-3" />
+                  View breakdown
+                  <ArrowRight className="size-3 transition-transform duration-200 group-hover:translate-x-1" />
                 </button>
               </Card>
             );
@@ -178,10 +174,7 @@ function Summary({
       </section>
 
       <section>
-        <SectionTitle
-          title="Sky revenue by prime & month"
-          note="click a prime to open its breakdown · USD"
-        />
+        <SectionTitle title="Monthly breakdown" />
         <Card className="overflow-hidden">
           <div className="dr-scroll overflow-x-auto">
             <table className="w-full min-w-[760px] border-collapse text-left">
@@ -245,8 +238,9 @@ function Summary({
       </section>
 
       <section>
-        <SectionTitle title="Window totals" note="all primes combined, by month" />
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <SectionTitle title="Monthly totals" />
+        {/* auto-fit so the row stays full whatever the month count */}
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3">
           {SSR_MONTHS.map((m) => (
             <Card key={m} className="px-4 py-3">
               <p className="font-mono text-[10.5px] tracking-[0.12em] text-muted uppercase">
@@ -292,7 +286,7 @@ function PartnerBreakdown({
         <button
           type="button"
           onClick={onBack}
-          className="inline-flex h-9 items-center gap-1.5 rounded-[6px] border border-line-strong bg-card px-3 font-mono text-[11px] font-medium tracking-wide text-muted transition-colors hover:border-ink/40 hover:text-ink"
+          className="neu-btn neu-focus inline-flex h-10 items-center gap-1.5 rounded-full px-4 font-mono text-[11px] font-medium tracking-wide text-muted hover:text-ink"
         >
           <ArrowLeft className="size-3.5" /> All primes
         </button>
@@ -331,13 +325,12 @@ function PartnerBreakdown({
 
       <section>
         <SectionTitle
-          title="Prime and Sky revenues · monthly"
-          note="click a bar to change month"
+          title="Prime & Sky revenue"
         />
         <Card className="px-5 py-4">
           <div className="mb-3 flex items-center gap-4 font-mono text-[10px] text-muted">
             <span className="flex items-center gap-1.5">
-              <Swatch color="var(--gold)" /> sky revenue
+              <Swatch color="var(--sky-revenue)" /> sky revenue
             </span>
             <span className="flex items-center gap-1.5">
               <Swatch color={partnerColor(partner)} /> prime revenue
@@ -349,29 +342,42 @@ function PartnerBreakdown({
           <div className="flex items-end gap-2">
             {monthly.map((x) => {
               const selected = month === x.month;
+              /* Selection is never signalled by tinting the fill — darkening a
+                 pastel turns it to mud. The hue stays exactly as the legend
+                 shows it; the unselected columns simply recede. */
               const seg = (v: number, c: string) => ({
                 height: `${Math.max(v > 0 ? 3 : 0, (Math.max(0, v) / maxMonthly) * 100)}%`,
-                background: selected ? `color-mix(in srgb, ${c} 80%, #000)` : c,
-                opacity: selected ? 1 : 0.8,
+                background: c,
               });
               return (
                 <button
                   key={x.month}
                   type="button"
                   onClick={() => setMonth(x.month)}
+                  aria-pressed={selected}
                   title={`${monthLong(x.month)} · sky ${formatUSD(x.sky)} · prime ${formatUSD(x.prime)}`}
-                  className="flex flex-1 flex-col items-center gap-2"
+                  className="group/bar neu-focus flex flex-1 flex-col items-center gap-2 rounded-lg"
                 >
-                  <div className="flex h-24 w-full flex-col justify-end gap-px">
+                  {/* 0.85, not 0.5: heavier fading washes the fills out against
+                      the cream (lavender/terracotta separation drops from 1.75
+                      to 1.33). Selection is carried by the label pill instead. */}
+                  <div
+                    className={cn(
+                      "flex h-24 w-full flex-col justify-end gap-px transition-opacity duration-200",
+                      selected
+                        ? "opacity-100"
+                        : "opacity-85 group-hover/bar:opacity-95"
+                    )}
+                  >
                     <div
-                      className="w-full rounded-t-[2px] transition-[background-color]"
+                      className="w-full rounded-t-[2px]"
                       style={seg(x.prime, partnerColor(partner))}
                     />
-                    {/* Negative prime months: the loss shows as a red zone eating
-                        into the top of the sky segment. */}
+                    {/* Negative prime months: the loss shows as a burgundy zone
+                        eating into the top of the sky segment. */}
                     <div
-                      className="relative w-full overflow-hidden rounded-b-[2px] transition-[background-color]"
-                      style={seg(x.sky, "var(--gold)")}
+                      className="relative w-full overflow-hidden rounded-b-[2px]"
+                      style={seg(x.sky, "var(--sky-revenue)")}
                     >
                       {x.prime < 0 && (
                         <div
@@ -379,16 +385,20 @@ function PartnerBreakdown({
                           style={{
                             height: `${Math.min(100, (-x.prime / Math.max(x.sky, 1)) * 100)}%`,
                             background: "var(--loss)",
-                            opacity: 0.85,
                           }}
                         />
                       )}
                     </div>
                   </div>
+
+                  {/* The month label itself carves in when selected — the same
+                      pressed-pill idiom the filters use elsewhere. */}
                   <span
                     className={cn(
-                      "font-mono text-[10px]",
-                      selected ? "font-semibold text-ink" : "text-muted"
+                      "rounded-full px-2.5 py-1 font-mono text-[10px] transition-colors",
+                      selected
+                        ? "neu-btn-pressed font-semibold text-ink"
+                        : "text-muted group-hover/bar:text-ink"
                     )}
                   >
                     {SSR_MONTH_LABELS[x.month]}
@@ -410,7 +420,6 @@ function PartnerBreakdown({
               </span>
             </>
           }
-          note="AUM & revenue per deployment venue"
         />
 
         {venues.length === 0 ? (
@@ -431,7 +440,7 @@ function PartnerBreakdown({
               </FilterButton>
               <span className="font-mono text-[10.5px] text-muted">
                 {onlyEarning
-                  ? `hiding ${venues.length - shownVenues.length} idle venues · negative = loss shown in red`
+                  ? `hiding ${venues.length - shownVenues.length} idle venues · negative = loss`
                   : `showing all ${venues.length} venues`}
               </span>
             </div>
@@ -516,7 +525,7 @@ function RateBuildSection({ rb }: { rb: SsrRateBuild }) {
     <section>
       <SectionTitle
         title="Subsidized borrowing"
-        note="rate, subsidy & cost-of-funds composition"
+        info="How Sky's take is built: base rate, the subsidy applied to it, and the cost-of-funds composition."
       />
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
         <Card className="px-5 py-4">
@@ -597,7 +606,7 @@ function SkyDirectSection({ rows }: { rows: SsrSkyDirectExposure[] }) {
     <section>
       <SectionTitle
         title="Sky-Direct exposures"
-        note="fixed / capped venues whose yield accrues to Sky"
+        info="Fixed or capped venues whose yield accrues directly to Sky."
       />
       <Card className="overflow-hidden">
         <div className="dr-scroll overflow-x-auto">
@@ -648,7 +657,7 @@ function ExcludedSection({ rows }: { rows: SsrExcludedVenue[] }) {
     <section>
       <SectionTitle
         title="Excluded holdings"
-        note="tracked for NAV · not in prime or sky revenue"
+        info="Tracked for NAV only — not counted in prime or sky revenue."
       />
       <Card className="overflow-hidden">
         <div className="dr-scroll overflow-x-auto">
@@ -693,7 +702,7 @@ function RefCodesSection({ rows }: { rows: SsrRefCode[] }) {
     <section>
       <SectionTitle
         title="DR per ref code"
-        note="distribution rewards in this report · also in the Distribution Rewards section"
+        info="Distribution rewards attributed in this report — also shown in full on the Distribution Rewards tab."
       />
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <FilterButton
