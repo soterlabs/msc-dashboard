@@ -14,9 +14,20 @@ const NAV: {
   key: Section;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
+  source: string;
 }[] = [
-  { key: "dr", label: "Distribution Rewards", icon: Coins },
-  { key: "ssr", label: "Supply Side Revenues", icon: TrendingUp },
+  {
+    key: "dr",
+    label: "Distribution Rewards",
+    icon: Coins,
+    source: "dr_comparison_latest.xlsx",
+  },
+  {
+    key: "ssr",
+    label: "Supply Side Revenues",
+    icon: TrendingUp,
+    source: "soter · settlement-reports",
+  },
 ];
 
 export function AppShell() {
@@ -33,6 +44,9 @@ export function AppShell() {
           <main className="px-5 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
             {section === "dr" ? <DistributionRewards /> : <SupplySideRevenues />}
           </main>
+          <footer className="px-5 pb-10 sm:px-8 lg:hidden">
+            <SourceNote section={section} className="border-t border-line pt-5" />
+          </footer>
         </div>
       </div>
     </div>
@@ -66,7 +80,27 @@ function Sidebar({
           />
         ))}
       </nav>
+      <SourceNote section={section} className="mt-auto px-3 pt-6" />
     </aside>
+  );
+}
+
+function SourceNote({
+  section,
+  className,
+}: {
+  section: Section;
+  className?: string;
+}) {
+  return (
+    <div className={className}>
+      <p className="font-sans text-[10px] font-medium tracking-[0.18em] text-faint uppercase">
+        Source
+      </p>
+      <p className="mt-1 font-mono text-[11px] wrap-break-word text-muted">
+        {NAV.find((n) => n.key === section)!.source}
+      </p>
+    </div>
   );
 }
 
@@ -74,9 +108,6 @@ function Brand() {
   return (
     <div className="flex items-center gap-2.5 px-2">
       <SoterLabsMark className="h-7" />
-      {/* Their exact lockup: Deltha, uppercase, gold, widely tracked. As a
-          logotype this gold is a brand element, not reading text, so the usual
-          body-text contrast floor doesn't apply. */}
       <span className="font-brand text-[17px] tracking-[0.13em] text-gold uppercase">
         Soter Labs
       </span>
