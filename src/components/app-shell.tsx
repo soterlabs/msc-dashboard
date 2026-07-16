@@ -4,9 +4,13 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 import { DistributionRewards } from "./dr/distribution-rewards";
+import { SpellPayments } from "./spell/spell-payments";
 import { SupplySideRevenues } from "./ssr/supply-side-revenues";
 
-type Section = "dr" | "ssr";
+type Section = "dr" | "ssr" | "spell";
+
+const SHOW_SPELL_PAYMENTS =
+  process.env.NEXT_PUBLIC_SHOW_SPELL_PAYMENTS === "true";
 
 const NAV: {
   key: Section;
@@ -23,9 +27,18 @@ const NAV: {
     label: "Supply Side Revenues",
     source: "soter · settlement-reports",
   },
+  ...(SHOW_SPELL_PAYMENTS
+    ? [
+        {
+          key: "spell" as const,
+          label: "Spell Payments",
+          source: "spell-payments-to-prime-subproxies.md",
+        },
+      ]
+    : []),
 ];
 
-const SECTION_ORDER: Section[] = ["dr", "ssr"];
+const SECTION_ORDER: Section[] = NAV.map((n) => n.key);
 
 export function AppShell() {
   const [section, setSection] = React.useState<Section>("dr");
@@ -80,7 +93,9 @@ export function AppShell() {
 
       <main>
         <div className="mx-auto max-w-[1200px] px-5 py-8 sm:px-8 sm:py-12">
-          {section === "dr" ? <DistributionRewards /> : <SupplySideRevenues />}
+          {section === "dr" && <DistributionRewards />}
+          {section === "ssr" && <SupplySideRevenues />}
+          {section === "spell" && SHOW_SPELL_PAYMENTS && <SpellPayments />}
 
           <footer className="mt-16 flex flex-wrap items-center justify-between gap-2 border-t border-line pt-5 font-mono text-[11px] text-muted">
             <span>Sky · {active.label} — Soter methodology</span>
