@@ -24,9 +24,9 @@ import {
   Card,
   DarkBar,
   KpiCard,
-  LeaderRow,
   NoteTag,
   SectionTitle,
+  StatRow,
   Swatch,
 } from "./primitives";
 
@@ -50,74 +50,59 @@ export function SummaryView({
     <div className="space-y-10">
       {/* KPI strip */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <KpiCard
-          label="Total DR · window"
-          value={formatCompactUSD(grand)}
-          note="Jan–May 2026 · all groups & ref codes"
-        />
+        <KpiCard label="Total DR" value={formatCompactUSD(grand)} />
         <KpiCard
           label={`Latest · ${monthLong(kpis.latestMonth)}`}
           value={formatCompactUSD(kpis.latestTotal)}
           accent
           note={`${mom >= 0 ? "+" : ""}${mom.toFixed(1)}% vs prior month`}
         />
-        <KpiCard
-          label="Ref codes"
-          value={refKpis.activeCount}
-          unit="active"
-          note={`${refKpis.withNotesCount} carry methodology notes`}
-        />
-        <KpiCard
-          label="Partner groups"
-          value={kpis.groupCount}
-          note="Skybase · Spark · Grove · Keel · Osero"
-        />
+        <KpiCard label="Ref codes" value={refKpis.activeCount} unit="active" />
+        <KpiCard label="Partner groups" value={kpis.groupCount} />
       </div>
 
       {/* Allocation cards */}
       <section>
-        <SectionTitle
-          title="Allocation by group"
-          note="DR distributed per partner group · Jan–May 2026"
-        />
+        <SectionTitle title="Allocation by group" />
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {groups.map((g) => {
             const share = grand > 0 ? ((g.total ?? 0) / grand) * 100 : 0;
             const latest = g.monthly[kpis.latestMonth] ?? 0;
             return (
-              <Card key={g.group} className="flex flex-col px-5 py-4">
+              <Card
+                key={g.group}
+                className="neu-raised-interactive group relative flex flex-col p-6"
+              >
                 <div className="flex items-center gap-2">
                   <Swatch color={groupColor(g.group)} />
-                  <span className="font-mono text-[11px] font-medium tracking-[0.12em] text-muted uppercase">
+                  <span className="font-sans text-[10.5px] font-medium tracking-[0.14em] text-muted uppercase">
                     {g.group}
                   </span>
                 </div>
-                <p className="mt-3 font-mono text-[1.6rem] leading-none font-semibold text-ink tabular-nums">
+
+                <p className="mt-5 font-mono text-[1.75rem] leading-none font-semibold text-ink tabular-nums">
                   {formatUSD(g.total)}
                 </p>
-                <p className="mt-1.5 font-mono text-[11px] text-muted">
-                  total DR · window
-                </p>
 
-                <div className="mt-4 space-y-2 border-t border-line pt-3.5">
-                  <LeaderRow
+                <div className="mt-6 space-y-2.5">
+                  <StatRow
                     label={`latest · ${MONTH_LABELS[kpis.latestMonth]}`}
                     value={formatCompactUSD(latest)}
                   />
-                  <LeaderRow
-                    label="share of total"
-                    value={formatPercent(share)}
-                    valueClassName="text-gold"
-                  />
-                  <LeaderRow label="ref codes" value={g.refCodes.length} />
+                  <StatRow label="share of total" value={formatPercent(share)} />
+                  <StatRow label="ref codes" value={g.refCodes.length} />
                 </div>
 
+                {/* mt-auto pins the CTA to the card floor so it lines up across
+                    the row. ::after stretches the hit area over the whole card,
+                    while the button stays the accessible, focusable target. */}
                 <button
                   type="button"
                   onClick={() => onViewGroup(g.group)}
-                  className="mt-4 inline-flex items-center gap-1 self-start font-mono text-[11px] font-medium tracking-wide text-gold uppercase transition-opacity hover:opacity-70"
+                  className="neu-focus mt-auto inline-flex items-center gap-1.5 self-start rounded-full pt-6 font-sans text-[10.5px] font-semibold tracking-widest text-gold uppercase after:absolute after:inset-0 after:rounded-2xl after:content-['']"
                 >
-                  View codes <ArrowRight className="size-3" />
+                  View codes
+                  <ArrowRight className="size-3 transition-transform duration-200 group-hover:translate-x-1" />
                 </button>
               </Card>
             );
@@ -128,8 +113,7 @@ export function SummaryView({
       {/* Monthly distribution table */}
       <section>
         <SectionTitle
-          title="Distribution by group"
-          note="click a group to expand its ref codes · monthly DR in USD"
+          title="Monthly breakdown"
         />
         <Card className="overflow-hidden">
           <div className="dr-scroll overflow-x-auto">
@@ -146,14 +130,12 @@ export function SummaryView({
 
       {/* monthly trend footnote row */}
       <section>
-        <SectionTitle
-          title="Window totals"
-          note="all groups combined, by month"
-        />
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <SectionTitle title="Monthly totals" />
+        {/* auto-fit so the row stays full whatever the month count */}
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3">
           {REPORT_MONTHS.map((m) => (
             <Card key={m} className="px-4 py-3">
-              <p className="font-mono text-[10.5px] tracking-[0.12em] text-muted uppercase">
+              <p className="font-sans text-[10.5px] tracking-[0.12em] text-muted uppercase">
                 {monthLong(m)}
               </p>
               <p className="mt-1.5 font-mono text-base font-semibold text-ink tabular-nums">
@@ -281,7 +263,7 @@ function Th({
   return (
     <th
       className={cn(
-        "px-3 py-2.5 font-mono text-[10.5px] font-medium tracking-[0.1em] text-muted uppercase",
+        "px-3 py-2.5 font-sans text-[10.5px] font-medium tracking-[0.1em] text-muted uppercase",
         className
       )}
     >

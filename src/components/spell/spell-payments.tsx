@@ -11,7 +11,6 @@ import { cn } from "@/lib/utils";
 import {
   Card,
   DisplayTitle,
-  Eyebrow,
   FilterButton,
   KpiCard,
   MetaItem,
@@ -156,10 +155,9 @@ export function SpellPayments() {
   return (
     <div className="space-y-7">
       {/* page header */}
-      <header className="space-y-3">
-        <Eyebrow>Spell payments · prime subproxies</Eyebrow>
+      <header>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-          <DisplayTitle accent="to prime subproxies.">Spell payments —</DisplayTitle>
+          <DisplayTitle accent="to prime subproxies">Spell payments</DisplayTitle>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 lg:justify-end">
             <MetaItem label="payments" value={ROWS.length} />
             <MetaItem label="settlement" value={formatCompactUSD(cycleTotal)} />

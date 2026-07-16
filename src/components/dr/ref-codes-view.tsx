@@ -14,6 +14,7 @@ import {
 import { formatUSD, formatUSD2, monthLong, monthShort } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
+import { Dropdown } from "./dropdown";
 import {
   Bar,
   Card,
@@ -79,7 +80,7 @@ export function RefCodesView({
     <div className="space-y-5">
       {/* group filter chips — multi-select; "All" clears the selection */}
       <div className="flex flex-wrap items-center gap-2">
-        <span className="mr-1 font-mono text-[10.5px] tracking-[0.14em] text-muted uppercase">
+        <span className="mr-1 font-sans text-[10.5px] tracking-[0.14em] text-muted uppercase">
           Group
         </span>
         <FilterButton
@@ -98,7 +99,7 @@ export function RefCodesView({
           </FilterButton>
         ))}
         {!allSelected ? (
-          <span className="ml-1 font-mono text-[10.5px] text-muted">
+          <span className="ml-1 font-sans text-[10.5px] text-muted">
             {selectedGroups.size === 0
               ? "none selected"
               : `${selectedGroups.size} selected`}
@@ -108,7 +109,7 @@ export function RefCodesView({
 
       {/* toolbar */}
       <div className="flex flex-wrap items-center gap-2">
-        <label className="flex h-9 min-w-[230px] flex-1 items-center gap-2 rounded-[6px] border border-line-strong bg-card px-3">
+        <label className="neu-inset-sm flex h-10 min-w-[230px] flex-1 items-center gap-2 rounded-full px-4">
           <Search className="size-3.5 text-muted" />
           <input
             value={query}
@@ -118,13 +119,13 @@ export function RefCodesView({
           />
         </label>
 
-        <StyledSelect
+        <Dropdown
           label="token"
           value={token}
           onChange={setToken}
           options={tokens}
         />
-        <StyledSelect
+        <Dropdown
           label="sort"
           value={sort}
           onChange={(v) => setSort(v as SortKey)}
@@ -143,7 +144,7 @@ export function RefCodesView({
         <button
           type="button"
           onClick={() => exportCsv(rows)}
-          className="inline-flex h-9 items-center gap-1.5 rounded-[6px] border border-line-strong bg-card px-3 font-mono text-[11px] font-medium tracking-wide text-muted transition-colors hover:border-ink/40 hover:text-ink"
+          className="neu-btn neu-focus inline-flex h-10 items-center gap-1.5 rounded-full px-4 font-sans text-[11px] font-medium tracking-wide text-muted hover:text-ink"
         >
           <Download className="size-3.5" /> Export CSV
         </button>
@@ -153,12 +154,11 @@ export function RefCodesView({
         title={
           <>
             Ledger{" "}
-            <span className="font-mono text-xs font-normal text-muted">
+            <span className="font-sans text-xs font-normal text-muted">
               {rows.length} codes
             </span>
           </>
         }
-        note="click a row for the per-token history"
       />
 
       <Card className="overflow-hidden">
@@ -208,7 +208,7 @@ export function RefCodesView({
                       <Td>
                         <span className="inline-flex items-center gap-1.5">
                           <Swatch color={groupColor(r.group)} />
-                          <span className="text-[11px] text-muted">
+                          <span className="font-sans text-[11px] text-muted">
                             {r.group}
                           </span>
                         </span>
@@ -253,7 +253,7 @@ export function RefCodesView({
                 <tr>
                   <td
                     colSpan={REPORT_MONTHS.length + 4}
-                    className="px-3 py-10 text-center font-mono text-xs text-muted"
+                    className="px-3 py-10 text-center font-sans text-xs text-muted"
                   >
                     No ref codes match these filters.
                   </td>
@@ -315,10 +315,10 @@ function RefCodeDetail({ refCode, group }: { refCode: string; group: string }) {
       <div className="space-y-4">
         <div>
           <div className="mb-2 flex items-center justify-between gap-2">
-            <p className="font-mono text-[10px] font-medium tracking-[0.16em] text-muted uppercase">
+            <p className="font-sans text-[10px] font-medium tracking-[0.16em] text-muted uppercase">
               Token composition · {compositionLabel}
             </p>
-            <StyledSelect
+            <Dropdown
               label="month"
               value={month}
               onChange={setMonth}
@@ -330,7 +330,7 @@ function RefCodeDetail({ refCode, group }: { refCode: string; group: string }) {
             {shownTokens.map((s) => (
               <div
                 key={s.token}
-                className="grid grid-cols-[120px_1fr_92px] items-center gap-3"
+                className="grid grid-cols-[104px_1fr_auto] items-center gap-3"
               >
                 <span className="inline-flex items-center gap-1.5">
                   <Swatch color={tokenColor(s.token)} />
@@ -339,23 +339,23 @@ function RefCodeDetail({ refCode, group }: { refCode: string; group: string }) {
                   </span>
                 </span>
                 <Bar value={s.value} max={maxToken} color={tokenColor(s.token)} />
-                <span className="text-right font-mono text-[11px] text-muted tabular-nums">
+                <span className="min-w-28 text-right font-mono text-[11px] whitespace-nowrap text-muted tabular-nums">
                   {formatUSD2(s.value)}
                 </span>
               </div>
             ))}
             {series.length === 0 ? (
-              <p className="font-mono text-[11px] text-faint">
+              <p className="font-sans text-[11px] text-faint">
                 No token-level history recorded.
               </p>
             ) : null}
           </div>
           {series.length > 0 ? (
-            <div className="mt-2 flex items-center justify-between border-t border-line pt-2 font-mono text-[10px] text-faint">
+            <div className="mt-2 flex items-center justify-between border-t border-line pt-2 font-sans text-[10px] text-faint">
               <span>
                 Total · {month === "all" ? "full history" : monthLong(month)}
               </span>
-              <span className="text-muted tabular-nums">
+              <span className="font-mono text-muted tabular-nums">
                 {formatUSD2(monthTotal)}
               </span>
             </div>
@@ -365,7 +365,7 @@ function RefCodeDetail({ refCode, group }: { refCode: string; group: string }) {
 
       {/* right: history sparkbars + stats */}
       <div className="space-y-3">
-        <p className="font-mono text-[10px] font-medium tracking-[0.16em] text-muted uppercase">
+        <p className="font-sans text-[10px] font-medium tracking-[0.16em] text-muted uppercase">
           DR history · monthly{" "}
           <span className="text-faint normal-case tracking-normal">
             (click a bar to filter)
@@ -402,7 +402,7 @@ function RefCodeDetail({ refCode, group }: { refCode: string; group: string }) {
             );
           })}
         </div>
-        <div className="flex justify-between font-mono text-[10px] text-faint">
+        <div className="flex justify-between font-sans text-[10px] text-faint">
           <span>{monthShort(HISTORY_MONTHS[0])} ’{HISTORY_MONTHS[0].slice(2, 4)}</span>
           <span>
             {monthShort(HISTORY_MONTHS[HISTORY_MONTHS.length - 1])} ’
@@ -423,11 +423,11 @@ function RefCodeDetail({ refCode, group }: { refCode: string; group: string }) {
 
 function MiniStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-line bg-card px-3 py-2">
-      <p className="font-mono text-[9.5px] tracking-[0.12em] text-muted uppercase">
+    <div className="neu-inset-sm rounded-xl px-3 py-2.5">
+      <p className="font-sans text-[9.5px] tracking-[0.12em] text-muted uppercase">
         {label}
       </p>
-      <p className="mt-1 font-mono text-xs font-medium text-ink">{value}</p>
+      <p className="mt-1 font-sans text-xs font-medium text-ink">{value}</p>
     </div>
   );
 }
@@ -479,7 +479,7 @@ function Th({
   return (
     <th
       className={cn(
-        "bg-thead px-3 py-2.5 font-mono text-[10.5px] font-medium tracking-[0.1em] text-muted uppercase",
+        "bg-thead px-3 py-2.5 font-sans text-[10.5px] font-medium tracking-[0.1em] text-muted uppercase",
         className
       )}
     >
@@ -504,36 +504,3 @@ function Td({
   );
 }
 
-/* native select styled to match the editorial controls */
-function StyledSelect({
-  label,
-  value,
-  onChange,
-  options,
-  render,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  options: string[];
-  render?: (v: string) => string;
-}) {
-  return (
-    <label className="inline-flex h-9 items-center gap-1.5 rounded-[6px] border border-line-strong bg-card px-3">
-      <span className="font-mono text-[10px] tracking-[0.14em] text-muted uppercase">
-        {label}
-      </span>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="cursor-pointer bg-transparent font-mono text-[11px] font-medium text-ink outline-none"
-      >
-        {options.map((o) => (
-          <option key={o} value={o}>
-            {render ? render(o) : o}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}

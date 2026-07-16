@@ -13,7 +13,7 @@ import {
 } from "@/lib/domain";
 import { formatCompactUSD } from "@/lib/format";
 
-import { DisplayTitle, Eyebrow, FilterButton, MetaItem } from "./primitives";
+import { DisplayTitle, FilterButton, MetaItem } from "./primitives";
 import { RatesView } from "./rates-view";
 import { RefCodesView } from "./ref-codes-view";
 import { SummaryView } from "./summary-view";
@@ -28,7 +28,6 @@ const ALL_GROUPS = Array.from(
 interface TabDef {
   key: Tab;
   label: string;
-  eyebrow: string;
   title: string;
   accent: string;
   meta: { label: string; value: React.ReactNode }[];
@@ -48,9 +47,8 @@ export function DistributionRewards() {
     {
       key: "summary",
       label: "Summary",
-      eyebrow: "Distribution rewards · summary",
-      title: "Distribution rewards —",
-      accent: "summary by group.",
+      title: "Distribution rewards",
+      accent: "summary by group",
       meta: [
         { label: "groups", value: visibleSummaryGroups.length },
         { label: "ref codes", value: visibleRefCodeRows.length },
@@ -61,9 +59,8 @@ export function DistributionRewards() {
     {
       key: "refcodes",
       label: "By ref code",
-      eyebrow: "Distribution rewards · ledger",
-      title: "DR ledger —",
-      accent: "every ref code.",
+      title: "DR ledger",
+      accent: "every ref code",
       meta: [
         { label: "codes", value: visibleRefCodeRows.length },
         { label: "with notes", value: refKpis.withNotesCount },
@@ -74,9 +71,8 @@ export function DistributionRewards() {
     {
       key: "rates",
       label: "Sky rates",
-      eyebrow: "Distribution rewards · methodology",
-      title: "Rate card —",
-      accent: "the methodology.",
+      title: "Rate card",
+      accent: "the methodology",
       meta: [
         { label: "tokens", value: tokenRates.length },
         { label: "families", value: RATE_FAMILIES.length },
@@ -106,8 +102,7 @@ export function DistributionRewards() {
   return (
     <div className="space-y-7">
       {/* page header */}
-      <header className="space-y-3">
-        <Eyebrow>{current.eyebrow}</Eyebrow>
+      <header>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <DisplayTitle accent={current.accent}>{current.title}</DisplayTitle>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 lg:justify-end">
