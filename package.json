@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "next dev",
+    "fetch-spell-payments": "node scripts/fetch-spell-payments.mjs",
     "generate-data": "node scripts/generate-data.mjs",
     "prebuild": "node scripts/generate-data.mjs",
     "build": "next build",

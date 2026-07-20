@@ -53,6 +53,33 @@ export function formatCompactUSD(value: number | null | undefined): string {
   return `${sign}$${Math.round(abs)}`;
 }
 
+/** Whole-token, space-grouped, no currency symbol: "1 234 567" (USDS etc.). */
+export function formatTokens(value: number | null | undefined): string {
+  if (value == null) return "—";
+  return groupSpaces(value);
+}
+
+/** Compact token amount, no symbol: "1.07B", "6.73M", "797K", "842". */
+export function formatCompactTokens(value: number | null | undefined): string {
+  if (value == null) return "—";
+  const sign = value < 0 ? "-" : "";
+  const abs = Math.abs(value);
+  if (abs >= 1_000_000_000) {
+    const b = abs / 1_000_000_000;
+    return `${sign}${b < 10 ? b.toFixed(2) : b.toFixed(1)}B`;
+  }
+  if (abs >= 1_000_000) {
+    const m = abs / 1_000_000;
+    return `${sign}${m < 10 ? m.toFixed(2) : m.toFixed(1)}M`;
+  }
+  if (abs >= 1_000) {
+    const k = abs / 1_000;
+    return `${sign}${k < 100 ? k.toFixed(1) : Math.round(k)}K`;
+  }
+  if (abs > 0 && abs < 1) return `${sign}<1`;
+  return `${sign}${Math.round(abs)}`;
+}
+
 /** Decimal rate → percent: 0.005 → "0.50%", 0.001998 → "0.20%". */
 export function formatRatePercent(
   value: number | null | undefined,
