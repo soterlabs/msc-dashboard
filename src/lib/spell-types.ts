@@ -28,6 +28,6 @@ export interface SpellPayment {
   spellAddress: string;
   /** On-chain subproxy constant, e.g. "SPARK_SUBPROXY". */
   subproxyConstant: string;
-  /** Human-readable spell section / title. */
-  section: string;
+  /** Short category label, e.g. "MSC", "Genesis Transfer", "Transfer". */
+  label: string;
 }

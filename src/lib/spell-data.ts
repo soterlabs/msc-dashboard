@@ -21,7 +21,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2026-06-18",
     "spellAddress": "0xc136c3c419746c2e8c0b95100ac866a747e3e04b",
     "subproxyConstant": "SPARK_SUBPROXY",
-    "section": "Monthly Settlement Cycle for May 2026"
+    "label": "MSC"
   },
   {
     "castDate": "2026-06-22",
@@ -34,7 +34,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2026-06-18",
     "spellAddress": "0xc136c3c419746c2e8c0b95100ac866a747e3e04b",
     "subproxyConstant": "SKYBASE_SUBPROXY",
-    "section": "Monthly Settlement Cycle for May 2026"
+    "label": "MSC"
   },
   {
     "castDate": "2026-06-22",
@@ -47,7 +47,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2026-06-18",
     "spellAddress": "0xc136c3c419746c2e8c0b95100ac866a747e3e04b",
     "subproxyConstant": "OBEX_SUBPROXY",
-    "section": "Monthly Settlement Cycle for May 2026"
+    "label": "MSC"
   },
   {
     "castDate": "2026-06-22",
@@ -60,7 +60,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2026-06-18",
     "spellAddress": "0xc136c3c419746c2e8c0b95100ac866a747e3e04b",
     "subproxyConstant": "GROVE_SUBPROXY",
-    "section": "Monthly Settlement Cycle for May 2026"
+    "label": "MSC"
   },
   {
     "castDate": "2026-06-22",
@@ -73,7 +73,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2026-06-18",
     "spellAddress": "0xc136c3c419746c2e8c0b95100ac866a747e3e04b",
     "subproxyConstant": "KEEL_SUBPROXY",
-    "section": "Monthly Settlement Cycle for May 2026"
+    "label": "MSC"
   },
   {
     "castDate": "2026-05-11",
@@ -86,7 +86,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2026-05-07",
     "spellAddress": "0xa0059dadd7fbdbc81a9bb9d1d17ccb029b6af596",
     "subproxyConstant": "SPARK_SUBPROXY",
-    "section": "Monthly Settlement Cycle for April 2026"
+    "label": "MSC"
   },
   {
     "castDate": "2026-05-11",
@@ -99,7 +99,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2026-05-07",
     "spellAddress": "0xa0059dadd7fbdbc81a9bb9d1d17ccb029b6af596",
     "subproxyConstant": "GROVE_SUBPROXY",
-    "section": "Monthly Settlement Cycle for April 2026"
+    "label": "MSC"
   },
   {
     "castDate": "2026-05-11",
@@ -112,7 +112,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2026-05-07",
     "spellAddress": "0xa0059dadd7fbdbc81a9bb9d1d17ccb029b6af596",
     "subproxyConstant": "SKYBASE_SUBPROXY",
-    "section": "Monthly Settlement Cycle for April 2026"
+    "label": "MSC"
   },
   {
     "castDate": "2026-05-11",
@@ -125,7 +125,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2026-05-07",
     "spellAddress": "0xa0059dadd7fbdbc81a9bb9d1d17ccb029b6af596",
     "subproxyConstant": "OBEX_SUBPROXY",
-    "section": "Monthly Settlement Cycle for April 2026"
+    "label": "MSC"
   },
   {
     "castDate": "2026-05-11",
@@ -138,7 +138,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2026-05-07",
     "spellAddress": "0xa0059dadd7fbdbc81a9bb9d1d17ccb029b6af596",
     "subproxyConstant": "KEEL_SUBPROXY",
-    "section": "Monthly Settlement Cycle for April 2026"
+    "label": "MSC"
   },
   {
     "castDate": "2026-04-27",
@@ -151,7 +151,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2026-04-23",
     "spellAddress": "0x06851b5235cefb29c60ef3b29eb1f661d960b125",
     "subproxyConstant": "SPARK_SUBPROXY",
-    "section": "Monthly Settlement Cycle for March"
+    "label": "MSC"
   },
   {
     "castDate": "2026-04-27",
@@ -164,7 +164,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2026-04-23",
     "spellAddress": "0x06851b5235cefb29c60ef3b29eb1f661d960b125",
     "subproxyConstant": "SKYBASE_SUBPROXY",
-    "section": "Monthly Settlement Cycle for March"
+    "label": "MSC"
   },
   {
     "castDate": "2026-04-27",
@@ -177,7 +177,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2026-04-23",
     "spellAddress": "0x06851b5235cefb29c60ef3b29eb1f661d960b125",
     "subproxyConstant": "GROVE_SUBPROXY",
-    "section": "Monthly Settlement Cycle for March"
+    "label": "MSC"
   },
   {
     "castDate": "2026-04-27",
@@ -190,7 +190,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2026-04-23",
     "spellAddress": "0x06851b5235cefb29c60ef3b29eb1f661d960b125",
     "subproxyConstant": "OBEX_SUBPROXY",
-    "section": "Monthly Settlement Cycle for March"
+    "label": "MSC"
   },
   {
     "castDate": "2026-04-27",
@@ -203,7 +203,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2026-04-23",
     "spellAddress": "0x06851b5235cefb29c60ef3b29eb1f661d960b125",
     "subproxyConstant": "KEEL_SUBPROXY",
-    "section": "Monthly Settlement Cycle for March"
+    "label": "MSC"
   },
   {
     "castDate": "2026-04-13",
@@ -216,7 +216,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2026-04-09",
     "spellAddress": "0x70da14478667c08320ef65506063abba84b6990f",
     "subproxyConstant": "GROVE_SUBPROXY",
-    "section": "Grove Genesis Capital Transfer"
+    "label": "Genesis Transfer"
   },
   {
     "castDate": "2026-03-30",
@@ -229,7 +229,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2026-03-26",
     "spellAddress": "0x415396c98a5b42c0d97e4e80cb5c9079369ea4d8",
     "subproxyConstant": "AMATSU_SUBPROXY",
-    "section": "Genesis Funding Transfers"
+    "label": "Genesis Transfer"
   },
   {
     "castDate": "2026-03-30",
@@ -242,7 +242,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2026-03-26",
     "spellAddress": "0x415396c98a5b42c0d97e4e80cb5c9079369ea4d8",
     "subproxyConstant": "OZONE_SUBPROXY",
-    "section": "Genesis Funding Transfers"
+    "label": "Genesis Transfer"
   },
   {
     "castDate": "2026-03-30",
@@ -255,7 +255,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2026-03-26",
     "spellAddress": "0x415396c98a5b42c0d97e4e80cb5c9079369ea4d8",
     "subproxyConstant": "KEEL_SUBPROXY",
-    "section": "Genesis Funding Transfers"
+    "label": "Genesis Transfer"
   },
   {
     "castDate": "2026-03-30",
@@ -268,7 +268,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2026-03-26",
     "spellAddress": "0x415396c98a5b42c0d97e4e80cb5c9079369ea4d8",
     "subproxyConstant": "PRYSM_SUBPROXY",
-    "section": "Genesis Funding Transfers"
+    "label": "Genesis Transfer"
   },
   {
     "castDate": "2026-03-30",
@@ -281,7 +281,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2026-03-26",
     "spellAddress": "0x415396c98a5b42c0d97e4e80cb5c9079369ea4d8",
     "subproxyConstant": "SPARK_SUBPROXY",
-    "section": "Monthly Settlement Cycle for February 2026"
+    "label": "MSC"
   },
   {
     "castDate": "2026-03-30",
@@ -294,7 +294,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2026-03-26",
     "spellAddress": "0x415396c98a5b42c0d97e4e80cb5c9079369ea4d8",
     "subproxyConstant": "SKYBASE_SUBPROXY",
-    "section": "Monthly Settlement Cycle for February 2026"
+    "label": "MSC"
   },
   {
     "castDate": "2026-03-30",
@@ -307,7 +307,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2026-03-26",
     "spellAddress": "0x415396c98a5b42c0d97e4e80cb5c9079369ea4d8",
     "subproxyConstant": "OBEX_SUBPROXY",
-    "section": "Monthly Settlement Cycle for February 2026"
+    "label": "MSC"
   },
   {
     "castDate": "2026-03-30",
@@ -320,7 +320,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2026-03-26",
     "spellAddress": "0x415396c98a5b42c0d97e4e80cb5c9079369ea4d8",
     "subproxyConstant": "GROVE_SUBPROXY",
-    "section": "Monthly Settlement Cycle for February 2026"
+    "label": "MSC"
   },
   {
     "castDate": "2026-03-02",
@@ -333,7 +333,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2026-02-26",
     "spellAddress": "0x4c56b1b1554b1230349d66f665814641a609c569",
     "subproxyConstant": "SPARK_SUBPROXY",
-    "section": "January 2026 MSC"
+    "label": "MSC"
   },
   {
     "castDate": "2026-03-02",
@@ -346,7 +346,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2026-02-26",
     "spellAddress": "0x4c56b1b1554b1230349d66f665814641a609c569",
     "subproxyConstant": "OBEX_SUBPROXY",
-    "section": "January 2026 MSC"
+    "label": "MSC"
   },
   {
     "castDate": "2026-03-02",
@@ -359,7 +359,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2026-02-26",
     "spellAddress": "0x4c56b1b1554b1230349d66f665814641a609c569",
     "subproxyConstant": "GROVE_SUBPROXY",
-    "section": "January 2026 MSC"
+    "label": "MSC"
   },
   {
     "castDate": "2026-02-02",
@@ -372,7 +372,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2026-01-29",
     "spellAddress": "0x4d99868f6d4d2545ebff3a1385efe31c06d3a472",
     "subproxyConstant": "SPARK_SUBPROXY",
-    "section": "Monthly Settlement Cycle and Treasury Management Function for November and December"
+    "label": "MSC"
   },
   {
     "castDate": "2026-02-02",
@@ -385,7 +385,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2026-01-29",
     "spellAddress": "0x4d99868f6d4d2545ebff3a1385efe31c06d3a472",
     "subproxyConstant": "OBEX_SUBPROXY",
-    "section": "Monthly Settlement Cycle and Treasury Management Function for November and December"
+    "label": "MSC"
   },
   {
     "castDate": "2025-12-15",
@@ -398,7 +398,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2025-12-11",
     "spellAddress": "0x0d2bda9a446527238e802708b370dd66f375e4d1",
     "subproxyConstant": "CCEA1_SUBPROXY",
-    "section": "Core Council Executor Agent 1 Launch and Funding"
+    "label": "Genesis Transfer"
   },
   {
     "castDate": "2025-12-01",
@@ -411,7 +411,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2025-11-27",
     "spellAddress": "0xa57d885d8fb034455aadb8c3f3d5414c214cbe3d",
     "subproxyConstant": "SPARK_SUBPROXY",
-    "section": "Monthly Settlement Cycle and Treasury Management Function for October"
+    "label": "MSC"
   },
   {
     "castDate": "2025-11-17",
@@ -424,7 +424,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2025-11-13",
     "spellAddress": "0xed3de16bdf69f697fecf1b4103b9f48d71bddf20",
     "subproxyConstant": "ALLOCATOR_OBEX_A_SUBPROXY",
-    "section": "Genesis Capital Transfer To Launch Agent 4"
+    "label": "Genesis Transfer"
   },
   {
     "castDate": "2025-10-20",
@@ -437,7 +437,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2025-10-16",
     "spellAddress": "0xf3d37a2508d269b8328026f72d65795730ce07b6",
     "subproxyConstant": "SPARK_PROXY",
-    "section": "Monthly Settlement Cycle #2"
+    "label": "MSC"
   },
   {
     "castDate": "2025-10-20",
@@ -450,7 +450,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2025-10-16",
     "spellAddress": "0xf3d37a2508d269b8328026f72d65795730ce07b6",
     "subproxyConstant": "GROVE_PROXY",
-    "section": "Monthly Settlement Cycle #2"
+    "label": "MSC"
   },
   {
     "castDate": "2025-09-22",
@@ -463,7 +463,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2025-09-18",
     "spellAddress": "0x98b876f9e8aa2d32a85042f5fe8e860d3a7b8d3b",
     "subproxyConstant": "SPARK_PROXY",
-    "section": "First Settlement Cycle"
+    "label": "MSC"
   },
   {
     "castDate": "2025-09-22",
@@ -476,7 +476,7 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2025-09-18",
     "spellAddress": "0x98b876f9e8aa2d32a85042f5fe8e860d3a7b8d3b",
     "subproxyConstant": "GROVE_PROXY",
-    "section": "First Settlement Cycle"
+    "label": "MSC"
   },
   {
     "castDate": "2025-06-30",
@@ -489,6 +489,6 @@ export const spellPayments: SpellPayment[] = [
     "spell": "2025-06-26",
     "spellAddress": "0xc9c4ddf824e4ff80158ab7862d168a35ce616e8e",
     "subproxyConstant": "SPARK_PROXY",
-    "section": "Spark USDS Transfer"
+    "label": "Transfer"
   }
 ];

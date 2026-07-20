@@ -527,7 +527,7 @@ const SPELL_COLUMNS = [
   ["Spell", "spell", str],
   ["Spell address", "spellAddress", str],
   ["Subproxy constant", "subproxyConstant", str],
-  ["Section", "section", str],
+  ["Label", "label", str],
 ];
 
 function generateSpell(root) {
