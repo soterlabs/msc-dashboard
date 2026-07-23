@@ -3,8 +3,8 @@
 import * as React from "react";
 import { ArrowUpRight, ChevronDown, ChevronUp, ChevronsUpDown, Search } from "lucide-react";
 
-import { spellPayments } from "@/lib/spell-data";
-import type { SpellKind, SpellPayment } from "@/lib/spell-types";
+import { primePayments } from "@/lib/prime-data";
+import type { PrimeKind, PrimePayment } from "@/lib/prime-types";
 import { formatCompactTokens, formatTokens, monthLong, shortAddress } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -18,8 +18,8 @@ import {
   Pill,
 } from "../dr/primitives";
 
-type Filter = "all" | SpellKind;
-type SortKey = "castDate" | "prime" | "usds" | "settlesAccrual" | "label";
+type Filter = "all" | PrimeKind;
+type SortKey = "castDate" | "prime" | "usds" | "settlesAccrual" | "label" | "source";
 type SortDir = "asc" | "desc";
 
 const ETHERSCAN_TX = "https://etherscan.io/tx/";
@@ -41,13 +41,18 @@ const COLUMNS: {
   { key: "usds", label: "USDS", align: "right", num: true },
   { key: "settlesAccrual", label: "Month" },
   { key: "label", label: "Label" },
+  { key: "source", label: "Source" },
+  { key: null, label: "From" },
   { key: null, label: "Tx" },
   { key: null, label: "Spell" },
+  { key: null, label: "Reference" },
 ];
+
+const SOURCE_OPTIONS = ["all", "spell", "transfer"];
 
 const NUMERIC_KEYS: ReadonlySet<SortKey> = new Set<SortKey>(["usds"]);
 
-const ROWS = spellPayments;
+const ROWS = primePayments;
 
 /** Accrual months a row covers: "2025-11 + 2025-12" → ["2025-11", "2025-12"]. */
 function accrualMonths(accrual: string): string[] {
@@ -70,7 +75,7 @@ function accrualLabel(accrual: string): string {
     .join(" + ");
 }
 
-function matches(row: SpellPayment, query: string): boolean {
+function matches(row: PrimePayment, query: string): boolean {
   if (!query) return true;
   const q = query.toLowerCase();
   return [
@@ -81,12 +86,17 @@ function matches(row: SpellPayment, query: string): boolean {
     row.receivingWallet,
     row.txHash,
     row.spellAddress,
+    row.source,
+    row.fromAddress,
+    row.fromLabel,
+    row.toLabel,
+    row.lineItem,
   ].some((f) => f.toLowerCase().includes(q));
 }
 
 function compareBy(key: SortKey, dir: SortDir) {
   const sign = dir === "asc" ? 1 : -1;
-  return (a: SpellPayment, b: SpellPayment) => {
+  return (a: PrimePayment, b: PrimePayment) => {
     if (NUMERIC_KEYS.has(key)) return (a[key] < b[key] ? -1 : a[key] > b[key] ? 1 : 0) * sign;
     return String(a[key]).localeCompare(String(b[key])) * sign;
   };
@@ -141,9 +151,10 @@ function SortHeader({
   );
 }
 
-export function SpellPayments() {
+export function PrimePayments() {
   const [filter, setFilter] = React.useState<Filter>("all");
   const [prime, setPrime] = React.useState("all");
+  const [source, setSource] = React.useState("all");
   const [month, setMonth] = React.useState("all");
   const [query, setQuery] = React.useState("");
   const [sortKey, setSortKey] = React.useState<SortKey>("castDate");
@@ -156,6 +167,7 @@ export function SpellPayments() {
     (r) =>
       (filter === "all" || r.kind === filter) &&
       (prime === "all" || r.prime === prime) &&
+      (source === "all" || r.source === source) &&
       (month === "all" || accrualMonths(r.settlesAccrual).includes(month)) &&
       matches(r, query.trim())
   ).sort(compareBy(sortKey, sortDir));
@@ -176,7 +188,9 @@ export function SpellPayments() {
       {/* page header */}
       <header>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-          <DisplayTitle accent="to prime subproxies">Spell payments</DisplayTitle>
+          <DisplayTitle accent="spell mints & budget transfers">
+            Prime payments
+          </DisplayTitle>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 lg:justify-end">
             <MetaItem label="payments" value={ROWS.length} />
             <MetaItem label="settlement" value={formatCompactTokens(cycleTotal)} />
@@ -192,7 +206,7 @@ export function SpellPayments() {
           label="Total paid"
           value={formatCompactTokens(cycleTotal + otherTotal)}
           unit="USDS"
-          note={`${ROWS.length} spell payments to prime subproxies`}
+          note={`${ROWS.length} payments to primes`}
         />
         <KpiCard
           label="Settlement cycles"
@@ -223,6 +237,13 @@ export function SpellPayments() {
             value={prime}
             onChange={setPrime}
             options={PRIME_OPTIONS}
+            render={(v) => (v === "all" ? "All" : v)}
+          />
+          <Dropdown
+            label="Source"
+            value={source}
+            onChange={setSource}
+            options={SOURCE_OPTIONS}
             render={(v) => (v === "all" ? "All" : v)}
           />
           <Dropdown
@@ -287,7 +308,21 @@ export function SpellPayments() {
                   {r.settlesAccrual ? accrualLabel(r.settlesAccrual) : <span className="text-faint">—</span>}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
-                  <Pill>{r.label}</Pill>
+                  <span title={r.lineItem || undefined}>
+                    <Pill>{r.label}</Pill>
+                  </span>
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap text-muted">
+                  {r.source}
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap">
+                  {r.source === "transfer" ? (
+                    <span title={r.fromAddress || undefined} className="text-ink">
+                      {r.fromLabel || shortAddress(r.fromAddress)}
+                    </span>
+                  ) : (
+                    <span className="text-faint">mint</span>
+                  )}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
                   <ExplorerLink href={`${ETHERSCAN_TX}${r.txHash}`}>
@@ -295,10 +330,23 @@ export function SpellPayments() {
                   </ExplorerLink>
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
-                  <span className="text-muted">{r.spell} · </span>
-                  <ExplorerLink href={`${ETHERSCAN_ADDR}${r.spellAddress}`}>
-                    {shortAddress(r.spellAddress)}
-                  </ExplorerLink>
+                  {r.spellAddress ? (
+                    <>
+                      <span className="text-muted">{r.spell} · </span>
+                      <ExplorerLink href={`${ETHERSCAN_ADDR}${r.spellAddress}`}>
+                        {shortAddress(r.spellAddress)}
+                      </ExplorerLink>
+                    </>
+                  ) : (
+                    <span className="text-faint">—</span>
+                  )}
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap">
+                  {r.reference ? (
+                    <ExplorerLink href={r.reference}>post</ExplorerLink>
+                  ) : (
+                    <span className="text-faint">—</span>
+                  )}
                 </td>
               </tr>
             ))}
