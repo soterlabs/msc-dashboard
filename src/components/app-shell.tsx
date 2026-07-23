@@ -5,14 +5,14 @@ import { Coins, ScrollText, TrendingUp } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { DistributionRewards } from "./dr/distribution-rewards";
+import { PrimePayments } from "./prime/prime-payments";
 import { SoterLabsMark } from "./soter-labs";
-import { SpellPayments } from "./spell/spell-payments";
 import { SupplySideRevenues } from "./ssr/supply-side-revenues";
 
-type Section = "dr" | "ssr" | "spell";
+type Section = "dr" | "ssr" | "prime";
 
-const SHOW_SPELL_PAYMENTS =
-  process.env.NEXT_PUBLIC_SHOW_SPELL_PAYMENTS === "true";
+const SHOW_PRIME_PAYMENTS =
+  process.env.NEXT_PUBLIC_SHOW_PRIME_PAYMENTS === "true";
 
 const NAV: {
   key: Section;
@@ -32,13 +32,13 @@ const NAV: {
     icon: TrendingUp,
     source: "soter · settlement-reports",
   },
-  ...(SHOW_SPELL_PAYMENTS
+  ...(SHOW_PRIME_PAYMENTS
     ? [
         {
-          key: "spell" as const,
-          label: "Spell Payments",
+          key: "prime" as const,
+          label: "Prime Payments",
           icon: ScrollText,
-          source: "spell-payments-to-prime-subproxies.md",
+          source: "prime-payments.md",
         },
       ]
     : []),
@@ -58,7 +58,7 @@ export function AppShell() {
           <main className="px-5 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
             {section === "dr" && <DistributionRewards />}
             {section === "ssr" && <SupplySideRevenues />}
-            {section === "spell" && SHOW_SPELL_PAYMENTS && <SpellPayments />}
+            {section === "prime" && SHOW_PRIME_PAYMENTS && <PrimePayments />}
           </main>
           <footer className="px-5 pb-10 sm:px-8 lg:hidden">
             <SourceNote section={section} className="border-t border-line pt-5" />
