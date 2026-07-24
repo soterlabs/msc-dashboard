@@ -29,6 +29,10 @@ Two kinds of payment share this table, told apart by **Source**:
 - **Source** — `spell` or `transfer` (see above).
 - **From address / From label** — payer wallet; blank for `spell` rows (minted).
 - **To label** — human name for the receiving wallet.
+- **Wallet** — category of the recipient (`subproxy` / `foundation` / `msig` /
+  `other`). Not a column here: it is derived in scripts/generate-data.mjs from
+  Source (spell → `subproxy`) and the receiving wallet address; add new
+  foundation/msig wallets to PRIME_TRANSFER_WALLETS there or they default to `other`.
 - **Line item** — what the payment covers, where a source document states it;
   left blank rather than inferred.
 

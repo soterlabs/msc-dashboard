@@ -28,7 +28,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2026-06-22",
@@ -48,7 +49,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2026-06-22",
@@ -68,7 +70,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2026-06-22",
@@ -88,7 +91,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2026-06-22",
@@ -108,7 +112,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2026-05-11",
@@ -128,7 +133,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2026-05-11",
@@ -148,7 +154,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2026-05-11",
@@ -168,7 +175,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2026-05-11",
@@ -188,7 +196,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2026-05-11",
@@ -208,7 +217,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2026-04-27",
@@ -228,7 +238,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2026-04-27",
@@ -248,7 +259,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2026-04-27",
@@ -268,7 +280,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2026-04-27",
@@ -288,7 +301,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2026-04-27",
@@ -308,7 +322,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2026-04-17",
@@ -328,7 +343,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "0x210cfcf53d1f9648c1c4dcaee677f0cb06914364",
     "fromLabel": "Core Council Buffer",
     "toLabel": "Grove Reimbursements",
-    "lineItem": "March 2026 Expenses"
+    "lineItem": "March 2026 Expenses",
+    "walletType": "msig"
   },
   {
     "castDate": "2026-04-13",
@@ -348,7 +364,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2026-03-30",
@@ -368,7 +385,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2026-03-30",
@@ -388,7 +406,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2026-03-30",
@@ -408,7 +427,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2026-03-30",
@@ -428,7 +448,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2026-03-30",
@@ -448,7 +469,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2026-03-30",
@@ -468,7 +490,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2026-03-30",
@@ -488,7 +511,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2026-03-30",
@@ -508,7 +532,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2026-03-06",
@@ -528,7 +553,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "0x210cfcf53d1f9648c1c4dcaee677f0cb06914364",
     "fromLabel": "Core Council Buffer",
     "toLabel": "Grove Reimbursements",
-    "lineItem": "February 2026 Reimbursements"
+    "lineItem": "February 2026 Reimbursements",
+    "walletType": "msig"
   },
   {
     "castDate": "2026-03-04",
@@ -548,7 +574,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "0x210cfcf53d1f9648c1c4dcaee677f0cb06914364",
     "fromLabel": "Core Council Buffer",
     "toLabel": "Skybase Foundation",
-    "lineItem": "DR codes 0 & 1 [Sep 2024 - Jan 2026]"
+    "lineItem": "DR codes 0 & 1 [Sep 2024 - Jan 2026]",
+    "walletType": "foundation"
   },
   {
     "castDate": "2026-03-02",
@@ -568,7 +595,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2026-03-02",
@@ -588,7 +616,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2026-03-02",
@@ -608,7 +637,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2026-02-24",
@@ -628,7 +658,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "0x210cfcf53d1f9648c1c4dcaee677f0cb06914364",
     "fromLabel": "Core Council Buffer",
     "toLabel": "Skybase Foundation",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "foundation"
   },
   {
     "castDate": "2026-02-14",
@@ -648,7 +679,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "0x210cfcf53d1f9648c1c4dcaee677f0cb06914364",
     "fromLabel": "Core Council Buffer",
     "toLabel": "Grove Reimbursements",
-    "lineItem": "January 2026 Reimbursements"
+    "lineItem": "January 2026 Reimbursements",
+    "walletType": "msig"
   },
   {
     "castDate": "2026-02-02",
@@ -668,7 +700,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2026-02-02",
@@ -688,7 +721,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2026-01-15",
@@ -708,7 +742,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "0x210cfcf53d1f9648c1c4dcaee677f0cb06914364",
     "fromLabel": "Core Council Buffer",
     "toLabel": "Grove Reimbursements",
-    "lineItem": "December 2025 Reimbursements"
+    "lineItem": "December 2025 Reimbursements",
+    "walletType": "msig"
   },
   {
     "castDate": "2025-12-23",
@@ -728,7 +763,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "0x210cfcf53d1f9648c1c4dcaee677f0cb06914364",
     "fromLabel": "Core Council Buffer",
     "toLabel": "Osero Foundation",
-    "lineItem": "Osero Genesis Capital"
+    "lineItem": "Osero Genesis Capital",
+    "walletType": "foundation"
   },
   {
     "castDate": "2025-12-23",
@@ -748,7 +784,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "0x210cfcf53d1f9648c1c4dcaee677f0cb06914364",
     "fromLabel": "Core Council Buffer",
     "toLabel": "Osero Foundation",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "foundation"
   },
   {
     "castDate": "2025-12-15",
@@ -768,7 +805,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2025-12-08",
@@ -788,7 +826,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "0xfa22c2acfee6221829510d98d57ace29ec497009",
     "fromLabel": "SBB / Launch Project ops multisig",
     "toLabel": "Grove Reimbursements",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "msig"
   },
   {
     "castDate": "2025-12-01",
@@ -808,7 +847,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2025-11-17",
@@ -828,7 +868,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2025-11-04",
@@ -848,7 +889,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "0xfa22c2acfee6221829510d98d57ace29ec497009",
     "fromLabel": "SBB / Launch Project ops multisig",
     "toLabel": "Grove Reimbursements",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "msig"
   },
   {
     "castDate": "2025-10-20",
@@ -868,7 +910,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2025-10-20",
@@ -888,7 +931,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2025-10-06",
@@ -908,7 +952,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "0xfa22c2acfee6221829510d98d57ace29ec497009",
     "fromLabel": "SBB / Launch Project ops multisig",
     "toLabel": "Grove Reimbursements",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "msig"
   },
   {
     "castDate": "2025-09-22",
@@ -928,7 +973,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2025-09-22",
@@ -948,7 +994,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   },
   {
     "castDate": "2025-09-03",
@@ -968,7 +1015,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "0x3c5142f28567e6a0f172fd0baaf1f2847f49d02f",
     "fromLabel": "Launch Project",
     "toLabel": "Grove Reimbursements",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "msig"
   },
   {
     "castDate": "2025-09-01",
@@ -988,7 +1036,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "0x3c5142f28567e6a0f172fd0baaf1f2847f49d02f",
     "fromLabel": "Launch Project",
     "toLabel": "Grove Reimbursements",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "msig"
   },
   {
     "castDate": "2025-08-05",
@@ -1008,7 +1057,8 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "0x3c5142f28567e6a0f172fd0baaf1f2847f49d02f",
     "fromLabel": "Launch Project",
     "toLabel": "Owner of Grove Reimbursements Safe",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "other"
   },
   {
     "castDate": "2025-06-30",
@@ -1028,6 +1078,7 @@ export const primePayments: PrimePayment[] = [
     "fromAddress": "",
     "fromLabel": "",
     "toLabel": "",
-    "lineItem": ""
+    "lineItem": "",
+    "walletType": "subproxy"
   }
 ];

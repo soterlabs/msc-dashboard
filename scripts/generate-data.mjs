@@ -537,6 +537,14 @@ const PRIME_COLUMNS = [
   ["Line item", "lineItem", str],
 ];
 
+/** Receiving wallet (lowercased) → walletType, for `transfer` rows only. */
+const PRIME_TRANSFER_WALLETS = {
+  "0x1e12328d9726f6bdb53b8b2526da3ed5dca5058e": "msig", // Grove Reimbursements Safe
+  "0x58b945c8ce34bd8cea3fc0437626f9f87d58a621": "foundation", // Skybase Foundation
+  "0xfdd055d3ccee0d955031cf1fd76c8db9317ccc58": "foundation", // Osero Foundation
+  // 0x9106…e359e7 (Owner of Grove Reimbursements Safe) → "other" by default.
+};
+
 function generatePrime(root) {
   const md = fs.readFileSync(path.join(root, "data", "prime-payments.md"), "utf8");
   const [table] = mdTables(md);
@@ -550,6 +558,18 @@ function generatePrime(root) {
   const payments = table.rows.map((r) =>
     Object.fromEntries(PRIME_COLUMNS.map(([, key, parse], i) => [key, parse(r[idx[i]])])),
   );
+
+  // walletType categorises the recipient. Spell mints always land in a
+  // subproxy; transfers are keyed by the receiving wallet (a handful of known
+  // Safes / foundations), defaulting to "other".
+  // ponytail: address map — add a wallet here when a new foundation/msig
+  // recipient appears, otherwise it falls back to "other".
+  for (const p of payments) {
+    p.walletType =
+      p.source === "spell"
+        ? "subproxy"
+        : (PRIME_TRANSFER_WALLETS[p.receivingWallet.toLowerCase()] ?? "other");
+  }
 
   return `/**
  * Sky Prime Payments — dataset.

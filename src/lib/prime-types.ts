@@ -15,6 +15,14 @@ export type PrimeKind = "settlement cycle" | "other";
  */
 export type PrimeSource = "spell" | "transfer";
 
+/**
+ * Category of the wallet that received the payment. `spell` mints always land
+ * in a `subproxy`; transfers go to a prime `foundation`, a budget `msig`
+ * (Safe), or `other` (e.g. a Safe owner EOA). Derived in generate-data.mjs
+ * from `source` + the receiving wallet, not stored in the markdown.
+ */
+export type PrimeWallet = "subproxy" | "foundation" | "msig" | "other";
+
 export interface PrimePayment {
   /** Date the spell was cast on-chain, `YYYY-MM-DD`. */
   castDate: string;
@@ -54,4 +62,6 @@ export interface PrimePayment {
   toLabel: string;
   /** What the payment covers, per a source document; "" when not stated. */
   lineItem: string;
+  /** Category of the receiving wallet (see PrimeWallet). */
+  walletType: PrimeWallet;
 }

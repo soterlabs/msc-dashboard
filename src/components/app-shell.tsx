@@ -11,9 +11,6 @@ import { SupplySideRevenues } from "./ssr/supply-side-revenues";
 
 type Section = "dr" | "ssr" | "prime";
 
-const SHOW_PRIME_PAYMENTS =
-  process.env.NEXT_PUBLIC_SHOW_PRIME_PAYMENTS === "true";
-
 const NAV: {
   key: Section;
   label: string;
@@ -32,16 +29,12 @@ const NAV: {
     icon: TrendingUp,
     source: "soter · settlement-reports",
   },
-  ...(SHOW_PRIME_PAYMENTS
-    ? [
-        {
-          key: "prime" as const,
-          label: "Prime Payments",
-          icon: ScrollText,
-          source: "prime-payments.md",
-        },
-      ]
-    : []),
+  {
+    key: "prime",
+    label: "Prime Payments",
+    icon: ScrollText,
+    source: "prime-payments.md",
+  },
 ];
 
 export function AppShell() {
@@ -58,7 +51,7 @@ export function AppShell() {
           <main className="px-5 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
             {section === "dr" && <DistributionRewards />}
             {section === "ssr" && <SupplySideRevenues />}
-            {section === "prime" && SHOW_PRIME_PAYMENTS && <PrimePayments />}
+            {section === "prime" && <PrimePayments />}
           </main>
           <footer className="px-5 pb-10 sm:px-8 lg:hidden">
             <SourceNote section={section} className="border-t border-line pt-5" />

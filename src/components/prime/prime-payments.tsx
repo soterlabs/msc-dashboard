@@ -19,7 +19,7 @@ import {
 } from "../dr/primitives";
 
 type Filter = "all" | PrimeKind;
-type SortKey = "castDate" | "prime" | "usds" | "settlesAccrual" | "label" | "source";
+type SortKey = "castDate" | "prime" | "usds" | "settlesAccrual" | "label" | "walletType";
 type SortDir = "asc" | "desc";
 
 const ETHERSCAN_TX = "https://etherscan.io/tx/";
@@ -41,14 +41,14 @@ const COLUMNS: {
   { key: "usds", label: "USDS", align: "right", num: true },
   { key: "settlesAccrual", label: "Month" },
   { key: "label", label: "Label" },
-  { key: "source", label: "Source" },
+  { key: "walletType", label: "Wallet" },
   { key: null, label: "From" },
   { key: null, label: "Tx" },
   { key: null, label: "Spell" },
   { key: null, label: "Reference" },
 ];
 
-const SOURCE_OPTIONS = ["all", "spell", "transfer"];
+const WALLET_OPTIONS = ["all", "subproxy", "foundation", "msig", "other"];
 
 const NUMERIC_KEYS: ReadonlySet<SortKey> = new Set<SortKey>(["usds"]);
 
@@ -86,7 +86,7 @@ function matches(row: PrimePayment, query: string): boolean {
     row.receivingWallet,
     row.txHash,
     row.spellAddress,
-    row.source,
+    row.walletType,
     row.fromAddress,
     row.fromLabel,
     row.toLabel,
@@ -154,7 +154,7 @@ function SortHeader({
 export function PrimePayments() {
   const [filter, setFilter] = React.useState<Filter>("all");
   const [prime, setPrime] = React.useState("all");
-  const [source, setSource] = React.useState("all");
+  const [wallet, setWallet] = React.useState("all");
   const [month, setMonth] = React.useState("all");
   const [query, setQuery] = React.useState("");
   const [sortKey, setSortKey] = React.useState<SortKey>("castDate");
@@ -167,7 +167,7 @@ export function PrimePayments() {
     (r) =>
       (filter === "all" || r.kind === filter) &&
       (prime === "all" || r.prime === prime) &&
-      (source === "all" || r.source === source) &&
+      (wallet === "all" || r.walletType === wallet) &&
       (month === "all" || accrualMonths(r.settlesAccrual).includes(month)) &&
       matches(r, query.trim())
   ).sort(compareBy(sortKey, sortDir));
@@ -240,10 +240,10 @@ export function PrimePayments() {
             render={(v) => (v === "all" ? "All" : v)}
           />
           <Dropdown
-            label="Source"
-            value={source}
-            onChange={setSource}
-            options={SOURCE_OPTIONS}
+            label="Wallet"
+            value={wallet}
+            onChange={setWallet}
+            options={WALLET_OPTIONS}
             render={(v) => (v === "all" ? "All" : v)}
           />
           <Dropdown
@@ -313,7 +313,7 @@ export function PrimePayments() {
                   </span>
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap text-muted">
-                  {r.source}
+                  {r.walletType}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
                   {r.source === "transfer" ? (
