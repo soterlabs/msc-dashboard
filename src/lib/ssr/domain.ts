@@ -6,7 +6,7 @@
  * module stays usable from client components without pulling the dataset into
  * the browser bundle.
  */
-import type { SsrDataset, SsrPartner, SsrReport, SsrVenue } from "./ssr-types";
+import type { SsrDataset, SsrPartner, SsrReport, SsrVenue } from "./types";
 
 export interface SsrPartnerMeta {
   label: string;

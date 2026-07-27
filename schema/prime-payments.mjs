@@ -6,7 +6,7 @@
  * `dune` mappings to append newly-returned payments, generate-data.mjs uses
  * `parse` + the checks to build data/generated/prime.json. Adding a column means
  * editing this file (and the matching field on PrimePayment in
- * src/lib/prime-types.ts, which is hand-written for its doc comments).
+ * src/lib/prime/types.ts, which is hand-written for its doc comments).
  *
  * Severity is deliberate:
  *   - a missing REQUIRED field or a malformed value is an ERROR — it means the
@@ -161,7 +161,7 @@ export const HEADER = COLUMNS.map((c) => c.header);
  * Field order of the generated PrimePayment objects — the CSV columns plus the
  * three fields resolved from data/prime/wallets.csv at generate time. Pinned
  * here so reordering or adding a CSV column cannot silently reshuffle
- * data/generated/prime.json, and must stay in step with src/lib/prime-types.ts.
+ * data/generated/prime.json, and must stay in step with src/lib/prime/types.ts.
  */
 export const OUTPUT_FIELDS = [
   ...COLUMNS.map((c) => c.key).filter((k) => k !== "lineItem"),

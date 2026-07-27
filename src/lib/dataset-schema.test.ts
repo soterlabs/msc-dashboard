@@ -213,9 +213,9 @@ test("every problem is reported, not just the first", () => {
 
 test("the error points at the right types file", () => {
   const cases: [(v: unknown) => unknown, string, string][] = [
-    [validateDr, "dr", "src/lib/types.ts"],
-    [validateSsr, "ssr", "src/lib/ssr-types.ts"],
-    [validatePrime, "prime", "src/lib/prime-types.ts"],
+    [validateDr, "dr", "src/lib/dr/types.ts"],
+    [validateSsr, "ssr", "src/lib/ssr/types.ts"],
+    [validatePrime, "prime", "src/lib/prime/types.ts"],
   ];
   for (const [validate, name, typesFile] of cases) {
     const data = fixture(name);

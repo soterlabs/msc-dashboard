@@ -15,9 +15,9 @@ import * as path from "node:path";
 import { cache } from "react";
 
 import { validateDr, validatePrime, validateSsr } from "./dataset-schema";
-import type { PrimeDataset } from "./prime-types";
-import type { SsrDataset } from "./ssr-types";
-import type { DrDataset } from "./types";
+import type { PrimeDataset } from "./prime/types";
+import type { SsrDataset } from "./ssr/types";
+import type { DrDataset } from "./dr/types";
 
 /**
  * Resolved from the working directory, which is the project root both for

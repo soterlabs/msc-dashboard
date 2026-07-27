@@ -41,23 +41,32 @@ export const DOCS: Record<string, DocLinkDef> = {
   },
 };
 
-/** Block-explorer base URLs per chain (address pages). */
-const EXPLORERS: Record<string, { name: string; base: string }> = {
-  ethereum: { name: "Etherscan", base: "https://etherscan.io/address/" },
-  base: { name: "Basescan", base: "https://basescan.org/address/" },
-  arbitrum: { name: "Arbiscan", base: "https://arbiscan.io/address/" },
-  optimism: {
-    name: "OP Etherscan",
-    base: "https://optimistic.etherscan.io/address/",
-  },
-  unichain: { name: "Uniscan", base: "https://uniscan.xyz/address/" },
+/**
+ * Block explorers per chain, keyed by host so both address and transaction
+ * pages come from one entry. Adding a chain here is enough for every link in
+ * the app; hardcoding a scan URL at a call site is how a Base payment ends up
+ * pointing at Etherscan.
+ */
+const EXPLORERS: Record<string, { name: string; host: string }> = {
+  ethereum: { name: "Etherscan", host: "https://etherscan.io" },
+  base: { name: "Basescan", host: "https://basescan.org" },
+  arbitrum: { name: "Arbiscan", host: "https://arbiscan.io" },
+  optimism: { name: "OP Etherscan", host: "https://optimistic.etherscan.io" },
+  unichain: { name: "Uniscan", host: "https://uniscan.xyz" },
 };
 
 export function explorer(chain: string): { name: string; base: string } | null {
-  return EXPLORERS[chain.toLowerCase()] ?? null;
+  const e = EXPLORERS[chain.toLowerCase()];
+  return e ? { name: e.name, base: `${e.host}/address/` } : null;
 }
 
 export function explorerUrl(chain: string, address: string): string | null {
-  const e = explorer(chain);
-  return e ? `${e.base}${address}` : null;
+  const e = EXPLORERS[chain.toLowerCase()];
+  return e ? `${e.host}/address/${address}` : null;
+}
+
+/** Transaction page for a hash on `chain`. */
+export function txUrl(chain: string, hash: string): string | null {
+  const e = EXPLORERS[chain.toLowerCase()];
+  return e ? `${e.host}/tx/${hash}` : null;
 }

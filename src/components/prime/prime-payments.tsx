@@ -3,8 +3,23 @@
 import * as React from "react";
 import { ArrowUpRight, ChevronDown, ChevronUp, ChevronsUpDown, Search } from "lucide-react";
 
-import type { PrimeKind, PrimePayment } from "@/lib/prime-types";
+import {
+  WALLET_OPTIONS,
+  accrualLabel,
+  isWalletFilter,
+  defaultSortDir,
+  filterPayments,
+  primeKpis,
+  primeOptions,
+  accrualMonthOptions,
+  sumUsds,
+  type SortDir,
+  type SortKey,
+  type WalletFilter,
+} from "@/lib/prime/domain";
+import type { PrimeKind } from "@/lib/prime/types";
 import { formatCompactTokens, formatTokens, monthLong, shortAddress } from "@/lib/format";
+import { explorerUrl, txUrl } from "@/lib/links";
 import { cn } from "@/lib/utils";
 
 import { usePrime } from "../data-context";
@@ -19,11 +34,13 @@ import {
 } from "../dr/primitives";
 
 type Filter = "all" | PrimeKind;
-type SortKey = "castDate" | "prime" | "usds" | "settlesAccrual" | "label" | "walletType";
-type SortDir = "asc" | "desc";
-
-const ETHERSCAN_TX = "https://etherscan.io/tx/";
-const ETHERSCAN_ADDR = "https://etherscan.io/address/";
+/**
+ * Prime payments are all mainnet today, and PrimePayment carries no chain, so
+ * the explorer chain is an assumption of this view rather than data. Add a
+ * `chain` column to data/prime/payments.csv before any prime is paid elsewhere,
+ * and read it here instead.
+ */
+const PAYMENT_CHAIN = "ethereum";
 
 const FILTERS: { key: Filter; label: string }[] = [
   { key: "all", label: "All" },
@@ -47,51 +64,6 @@ const COLUMNS: {
   { key: null, label: "Spell" },
   { key: null, label: "Reference" },
 ];
-
-const WALLET_OPTIONS = ["all", "subproxy", "foundation", "msig", "other"];
-
-const NUMERIC_KEYS: ReadonlySet<SortKey> = new Set<SortKey>(["usds"]);
-
-/** Accrual months a row covers: "2025-11 + 2025-12" → ["2025-11", "2025-12"]. */
-function accrualMonths(accrual: string): string[] {
-  return accrual ? accrual.split("+").map((m) => m.trim()).filter(Boolean) : [];
-}
-
-/** "2026-05" or "2025-11 + 2025-12" → "May 2026" / "Nov 2025 + Dec 2025". */
-function accrualLabel(accrual: string): string {
-  if (!accrual) return "—";
-  return accrual
-    .split("+")
-    .map((m) => monthLong(m.trim()))
-    .join(" + ");
-}
-
-function matches(row: PrimePayment, query: string): boolean {
-  if (!query) return true;
-  const q = query.toLowerCase();
-  return [
-    row.prime,
-    row.label,
-    row.subproxyConstant,
-    row.settlesAccrual,
-    row.receivingWallet,
-    row.txHash,
-    row.spellAddress,
-    row.walletType,
-    row.fromAddress,
-    row.fromLabel,
-    row.toLabel,
-    row.lineItem,
-  ].some((f) => f.toLowerCase().includes(q));
-}
-
-function compareBy(key: SortKey, dir: SortDir) {
-  const sign = dir === "asc" ? 1 : -1;
-  return (a: PrimePayment, b: PrimePayment) => {
-    if (NUMERIC_KEYS.has(key)) return (a[key] < b[key] ? -1 : a[key] > b[key] ? 1 : 0) * sign;
-    return String(a[key]).localeCompare(String(b[key])) * sign;
-  };
-}
 
 function ExplorerLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
@@ -144,48 +116,36 @@ function SortHeader({
 
 export function PrimePayments() {
   const { payments: ROWS } = usePrime();
-  /** Distinct primes and accrual months for the filter selects. */
-  const PRIME_OPTIONS = React.useMemo(
-    () => ["all", ...Array.from(new Set(ROWS.map((r) => r.prime))).sort()],
-    [ROWS]
-  );
-  const MONTH_OPTIONS = React.useMemo(
-    () => [
-      "all",
-      ...Array.from(new Set(ROWS.flatMap((r) => accrualMonths(r.settlesAccrual))))
-        .sort()
-        .reverse(),
-    ],
-    [ROWS]
-  );
+  const PRIME_OPTIONS = React.useMemo(() => primeOptions(ROWS), [ROWS]);
+  const MONTH_OPTIONS = React.useMemo(() => accrualMonthOptions(ROWS), [ROWS]);
+  const kpis = React.useMemo(() => primeKpis(ROWS), [ROWS]);
   const [filter, setFilter] = React.useState<Filter>("all");
   const [prime, setPrime] = React.useState("all");
-  const [wallet, setWallet] = React.useState("all");
+  const [wallet, setWallet] = React.useState<WalletFilter>("all");
   const [month, setMonth] = React.useState("all");
   const [query, setQuery] = React.useState("");
   const [sortKey, setSortKey] = React.useState<SortKey>("castDate");
   const [sortDir, setSortDir] = React.useState<SortDir>("desc");
 
-  const cycleTotal = ROWS.filter((r) => r.kind === "settlement cycle").reduce((s, r) => s + r.usds, 0);
-  const otherTotal = ROWS.filter((r) => r.kind === "other").reduce((s, r) => s + r.usds, 0);
+  const rows = React.useMemo(
+    () =>
+      filterPayments(
+        ROWS,
+        { kind: filter, prime, wallet, month, query },
+        sortKey,
+        sortDir
+      ),
+    [ROWS, filter, prime, wallet, month, query, sortKey, sortDir]
+  );
 
-  const rows = ROWS.filter(
-    (r) =>
-      (filter === "all" || r.kind === filter) &&
-      (prime === "all" || r.prime === prime) &&
-      (wallet === "all" || r.walletType === wallet) &&
-      (month === "all" || accrualMonths(r.settlesAccrual).includes(month)) &&
-      matches(r, query.trim())
-  ).sort(compareBy(sortKey, sortDir));
-
-  const total = rows.reduce((sum, r) => sum + r.usds, 0);
+  const total = sumUsds(rows);
 
   const onSort = (key: SortKey) => {
     if (key === sortKey) {
       setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     } else {
       setSortKey(key);
-      setSortDir(NUMERIC_KEYS.has(key) || key === "castDate" ? "desc" : "asc");
+      setSortDir(defaultSortDir(key));
     }
   };
 
@@ -198,10 +158,10 @@ export function PrimePayments() {
             Prime payments
           </DisplayTitle>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 lg:justify-end">
-            <MetaItem label="payments" value={ROWS.length} />
-            <MetaItem label="settlement" value={formatCompactTokens(cycleTotal)} />
-            <MetaItem label="other" value={formatCompactTokens(otherTotal)} />
-            <MetaItem label="total USDS" value={formatCompactTokens(cycleTotal + otherTotal)} />
+            <MetaItem label="payments" value={kpis.paymentCount} />
+            <MetaItem label="settlement" value={formatCompactTokens(kpis.cycleTotal)} />
+            <MetaItem label="other" value={formatCompactTokens(kpis.otherTotal)} />
+            <MetaItem label="total USDS" value={formatCompactTokens(kpis.cycleTotal + kpis.otherTotal)} />
           </div>
         </div>
       </header>
@@ -210,19 +170,19 @@ export function PrimePayments() {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <KpiCard
           label="Total paid"
-          value={formatCompactTokens(cycleTotal + otherTotal)}
+          value={formatCompactTokens(kpis.cycleTotal + kpis.otherTotal)}
           unit="USDS"
-          note={`${ROWS.length} payments to primes`}
+          note={`${kpis.paymentCount} payments to primes`}
         />
         <KpiCard
           label="Settlement cycles"
-          value={formatCompactTokens(cycleTotal)}
+          value={formatCompactTokens(kpis.cycleTotal)}
           unit="USDS"
           note="Monthly settlement of accrued distribution rewards"
         />
         <KpiCard
           label="Genesis & transfers"
-          value={formatCompactTokens(otherTotal)}
+          value={formatCompactTokens(kpis.otherTotal)}
           unit="USDS"
           note="One-off capital and genesis funding transfers"
         />
@@ -248,7 +208,7 @@ export function PrimePayments() {
           <Dropdown
             label="Wallet"
             value={wallet}
-            onChange={setWallet}
+            onChange={(v) => isWalletFilter(v) && setWallet(v)}
             options={WALLET_OPTIONS}
             render={(v) => (v === "all" ? "All" : v)}
           />
@@ -331,17 +291,29 @@ export function PrimePayments() {
                   )}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
-                  <ExplorerLink href={`${ETHERSCAN_TX}${r.txHash}`}>
-                    {shortAddress(r.txHash)}
-                  </ExplorerLink>
+                  {txUrl(PAYMENT_CHAIN, r.txHash) ? (
+                    <ExplorerLink href={txUrl(PAYMENT_CHAIN, r.txHash)!}>
+                      {shortAddress(r.txHash)}
+                    </ExplorerLink>
+                  ) : (
+                    <span className="font-mono text-[11px] text-muted">
+                      {shortAddress(r.txHash)}
+                    </span>
+                  )}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
                   {r.spellAddress ? (
                     <>
                       <span className="text-muted">{r.spell} · </span>
-                      <ExplorerLink href={`${ETHERSCAN_ADDR}${r.spellAddress}`}>
-                        {shortAddress(r.spellAddress)}
-                      </ExplorerLink>
+                      {explorerUrl(PAYMENT_CHAIN, r.spellAddress) ? (
+                        <ExplorerLink href={explorerUrl(PAYMENT_CHAIN, r.spellAddress)!}>
+                          {shortAddress(r.spellAddress)}
+                        </ExplorerLink>
+                      ) : (
+                        <span className="font-mono text-[11px] text-muted">
+                          {shortAddress(r.spellAddress)}
+                        </span>
+                      )}
                     </>
                   ) : (
                     <span className="text-faint">—</span>
@@ -368,7 +340,7 @@ export function PrimePayments() {
       </Card>
 
       <p className={cn("font-mono text-[11px] text-faint")}>
-        Showing {rows.length} of {ROWS.length} payments · {formatTokens(total)} USDS ·
+        Showing {rows.length} of {kpis.paymentCount} payments · {formatTokens(total)} USDS ·
         amounts are whole tokens
       </p>
     </div>

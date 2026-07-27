@@ -17,9 +17,9 @@
  *
  * Covered by dataset-schema.test.ts — `pnpm test`.
  */
-import type { PrimeDataset, PrimeKind, PrimeSource, PrimeWallet } from "./prime-types";
-import type { SsrDataset, SsrPartner } from "./ssr-types";
-import type { DrDataset } from "./types";
+import type { PrimeDataset, PrimeKind, PrimeSource, PrimeWallet } from "./prime/types";
+import type { SsrDataset, SsrPartner } from "./ssr/types";
+import type { DrDataset } from "./dr/types";
 
 type Problems = string[];
 
@@ -183,7 +183,7 @@ export function validateDr(data: unknown): DrDataset {
     }
   });
 
-  finish("dr", "types", p);
+  finish("dr", "dr/types", p);
   // Double cast: the isObj guard narrowed `data` to Record<string, unknown>,
   // which TypeScript will not widen directly to DrDataset.
   return data as unknown as DrDataset;
@@ -298,7 +298,7 @@ export function validateSsr(data: unknown): SsrDataset {
     });
   });
 
-  finish("ssr", "ssr-types", p);
+  finish("ssr", "ssr/types", p);
   // Double cast: the isObj guard narrowed `data` to Record<string, unknown>,
   // which TypeScript will not widen directly to SsrDataset.
   return data as unknown as SsrDataset;
@@ -342,7 +342,7 @@ export function validatePrime(data: unknown): PrimeDataset {
     num(p, `${at}.logIndex`, row.logIndex);
   });
 
-  finish("prime", "prime-types", p);
+  finish("prime", "prime/types", p);
   // Double cast: the isObj guard narrowed `data` to Record<string, unknown>,
   // which TypeScript will not widen directly to PrimeDataset.
   return data as unknown as PrimeDataset;

@@ -10,7 +10,7 @@ import {
   orderedGroups,
   refCodeKpis,
   summaryKpis,
-} from "@/lib/domain";
+} from "@/lib/dr/domain";
 import {
   formatCompactUSD,
   formatPercent,

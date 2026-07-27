@@ -225,7 +225,7 @@ function generateDr(drDir) {
 
   const monthLabels = Object.fromEntries(reportMonths.map((m) => [m, monthLabel(m)]));
 
-  // Shape mirrors DrDataset in src/lib/types.ts.
+  // Shape mirrors DrDataset in src/lib/dr/types.ts.
   return {
     reportMonths,
     historyMonths,
@@ -462,7 +462,7 @@ function generateSsr(reportsDir) {
   if (unknown.length) {
     throw new Error(
       `New partner director${unknown.length > 1 ? "ies" : "y"} in settlement-reports: ${unknown.map((p) => `"${p}"`).join(", ")}.\n` +
-        `  If a prime partner: add to SSR_KNOWN_PARTNERS in this script and SSR_PARTNER_META in src/lib/ssr-domain.ts.\n` +
+        `  If a prime partner: add to SSR_KNOWN_PARTNERS in this script and SSR_PARTNER_META in src/lib/ssr/domain.ts.\n` +
         `  If a protocol-wide aggregate (no .xlsx, different summary.md layout): add to SSR_NON_PARTNER_DIRS in this script.`,
     );
   }
@@ -501,7 +501,7 @@ function generateSsr(reportsDir) {
   const months = [...monthSet].sort();
   const monthLabels = Object.fromEntries(months.map((m) => [m, monthLabel(m)]));
 
-  // Shape mirrors SsrDataset in src/lib/ssr-types.ts.
+  // Shape mirrors SsrDataset in src/lib/ssr/types.ts.
   return { months, monthLabels, reports };
 }
 
@@ -514,7 +514,7 @@ function generatePrime() {
 
   for (const w of warnings) console.warn(`[generate-data] unclassified row — ${w}`);
 
-  // Shape mirrors PrimeDataset in src/lib/prime-types.ts.
+  // Shape mirrors PrimeDataset in src/lib/prime/types.ts.
   return { payments };
 }
 

@@ -10,9 +10,9 @@
  */
 import * as React from "react";
 
-import type { PrimeDataset } from "@/lib/prime-types";
-import type { SsrDataset } from "@/lib/ssr-types";
-import type { DrDataset } from "@/lib/types";
+import type { PrimeDataset } from "@/lib/prime/types";
+import type { SsrDataset } from "@/lib/ssr/types";
+import type { DrDataset } from "@/lib/dr/types";
 
 export interface Datasets {
   dr: DrDataset;
