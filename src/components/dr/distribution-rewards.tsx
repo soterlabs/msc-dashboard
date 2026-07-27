@@ -2,7 +2,6 @@
 
 import * as React from "react";
 
-import { tokenRates } from "@/lib/data";
 import {
   RATE_FAMILIES,
   allTokens,
@@ -12,6 +11,7 @@ import {
   visibleSummaryGroups,
 } from "@/lib/domain";
 import { formatCompactUSD } from "@/lib/format";
+import { useDr } from "../data-context";
 
 import { DisplayTitle, FilterButton, MetaItem } from "./primitives";
 import { RatesView } from "./rates-view";
@@ -19,11 +19,6 @@ import { RefCodesView } from "./ref-codes-view";
 import { SummaryView } from "./summary-view";
 
 type Tab = "summary" | "refcodes" | "rates";
-
-/** Every group present in the ledger (used for select-all / all-selected). */
-const ALL_GROUPS = Array.from(
-  new Set(visibleRefCodeRows.map((r) => r.group))
-);
 
 interface TabDef {
   key: Tab;
@@ -34,14 +29,20 @@ interface TabDef {
 }
 
 export function DistributionRewards() {
+  const dr = useDr();
   const [tab, setTab] = React.useState<Tab>("summary");
+  /** Every group present in the ledger (used for select-all / all-selected). */
+  const allGroups = React.useMemo(
+    () => Array.from(new Set(visibleRefCodeRows(dr).map((r) => r.group))),
+    [dr]
+  );
   // Selected groups drive ledger visibility; start with all selected.
   const [selectedGroups, setSelectedGroups] = React.useState<Set<string>>(
-    () => new Set(ALL_GROUPS)
+    () => new Set(allGroups)
   );
 
-  const refKpis = refCodeKpis();
-  const grand = grandTotal();
+  const refKpis = refCodeKpis(dr);
+  const grand = grandTotal(dr);
 
   const tabs: TabDef[] = [
     {
@@ -50,8 +51,8 @@ export function DistributionRewards() {
       title: "Distribution rewards",
       accent: "summary by group",
       meta: [
-        { label: "groups", value: visibleSummaryGroups.length },
-        { label: "ref codes", value: visibleRefCodeRows.length },
+        { label: "groups", value: visibleSummaryGroups(dr).length },
+        { label: "ref codes", value: visibleRefCodeRows(dr).length },
         { label: "window", value: "Jan–May 2026" },
         { label: "total DR", value: formatCompactUSD(grand) },
       ],
@@ -62,9 +63,9 @@ export function DistributionRewards() {
       title: "DR ledger",
       accent: "every ref code",
       meta: [
-        { label: "codes", value: visibleRefCodeRows.length },
+        { label: "codes", value: visibleRefCodeRows(dr).length },
         { label: "with notes", value: refKpis.withNotesCount },
-        { label: "tokens", value: allTokens().length },
+        { label: "tokens", value: allTokens(dr).length },
         { label: "total DR", value: formatCompactUSD(refKpis.total) },
       ],
     },
@@ -74,7 +75,7 @@ export function DistributionRewards() {
       title: "Rate card",
       accent: "the methodology",
       meta: [
-        { label: "tokens", value: tokenRates.length },
+        { label: "tokens", value: dr.tokenRates.length },
         { label: "families", value: RATE_FAMILIES.length },
         { label: "window", value: "Jan–May 2026" },
       ],
@@ -96,7 +97,7 @@ export function DistributionRewards() {
       return next;
     });
 
-  const selectAllGroups = () => setSelectedGroups(new Set(ALL_GROUPS));
+  const selectAllGroups = () => setSelectedGroups(new Set(allGroups));
   const clearGroups = () => setSelectedGroups(new Set());
 
   return (

@@ -2,16 +2,17 @@ import * as React from "react";
 
 import { ArrowUpRight } from "lucide-react";
 
-import { l2Addresses, refCodeRows } from "@/lib/data";
 import { formatUSD } from "@/lib/format";
 import { explorer, explorerUrl } from "@/lib/links";
 import { cn } from "@/lib/utils";
 
+import { useDr } from "../data-context";
 import { Card, NoteText, Pill, SectionTitle } from "./primitives";
 
 const CHAIN_ORDER = ["base", "arbitrum", "optimism", "unichain"];
 
 export function AddressesView() {
+  const { l2Addresses, refCodeRows } = useDr();
   const chains = Array.from(new Set(l2Addresses.map((a) => a.chain))).sort(
     (a, b) => CHAIN_ORDER.indexOf(a) - CHAIN_ORDER.indexOf(b)
   );

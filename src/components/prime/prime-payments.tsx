@@ -3,11 +3,11 @@
 import * as React from "react";
 import { ArrowUpRight, ChevronDown, ChevronUp, ChevronsUpDown, Search } from "lucide-react";
 
-import { primePayments } from "@/lib/prime-data";
 import type { PrimeKind, PrimePayment } from "@/lib/prime-types";
 import { formatCompactTokens, formatTokens, monthLong, shortAddress } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
+import { usePrime } from "../data-context";
 import { Dropdown } from "../dr/dropdown";
 import {
   Card,
@@ -52,19 +52,10 @@ const WALLET_OPTIONS = ["all", "subproxy", "foundation", "msig", "other"];
 
 const NUMERIC_KEYS: ReadonlySet<SortKey> = new Set<SortKey>(["usds"]);
 
-const ROWS = primePayments;
-
 /** Accrual months a row covers: "2025-11 + 2025-12" → ["2025-11", "2025-12"]. */
 function accrualMonths(accrual: string): string[] {
   return accrual ? accrual.split("+").map((m) => m.trim()).filter(Boolean) : [];
 }
-
-/** Distinct primes and accrual months for the filter selects. */
-const PRIME_OPTIONS = ["all", ...Array.from(new Set(ROWS.map((r) => r.prime))).sort()];
-const MONTH_OPTIONS = [
-  "all",
-  ...Array.from(new Set(ROWS.flatMap((r) => accrualMonths(r.settlesAccrual)))).sort().reverse(),
-];
 
 /** "2026-05" or "2025-11 + 2025-12" → "May 2026" / "Nov 2025 + Dec 2025". */
 function accrualLabel(accrual: string): string {
@@ -152,6 +143,21 @@ function SortHeader({
 }
 
 export function PrimePayments() {
+  const { payments: ROWS } = usePrime();
+  /** Distinct primes and accrual months for the filter selects. */
+  const PRIME_OPTIONS = React.useMemo(
+    () => ["all", ...Array.from(new Set(ROWS.map((r) => r.prime))).sort()],
+    [ROWS]
+  );
+  const MONTH_OPTIONS = React.useMemo(
+    () => [
+      "all",
+      ...Array.from(new Set(ROWS.flatMap((r) => accrualMonths(r.settlesAccrual))))
+        .sort()
+        .reverse(),
+    ],
+    [ROWS]
+  );
   const [filter, setFilter] = React.useState<Filter>("all");
   const [prime, setPrime] = React.useState("all");
   const [wallet, setWallet] = React.useState("all");

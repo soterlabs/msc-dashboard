@@ -3,7 +3,6 @@
 import * as React from "react";
 import { ChevronRight, ArrowRight } from "lucide-react";
 
-import { MONTH_LABELS, REPORT_MONTHS } from "@/lib/data";
 import {
   grandTotal,
   groupColor,
@@ -12,6 +11,7 @@ import {
   refCodeKpis,
   summaryKpis,
 } from "@/lib/domain";
+import { useDr } from "../data-context";
 import {
   formatCompactUSD,
   formatPercent,
@@ -35,11 +35,13 @@ export function SummaryView({
 }: {
   onViewGroup: (group: string) => void;
 }) {
-  const groups = orderedGroups();
-  const totals = monthTotals();
-  const grand = grandTotal();
-  const kpis = summaryKpis();
-  const refKpis = refCodeKpis();
+  const dr = useDr();
+  const { monthLabels: MONTH_LABELS, reportMonths: REPORT_MONTHS } = dr;
+  const groups = orderedGroups(dr);
+  const totals = monthTotals(dr);
+  const grand = grandTotal(dr);
+  const kpis = summaryKpis(dr);
+  const refKpis = refCodeKpis(dr);
 
   const mom =
     kpis.prevTotal > 0
@@ -158,6 +160,7 @@ function DistributionTable({
   groups: ReturnType<typeof orderedGroups>;
   grand: number;
 }) {
+  const { monthLabels: MONTH_LABELS, reportMonths: REPORT_MONTHS } = useDr();
   const [open, setOpen] = React.useState<Record<string, boolean>>({});
   const toggle = (g: string) => setOpen((o) => ({ ...o, [g]: !o[g] }));
 

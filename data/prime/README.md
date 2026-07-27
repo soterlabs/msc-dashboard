@@ -5,7 +5,7 @@ Two files back the Prime Payments view, both written by hand:
 - **`payments.csv`** — one row per on-chain payment to a prime.
 - **`wallets.csv`** — one row per wallet that needs a name or a category.
 
-They are parsed into `src/lib/prime-data.ts` by `scripts/generate-data.mjs`;
+They are parsed into `data/generated/prime.json` by `scripts/generate-data.mjs`;
 the column contracts live in `schema/prime-payments.mjs` and
 `schema/prime-wallets.mjs`.
 
@@ -19,7 +19,7 @@ DUNE_API_KEY=... pnpm fetch-prime-payments 8040299
 
 `scripts/fetch-prime-payments.mjs` keeps every existing row **verbatim** (which
 preserves hand-filled columns and address casing) and only appends payments the
-Dune query newly returns, then regenerates `prime-data.ts`. Rows in the CSV that
+Dune query newly returns, then regenerates `prime.json`. Rows in the CSV that
 the query does not return are kept, never dropped.
 
 New rows arrive with the hand-filled columns blank; the script lists them so you

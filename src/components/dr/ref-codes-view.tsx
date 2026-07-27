@@ -3,15 +3,16 @@
 import * as React from "react";
 import { ChevronRight, Download, Search } from "lucide-react";
 
-import { HISTORY_MONTHS, MONTH_LABELS, REPORT_MONTHS } from "@/lib/data";
 import {
   allTokens,
   groupColor,
   seriesForRefCode,
   tokenColor,
-  visibleRefCodeRows as refCodeRows,
+  visibleRefCodeRows,
 } from "@/lib/domain";
+import { useDr } from "../data-context";
 import { formatUSD, formatUSD2, monthLong, monthShort } from "@/lib/format";
+import type { RefCodeRow } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 import { Dropdown } from "./dropdown";
@@ -28,8 +29,6 @@ import {
 
 type SortKey = "total" | "refCode" | "latest";
 
-const GROUP_NAMES = Array.from(new Set(refCodeRows.map((r) => r.group)));
-
 export function RefCodesView({
   selectedGroups,
   onToggleGroup,
@@ -42,14 +41,21 @@ export function RefCodesView({
   onSelectAll: () => void;
   onClearGroups: () => void;
 }) {
-  const allSelected = GROUP_NAMES.every((g) => selectedGroups.has(g));
+  const dr = useDr();
+  const { monthLabels: MONTH_LABELS, reportMonths: REPORT_MONTHS } = dr;
+  const refCodeRows = React.useMemo(() => visibleRefCodeRows(dr), [dr]);
+  const groupNames = React.useMemo(
+    () => Array.from(new Set(refCodeRows.map((r) => r.group))),
+    [refCodeRows]
+  );
+  const allSelected = groupNames.every((g) => selectedGroups.has(g));
   const [query, setQuery] = React.useState("");
   const [token, setToken] = React.useState("All");
   const [onlyNotes, setOnlyNotes] = React.useState(false);
   const [sort, setSort] = React.useState<SortKey>("total");
   const [openRef, setOpenRef] = React.useState<string | null>(null);
 
-  const tokens = React.useMemo(() => ["All", ...allTokens()], []);
+  const tokens = React.useMemo(() => ["All", ...allTokens(dr)], [dr]);
 
   const rows = React.useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -72,7 +78,7 @@ export function RefCodesView({
       return (b.total ?? 0) - (a.total ?? 0);
     });
     return out;
-  }, [query, selectedGroups, token, onlyNotes, sort]);
+  }, [query, selectedGroups, token, onlyNotes, sort, refCodeRows, REPORT_MONTHS]);
 
   const filteredTotal = rows.reduce((acc, r) => acc + (r.total ?? 0), 0);
 
@@ -89,7 +95,7 @@ export function RefCodesView({
         >
           All
         </FilterButton>
-        {GROUP_NAMES.map((g) => (
+        {groupNames.map((g) => (
           <FilterButton
             key={g}
             active={selectedGroups.has(g)}
@@ -143,7 +149,7 @@ export function RefCodesView({
         </FilterButton>
         <button
           type="button"
-          onClick={() => exportCsv(rows)}
+          onClick={() => exportCsv(rows, REPORT_MONTHS)}
           className="neu-btn neu-focus inline-flex h-10 items-center gap-1.5 rounded-full px-4 font-sans text-[11px] font-medium tracking-wide text-muted hover:text-ink"
         >
           <Download className="size-3.5" /> Export CSV
@@ -227,7 +233,7 @@ export function RefCodesView({
                             <span className="text-faint">—</span>
                           ) : (
                             r.tokens.map((t) => (
-                              <Pill key={t} color={tokenColor(t)}>
+                              <Pill key={t} color={tokenColor(dr, t)}>
                                 {t}
                               </Pill>
                             ))
@@ -275,7 +281,9 @@ export function RefCodesView({
 /* ----------------------------------------------------------- detail panel */
 
 function RefCodeDetail({ refCode, group }: { refCode: string; group: string }) {
-  const series = seriesForRefCode(refCode);
+  const dr = useDr();
+  const { historyMonths: HISTORY_MONTHS } = dr;
+  const series = seriesForRefCode(dr, refCode);
 
   // Code-level monthly totals across the full history (sum of tokens).
   const history = HISTORY_MONTHS.map((m) => ({
@@ -333,12 +341,12 @@ function RefCodeDetail({ refCode, group }: { refCode: string; group: string }) {
                 className="grid grid-cols-[104px_1fr_auto] items-center gap-3"
               >
                 <span className="inline-flex items-center gap-1.5">
-                  <Swatch color={tokenColor(s.token)} />
+                  <Swatch color={tokenColor(dr, s.token)} />
                   <span className="font-mono text-[11px] text-ink">
                     {s.token}
                   </span>
                 </span>
-                <Bar value={s.value} max={maxToken} color={tokenColor(s.token)} />
+                <Bar value={s.value} max={maxToken} color={tokenColor(dr, s.token)} />
                 <span className="min-w-28 text-right font-mono text-[11px] whitespace-nowrap text-muted tabular-nums">
                   {formatUSD2(s.value)}
                 </span>
@@ -440,7 +448,7 @@ function fmtCell(v: number | null | undefined) {
   return formatUSD(v);
 }
 
-function exportCsv(rows: typeof refCodeRows) {
+function exportCsv(rows: RefCodeRow[], REPORT_MONTHS: string[]) {
   const header = [
     "ref_code",
     "group",

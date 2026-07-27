@@ -1,4 +1,4 @@
-/** A `YYYY-MM` month with settlement reports (driven by SSR_MONTHS in ssr-data.ts). */
+/** A `YYYY-MM` month with settlement reports (driven by `months` in SsrDataset). */
 export type SsrMonth = string;
 
 export type SsrPartner = "grove" | "keel" | "obex" | "spark";
@@ -93,4 +93,14 @@ export interface SsrReport {
   skyDirect: SsrSkyDirectExposure[];
   debtDaily: SsrDebtDay[];
   excludedVenues: SsrExcludedVenue[];
+}
+
+/**
+ * Everything the SSR view reads, as stored in data/generated/ssr.json.
+ * Loaded on the server (src/lib/load.ts) and passed down as props.
+ */
+export interface SsrDataset {
+  months: SsrMonth[];
+  monthLabels: Record<string, string>;
+  reports: SsrReport[];
 }

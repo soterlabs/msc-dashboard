@@ -117,7 +117,7 @@ function resolveWallets(payments, wallets) {
 
 /**
  * Parsed and validated payments with wallet fields resolved — everything
- * src/lib/prime-data.ts needs. Throws on malformed data or an unregistered
+ * data/generated/prime.json needs. Throws on malformed data or an unregistered
  * wallet; warns on a row that is merely unclassified.
  */
 export function readPrimePayments() {
