@@ -1,8 +1,9 @@
 /**
  * Prime payments — one on-chain payment to a prime per row.
  *
- * Source of truth is data/prime-payments.md; the shape here mirrors that table
- * (parsed by scripts/generate-data.mjs into prime-data.ts).
+ * Source of truth is data/prime/payments.csv; the shape here mirrors that table
+ * (parsed by scripts/generate-data.mjs into prime-data.ts, against the column
+ * contract in schema/prime-payments.mjs).
  */
 
 /** `settlement cycle` closes a monthly accrual; `other` is a genesis/capital transfer. */
@@ -42,7 +43,7 @@ export interface PrimePayment {
    * carry several payments — even two to the same wallet — so `txHash` alone
    * does not identify a row; `txHash` + `logIndex` does.
    */
-  logIndex: string;
+  logIndex: number;
   /** Date the spell itself is dated, `YYYY-MM-DD`; "" for `transfer`. */
   spell: string;
   /** Address of the executed spell; "" for `transfer`. */

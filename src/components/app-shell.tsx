@@ -33,7 +33,7 @@ const NAV: {
     key: "prime",
     label: "Prime Payments",
     icon: ScrollText,
-    source: "prime-payments.md",
+    source: "prime/payments.csv",
   },
 ];
 
