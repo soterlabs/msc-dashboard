@@ -27,6 +27,17 @@ const CACHE = path.join(ROOT, ".data-sources");
 
 /** Partners intentionally excluded from the SSR section. */
 const SSR_EXCLUDED_PARTNERS = new Set(["skybase"]);
+/**
+ * Directories under reports/ that are not partner reports at all: protocol-wide
+ * aggregates, published alongside the per-partner ones. They carry no .xlsx and
+ * their summary.md has its own layout (income/expense sections rather than the
+ * headline + venue tables parsed here), so they are skipped before the
+ * known-partner check rather than excluded as partners.
+ */
+const SSR_NON_PARTNER_DIRS = new Set([
+  "non_msc", // Sky protocol P&L outside the prime-agent (MSC) perimeter
+  "sky_total", // consolidated Sky net revenue: the primes plus non-MSC
+]);
 /** Known partners — a new one needs SSR_PARTNER_META (label/color) added by hand. */
 const SSR_KNOWN_PARTNERS = new Set(["grove", "keel", "obex", "spark"]);
 
@@ -452,12 +463,23 @@ function generateSsr(reportsDir) {
   const base = path.join(reportsDir, "reports");
   const partners = fs
     .readdirSync(base)
-    .filter((p) => fs.statSync(path.join(base, p)).isDirectory() && !SSR_EXCLUDED_PARTNERS.has(p))
+    .filter(
+      (p) =>
+        fs.statSync(path.join(base, p)).isDirectory() &&
+        !SSR_NON_PARTNER_DIRS.has(p) &&
+        !SSR_EXCLUDED_PARTNERS.has(p),
+    )
     .sort();
-  for (const p of partners) {
-    if (!SSR_KNOWN_PARTNERS.has(p)) {
-      throw new Error(`New partner "${p}" in settlement-reports — add it to SSR_PARTNER_META in src/lib/ssr-domain.ts and SSR_KNOWN_PARTNERS in this script.`);
-    }
+  // Report every unknown directory, not just the first: they tend to arrive in
+  // batches, and a build that fails once per new directory wastes a round trip
+  // each time.
+  const unknown = partners.filter((p) => !SSR_KNOWN_PARTNERS.has(p));
+  if (unknown.length) {
+    throw new Error(
+      `New partner director${unknown.length > 1 ? "ies" : "y"} in settlement-reports: ${unknown.map((p) => `"${p}"`).join(", ")}.\n` +
+        `  If a prime partner: add to SSR_KNOWN_PARTNERS in this script and SSR_PARTNER_META in src/lib/ssr-domain.ts.\n` +
+        `  If a protocol-wide aggregate (no .xlsx, different summary.md layout): add to SSR_NON_PARTNER_DIRS in this script.`,
+    );
   }
 
   const reports = [];
