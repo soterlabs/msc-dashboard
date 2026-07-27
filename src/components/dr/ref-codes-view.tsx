@@ -9,9 +9,9 @@ import {
   seriesForRefCode,
   tokenColor,
   visibleRefCodeRows,
-} from "@/lib/domain";
+} from "@/lib/dr/domain";
 import { formatUSD, formatUSD2, monthLong, monthShort } from "@/lib/format";
-import type { RefCodeRow } from "@/lib/types";
+import type { RefCodeRow } from "@/lib/dr/types";
 import { cn } from "@/lib/utils";
 
 import { useDr } from "../data-context";

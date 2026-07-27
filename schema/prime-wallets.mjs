@@ -17,7 +17,7 @@ const str = (v) => (v === null || v === undefined ? "" : String(v).trim());
 
 const ADDRESS = /^0x[0-9a-fA-F]{40}$/;
 
-/** Mirrors PrimeWallet in src/lib/prime-types.ts. */
+/** Mirrors PrimeWallet in src/lib/prime/types.ts. */
 export const WALLET_TYPES = ["subproxy", "foundation", "msig", "other"];
 
 export const COLUMNS = [

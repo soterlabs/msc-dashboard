@@ -1,4 +1,4 @@
-import { RATE_FAMILIES } from "@/lib/domain";
+import { RATE_FAMILIES } from "@/lib/dr/domain";
 import { formatRatePercent } from "@/lib/format";
 
 import { Card, SectionTitle, Swatch } from "./primitives";

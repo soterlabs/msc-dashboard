@@ -15,14 +15,14 @@ import {
   reportFor,
   ssrKpis,
   venuesFor,
-} from "@/lib/ssr-domain";
+} from "@/lib/ssr/domain";
 import type {
   SsrExcludedVenue,
   SsrPartner,
   SsrRateBuild,
   SsrRefCode,
   SsrSkyDirectExposure,
-} from "@/lib/ssr-types";
+} from "@/lib/ssr/types";
 import {
   formatCompactUSD,
   formatRatePercent,

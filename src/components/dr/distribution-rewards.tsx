@@ -9,7 +9,7 @@ import {
   refCodeKpis,
   visibleRefCodeRows,
   visibleSummaryGroups,
-} from "@/lib/domain";
+} from "@/lib/dr/domain";
 import { formatCompactUSD } from "@/lib/format";
 
 import { useDr } from "../data-context";

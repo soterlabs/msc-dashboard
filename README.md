@@ -86,12 +86,13 @@ otherwise render silently wrong, and `sum()` concatenates rather than adds.
 
 ```
 src/lib/
-  load.ts            server-only reads of data/generated/
-  dataset-schema.ts  runtime validation (+ .test.ts)
-  types.ts    domain.ts        DR
-  ssr-types.ts ssr-domain.ts   SSR
-  prime-types.ts                Prime
-  format.ts   links.ts  utils.ts
+  dr/{types,domain}.ts       one directory per report section
+  ssr/{types,domain}.ts
+  prime/{types,domain}.ts
+  load.ts                    server-only reads of data/generated/
+  dataset-schema.ts          runtime validation of those files (+ .test.ts)
+  format.ts  links.ts        formatting and block-explorer URLs (+ links.test.ts)
+  utils.ts
 ```
 
 Domain selectors take their dataset as the first argument — they hold no module
@@ -104,7 +105,7 @@ state, which is what lets client components use them without pulling the data in
 - **A new prime wallet** — add a row to `data/prime/wallets.csv`. An unregistered
   wallet on a transfer fails the refresh rather than defaulting to a category.
 - **A new SSR partner** — add it to `SSR_KNOWN_PARTNERS` in
-  `scripts/generate-data.mjs`, `SSR_PARTNER_META` in `src/lib/ssr-domain.ts`, and
+  `scripts/generate-data.mjs`, `SSR_PARTNER_META` in `src/lib/ssr/domain.ts`, and
   `SSR_PARTNERS` in `src/lib/dataset-schema.ts`. A protocol-wide aggregate that
   is not a partner goes in `SSR_NON_PARTNER_DIRS` instead.
 - **A new payment label** — add it to `LABEL_KINDS` in
