@@ -13,7 +13,8 @@
     "prebuild": "node scripts/generate-data.mjs",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "node --test --experimental-strip-types \"src/**/*.test.ts\""
   },
   "dependencies": {
     "clsx": "^2.1.1",

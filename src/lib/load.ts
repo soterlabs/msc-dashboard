@@ -14,7 +14,7 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { cache } from "react";
 
-import { assertDr, assertPrime, assertSsr } from "./dataset-schema";
+import { validateDr, validatePrime, validateSsr } from "./dataset-schema";
 import type { PrimeDataset } from "./prime-types";
 import type { SsrDataset } from "./ssr-types";
 import type { DrDataset } from "./types";
@@ -29,14 +29,15 @@ import type { DrDataset } from "./types";
 const DIR = path.join(process.cwd(), "data", "generated");
 
 /**
- * Reads and validates one dataset.
+ * Reads one dataset and hands the parsed value to its validator.
  *
- * The cast that JSON.parse forces is only a promise, so `assert` checks the
- * parsed value against the TypeScript type before anyone trusts it. Without
- * that, a field whose type drifts but whose shape survives — a number arriving
- * as a string, say — renders silently wrong instead of failing the build.
+ * `validate` both checks the value against its TypeScript type and returns it
+ * narrowed, so there is no cast here — the only cast lives in dataset-schema.ts,
+ * next to the checks that earn it. Without that step a field whose type drifts
+ * but whose shape survives — a number arriving as a string, say — would render
+ * silently wrong instead of failing the build.
  */
-function readGenerated<T>(name: string, assert: (value: unknown) => void): T {
+function readGenerated<T>(name: string, validate: (value: unknown) => T): T {
   const file = path.join(DIR, `${name}.json`);
   let raw: string;
   try {
@@ -55,12 +56,9 @@ function readGenerated<T>(name: string, assert: (value: unknown) => void): T {
       `data/generated/${name}.json is not valid JSON (${(e as Error).message}) — rerun \`pnpm generate-data\`.`,
     );
   }
-  assert(parsed);
-  return parsed as T;
+  return validate(parsed);
 }
 
-export const loadDr = cache((): DrDataset => readGenerated<DrDataset>("dr", assertDr));
-export const loadSsr = cache((): SsrDataset => readGenerated<SsrDataset>("ssr", assertSsr));
-export const loadPrime = cache(
-  (): PrimeDataset => readGenerated<PrimeDataset>("prime", assertPrime),
-);
+export const loadDr = cache((): DrDataset => readGenerated("dr", validateDr));
+export const loadSsr = cache((): SsrDataset => readGenerated("ssr", validateSsr));
+export const loadPrime = cache((): PrimeDataset => readGenerated("prime", validatePrime));

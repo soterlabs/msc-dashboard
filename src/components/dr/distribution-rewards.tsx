@@ -44,9 +44,13 @@ export function DistributionRewards() {
   // initialiser above only runs once, and the selection would silently keep
   // referring to the old groups if the data ever became dynamic (an API read).
   // Resetting during render is React's supported way to derive state from props.
-  const [groupsSnapshot, setGroupsSnapshot] = React.useState(allGroups);
-  if (groupsSnapshot !== allGroups) {
-    setGroupsSnapshot(allGroups);
+  //
+  // Keyed on `dr` rather than on `allGroups`: useMemo is a performance hint, not
+  // a semantic guarantee, so a discarded cache would hand back a fresh array and
+  // wipe the user's filter. `dr` comes from the provider and is genuinely stable.
+  const [dataset, setDataset] = React.useState(dr);
+  if (dataset !== dr) {
+    setDataset(dr);
     setSelectedGroups(new Set(allGroups));
   }
 
