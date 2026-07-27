@@ -10,11 +10,11 @@ import {
   tokenColor,
   visibleRefCodeRows,
 } from "@/lib/domain";
-import { useDr } from "../data-context";
 import { formatUSD, formatUSD2, monthLong, monthShort } from "@/lib/format";
 import type { RefCodeRow } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
+import { useDr } from "../data-context";
 import { Dropdown } from "./dropdown";
 import {
   Bar,
@@ -42,7 +42,7 @@ export function RefCodesView({
   onClearGroups: () => void;
 }) {
   const dr = useDr();
-  const { monthLabels: MONTH_LABELS, reportMonths: REPORT_MONTHS } = dr;
+  const { monthLabels, reportMonths } = dr;
   const refCodeRows = React.useMemo(() => visibleRefCodeRows(dr), [dr]);
   const groupNames = React.useMemo(
     () => Array.from(new Set(refCodeRows.map((r) => r.group))),
@@ -72,13 +72,13 @@ export function RefCodesView({
     out = [...out].sort((a, b) => {
       if (sort === "refCode") return Number(a.refCode) - Number(b.refCode);
       if (sort === "latest") {
-        const lm = REPORT_MONTHS[REPORT_MONTHS.length - 1];
+        const lm = reportMonths[reportMonths.length - 1];
         return (b.monthly[lm] ?? 0) - (a.monthly[lm] ?? 0);
       }
       return (b.total ?? 0) - (a.total ?? 0);
     });
     return out;
-  }, [query, selectedGroups, token, onlyNotes, sort, refCodeRows, REPORT_MONTHS]);
+  }, [query, selectedGroups, token, onlyNotes, sort, refCodeRows, reportMonths]);
 
   const filteredTotal = rows.reduce((acc, r) => acc + (r.total ?? 0), 0);
 
@@ -149,7 +149,7 @@ export function RefCodesView({
         </FilterButton>
         <button
           type="button"
-          onClick={() => exportCsv(rows, REPORT_MONTHS)}
+          onClick={() => exportCsv(rows, reportMonths)}
           className="neu-btn neu-focus inline-flex h-10 items-center gap-1.5 rounded-full px-4 font-sans text-[11px] font-medium tracking-wide text-muted hover:text-ink"
         >
           <Download className="size-3.5" /> Export CSV
@@ -174,9 +174,9 @@ export function RefCodesView({
               <tr className="bg-thead">
                 <Th className="w-[120px]">Ref code</Th>
                 <Th className="w-[130px]">Group</Th>
-                {REPORT_MONTHS.map((m) => (
+                {reportMonths.map((m) => (
                   <Th key={m} className="text-right">
-                    {MONTH_LABELS[m]}
+                    {monthLabels[m]}
                   </Th>
                 ))}
                 <Th className="text-right">Total</Th>
@@ -219,7 +219,7 @@ export function RefCodesView({
                           </span>
                         </span>
                       </Td>
-                      {REPORT_MONTHS.map((m) => (
+                      {reportMonths.map((m) => (
                         <Td key={m} className="text-right text-muted">
                           {fmtCell(r.monthly[m])}
                         </Td>
@@ -247,7 +247,7 @@ export function RefCodesView({
 
                     {isOpen ? (
                       <tr className="border-b border-line bg-paper/40">
-                        <td colSpan={REPORT_MONTHS.length + 4} className="p-0">
+                        <td colSpan={reportMonths.length + 4} className="p-0">
                           <RefCodeDetail refCode={r.refCode} group={r.group} />
                         </td>
                       </tr>
@@ -258,7 +258,7 @@ export function RefCodesView({
               {rows.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={REPORT_MONTHS.length + 4}
+                    colSpan={reportMonths.length + 4}
                     className="px-3 py-10 text-center font-sans text-xs text-muted"
                   >
                     No ref codes match these filters.
@@ -282,11 +282,11 @@ export function RefCodesView({
 
 function RefCodeDetail({ refCode, group }: { refCode: string; group: string }) {
   const dr = useDr();
-  const { historyMonths: HISTORY_MONTHS } = dr;
+  const { historyMonths } = dr;
   const series = seriesForRefCode(dr, refCode);
 
   // Code-level monthly totals across the full history (sum of tokens).
-  const history = HISTORY_MONTHS.map((m) => ({
+  const history = historyMonths.map((m) => ({
     m,
     v: series.reduce((acc, s) => acc + (s.monthly[m] ?? 0), 0),
   }));
@@ -411,10 +411,10 @@ function RefCodeDetail({ refCode, group }: { refCode: string; group: string }) {
           })}
         </div>
         <div className="flex justify-between font-sans text-[10px] text-faint">
-          <span>{monthShort(HISTORY_MONTHS[0])} ’{HISTORY_MONTHS[0].slice(2, 4)}</span>
+          <span>{monthShort(historyMonths[0])} ’{historyMonths[0].slice(2, 4)}</span>
           <span>
-            {monthShort(HISTORY_MONTHS[HISTORY_MONTHS.length - 1])} ’
-            {HISTORY_MONTHS[HISTORY_MONTHS.length - 1].slice(2, 4)}
+            {monthShort(historyMonths[historyMonths.length - 1])} ’
+            {historyMonths[historyMonths.length - 1].slice(2, 4)}
           </span>
         </div>
         <div className="grid grid-cols-2 gap-2 pt-1">
@@ -448,11 +448,11 @@ function fmtCell(v: number | null | undefined) {
   return formatUSD(v);
 }
 
-function exportCsv(rows: RefCodeRow[], REPORT_MONTHS: string[]) {
+function exportCsv(rows: RefCodeRow[], reportMonths: string[]) {
   const header = [
     "ref_code",
     "group",
-    ...REPORT_MONTHS,
+    ...reportMonths,
     "total",
     "tokens",
     "notes",
@@ -461,7 +461,7 @@ function exportCsv(rows: RefCodeRow[], REPORT_MONTHS: string[]) {
     [
       r.refCode,
       r.group,
-      ...REPORT_MONTHS.map((m) => r.monthly[m] ?? ""),
+      ...reportMonths.map((m) => r.monthly[m] ?? ""),
       r.total ?? "",
       r.tokens.join(" "),
       `"${r.notes.replace(/"/g, '""')}"`,

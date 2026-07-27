@@ -235,9 +235,25 @@ export function rateFamilyMeta(rateType: string): RateFamily {
   return RATE_FAMILIES.find((f) => f.key === rateType) ?? RATE_FAMILIES[0];
 }
 
+/**
+ * token → rate family, built once per dataset. These lookups happen per token
+ * pill inside render loops, so they stay O(1) rather than scanning tokenRates
+ * on every call; the WeakMap keeps the cache tied to the dataset's lifetime.
+ */
+const rateTypeByToken = new WeakMap<DrDataset, Map<string, string>>();
+
+function tokenRateTypes(dr: DrDataset): Map<string, string> {
+  let map = rateTypeByToken.get(dr);
+  if (!map) {
+    map = new Map(dr.tokenRates.map((r) => [r.token, r.rateType]));
+    rateTypeByToken.set(dr, map);
+  }
+  return map;
+}
+
 /** Rate family a token belongs to (XR / XR* / XR-stUSDS). */
 export function tokenRateType(dr: DrDataset, token: string): string | undefined {
-  return dr.tokenRates.find((r) => r.token === token)?.rateType;
+  return tokenRateTypes(dr).get(token);
 }
 
 /** `var(--rate-…)` colour for a token, keyed by its rate family. */

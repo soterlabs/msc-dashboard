@@ -16,7 +16,6 @@ import {
   ssrKpis,
   venuesFor,
 } from "@/lib/ssr-domain";
-import { useSsr } from "../data-context";
 import type {
   SsrExcludedVenue,
   SsrPartner,
@@ -32,6 +31,7 @@ import {
 } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
+import { useSsr } from "../data-context";
 import {
   Bar,
   Card,
@@ -108,7 +108,7 @@ function Summary({
   onOpenPartner: (p: SsrPartner) => void;
 }) {
   const ssr = useSsr();
-  const { months: SSR_MONTHS, monthLabels: SSR_MONTH_LABELS } = ssr;
+  const { months, monthLabels } = ssr;
   const kpis = ssrKpis(ssr);
   const grand = grandSkyRevenue(ssr);
   const totals = monthSkyRevenues(ssr);
@@ -144,7 +144,7 @@ function Summary({
 
                 <div className="mt-6 space-y-2.5">
                   <StatRow
-                    label={`latest · ${SSR_MONTH_LABELS[kpis.latestMonth]}`}
+                    label={`latest · ${monthLabels[kpis.latestMonth]}`}
                     value={formatCompactUSD(latest)}
                   />
                   <StatRow label="share of total" value={`${share.toFixed(1)}%`} />
@@ -185,9 +185,9 @@ function Summary({
                 <tr className="bg-thead">
                   <Th className="w-[200px]">Prime</Th>
                   <Th className="w-[150px]">Distribution</Th>
-                  {SSR_MONTHS.map((m) => (
+                  {months.map((m) => (
                     <Th key={m} className="text-right">
-                      {SSR_MONTH_LABELS[m]}
+                      {monthLabels[m]}
                     </Th>
                   ))}
                   <Th className="text-right">Total</Th>
@@ -216,7 +216,7 @@ function Summary({
                       <Td>
                         <Bar value={sky} max={maxPartner} color={partnerColor(p)} />
                       </Td>
-                      {SSR_MONTHS.map((m) => (
+                      {months.map((m) => (
                         <Td key={m} className="text-right text-muted">
                           {fmtCell(reportFor(ssr, p, m)?.headline.skyRevenue)}
                         </Td>
@@ -244,7 +244,7 @@ function Summary({
         <SectionTitle title="Monthly totals" />
         {/* auto-fit so the row stays full whatever the month count */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3">
-          {SSR_MONTHS.map((m) => (
+          {months.map((m) => (
             <Card key={m} className="px-4 py-3">
               <p className="font-sans text-[10.5px] tracking-[0.12em] text-muted uppercase">
                 {monthLong(m)}
@@ -268,9 +268,9 @@ function PartnerBreakdown({
   onBack: () => void;
 }) {
   const ssr = useSsr();
-  const { months: SSR_MONTHS, monthLabels: SSR_MONTH_LABELS } = ssr;
+  const { months, monthLabels } = ssr;
   const [month, setMonth] = React.useState<string>(
-    SSR_MONTHS[SSR_MONTHS.length - 1]
+    months[months.length - 1]
   );
   const [onlyEarning, setOnlyEarning] = React.useState(true);
 
@@ -298,9 +298,9 @@ function PartnerBreakdown({
         <span className="mx-1 font-sans text-[10.5px] tracking-[0.14em] text-muted uppercase">
           Month
         </span>
-        {SSR_MONTHS.map((m) => (
+        {months.map((m) => (
           <FilterButton key={m} active={month === m} onClick={() => setMonth(m)}>
-            {SSR_MONTH_LABELS[m]}
+            {monthLabels[m]}
           </FilterButton>
         ))}
       </div>
@@ -406,7 +406,7 @@ function PartnerBreakdown({
                         : "text-muted group-hover/bar:text-ink"
                     )}
                   >
-                    {SSR_MONTH_LABELS[x.month]}
+                    {monthLabels[x.month]}
                   </span>
                 </button>
               );

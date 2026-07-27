@@ -11,8 +11,8 @@ import {
   visibleSummaryGroups,
 } from "@/lib/domain";
 import { formatCompactUSD } from "@/lib/format";
-import { useDr } from "../data-context";
 
+import { useDr } from "../data-context";
 import { DisplayTitle, FilterButton, MetaItem } from "./primitives";
 import { RatesView } from "./rates-view";
 import { RefCodesView } from "./ref-codes-view";
@@ -40,6 +40,15 @@ export function DistributionRewards() {
   const [selectedGroups, setSelectedGroups] = React.useState<Set<string>>(
     () => new Set(allGroups)
   );
+  // The dataset is fixed at build today, so this never fires — but the
+  // initialiser above only runs once, and the selection would silently keep
+  // referring to the old groups if the data ever became dynamic (an API read).
+  // Resetting during render is React's supported way to derive state from props.
+  const [groupsSnapshot, setGroupsSnapshot] = React.useState(allGroups);
+  if (groupsSnapshot !== allGroups) {
+    setGroupsSnapshot(allGroups);
+    setSelectedGroups(new Set(allGroups));
+  }
 
   const refKpis = refCodeKpis(dr);
   const grand = grandTotal(dr);

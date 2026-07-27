@@ -11,7 +11,6 @@ import {
   refCodeKpis,
   summaryKpis,
 } from "@/lib/domain";
-import { useDr } from "../data-context";
 import {
   formatCompactUSD,
   formatPercent,
@@ -20,6 +19,7 @@ import {
 } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
+import { useDr } from "../data-context";
 import {
   Card,
   DarkBar,
@@ -36,7 +36,7 @@ export function SummaryView({
   onViewGroup: (group: string) => void;
 }) {
   const dr = useDr();
-  const { monthLabels: MONTH_LABELS, reportMonths: REPORT_MONTHS } = dr;
+  const { monthLabels, reportMonths } = dr;
   const groups = orderedGroups(dr);
   const totals = monthTotals(dr);
   const grand = grandTotal(dr);
@@ -88,7 +88,7 @@ export function SummaryView({
 
                 <div className="mt-6 space-y-2.5">
                   <StatRow
-                    label={`latest · ${MONTH_LABELS[kpis.latestMonth]}`}
+                    label={`latest · ${monthLabels[kpis.latestMonth]}`}
                     value={formatCompactUSD(latest)}
                   />
                   <StatRow label="share of total" value={formatPercent(share)} />
@@ -135,7 +135,7 @@ export function SummaryView({
         <SectionTitle title="Monthly totals" />
         {/* auto-fit so the row stays full whatever the month count */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3">
-          {REPORT_MONTHS.map((m) => (
+          {reportMonths.map((m) => (
             <Card key={m} className="px-4 py-3">
               <p className="font-sans text-[10.5px] tracking-[0.12em] text-muted uppercase">
                 {monthLong(m)}
@@ -160,7 +160,7 @@ function DistributionTable({
   groups: ReturnType<typeof orderedGroups>;
   grand: number;
 }) {
-  const { monthLabels: MONTH_LABELS, reportMonths: REPORT_MONTHS } = useDr();
+  const { monthLabels: monthLabels, reportMonths: reportMonths } = useDr();
   const [open, setOpen] = React.useState<Record<string, boolean>>({});
   const toggle = (g: string) => setOpen((o) => ({ ...o, [g]: !o[g] }));
 
@@ -169,9 +169,9 @@ function DistributionTable({
       <thead>
         <tr className="bg-thead">
           <Th className="w-[230px]">Group</Th>
-          {REPORT_MONTHS.map((m) => (
+          {reportMonths.map((m) => (
             <Th key={m} className="text-right">
-              {MONTH_LABELS[m]}
+              {monthLabels[m]}
             </Th>
           ))}
           <Th className="text-right">Total</Th>
@@ -202,7 +202,7 @@ function DistributionTable({
                     </span>
                   </div>
                 </Td>
-                {REPORT_MONTHS.map((m) => (
+                {reportMonths.map((m) => (
                   <Td key={m} className="text-right text-muted">
                     {fmtCell(g.monthly[m])}
                   </Td>
@@ -227,7 +227,7 @@ function DistributionTable({
                         {rc.notes ? <NoteTag note={rc.notes} /> : null}
                       </div>
                     </Td>
-                    {REPORT_MONTHS.map((m) => (
+                    {reportMonths.map((m) => (
                       <Td key={m} className="text-right text-muted">
                         {fmtCell(rc.monthly[m])}
                       </Td>
