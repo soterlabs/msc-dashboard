@@ -4,6 +4,7 @@ import * as React from "react";
 import { Coins, ScrollText, TrendingUp } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { DataProvider, type Datasets } from "./data-context";
 import { DistributionRewards } from "./dr/distribution-rewards";
 import { PrimePayments } from "./prime/prime-payments";
 import { SoterLabsMark } from "./soter-labs";
@@ -37,28 +38,33 @@ const NAV: {
   },
 ];
 
-export function AppShell() {
+export function AppShell({ dr, ssr, prime }: Datasets) {
   const [section, setSection] = React.useState<Section>("dr");
+  // The datasets are inert once loaded, so the context value only needs to be
+  // stable across re-renders caused by switching sections.
+  const datasets = React.useMemo(() => ({ dr, ssr, prime }), [dr, ssr, prime]);
 
   return (
-    <div className="min-h-screen bg-paper">
-      <div className="mx-auto flex w-full max-w-[1560px]">
-        <Sidebar section={section} onSelect={setSection} />
+    <DataProvider value={datasets}>
+      <div className="min-h-screen bg-paper">
+        <div className="mx-auto flex w-full max-w-[1560px]">
+          <Sidebar section={section} onSelect={setSection} />
 
-        <div className="min-w-0 flex-1">
-          <MobileBar section={section} onSelect={setSection} />
+          <div className="min-w-0 flex-1">
+            <MobileBar section={section} onSelect={setSection} />
 
-          <main className="px-5 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
-            {section === "dr" && <DistributionRewards />}
-            {section === "ssr" && <SupplySideRevenues />}
-            {section === "prime" && <PrimePayments />}
-          </main>
-          <footer className="px-5 pb-10 sm:px-8 lg:hidden">
-            <SourceNote section={section} className="border-t border-line pt-5" />
-          </footer>
+            <main className="px-5 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
+              {section === "dr" && <DistributionRewards />}
+              {section === "ssr" && <SupplySideRevenues />}
+              {section === "prime" && <PrimePayments />}
+            </main>
+            <footer className="px-5 pb-10 sm:px-8 lg:hidden">
+              <SourceNote section={section} className="border-t border-line pt-5" />
+            </footer>
+          </div>
         </div>
       </div>
-    </div>
+    </DataProvider>
   );
 }
 

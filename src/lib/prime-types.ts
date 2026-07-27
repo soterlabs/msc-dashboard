@@ -2,7 +2,7 @@
  * Prime payments — one on-chain payment to a prime per row.
  *
  * Source of truth is data/prime/payments.csv; the shape here mirrors that table
- * (parsed by scripts/generate-data.mjs into prime-data.ts, against the column
+ * (parsed by scripts/generate-data.mjs into data/generated/prime.json, against the column
  * contract in schema/prime-payments.mjs).
  */
 
@@ -71,4 +71,12 @@ export interface PrimePayment {
   lineItem: string;
   /** Category of the receiving wallet (see PrimeWallet). */
   walletType: PrimeWallet;
+}
+
+/**
+ * Everything the Prime Payments view reads, as stored in
+ * data/generated/prime.json. Loaded on the server (src/lib/load.ts).
+ */
+export interface PrimeDataset {
+  payments: PrimePayment[];
 }

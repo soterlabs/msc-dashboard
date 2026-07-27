@@ -66,3 +66,23 @@ export interface L2Address {
   address: string;
   refCode: string;
 }
+
+/**
+ * Everything the DR views read, as stored in data/generated/dr.json.
+ *
+ * Loaded on the server (src/lib/load.ts) and handed to the client components
+ * as props, so the dataset never becomes part of the browser bundle.
+ */
+export interface DrDataset {
+  /** Months surfaced in the KPI + summary views. */
+  reportMonths: ReportMonth[];
+  /** Full history window available for per-token drill-downs. */
+  historyMonths: ReportMonth[];
+  /** Short labels for the report months, e.g. "Jan". */
+  monthLabels: Record<string, string>;
+  summaryGroups: SummaryGroup[];
+  refCodeRows: RefCodeRow[];
+  tokenRates: TokenRate[];
+  refCodeTokenSeries: RefCodeTokenSeries[];
+  l2Addresses: L2Address[];
+}

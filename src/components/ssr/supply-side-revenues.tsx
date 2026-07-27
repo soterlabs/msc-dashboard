@@ -3,7 +3,6 @@
 import * as React from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
-import { SSR_MONTH_LABELS, SSR_MONTHS } from "@/lib/ssr-data";
 import {
   grandSkyRevenue,
   monthSkyRevenues,
@@ -32,6 +31,7 @@ import {
 } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
+import { useSsr } from "../data-context";
 import {
   Bar,
   Card,
@@ -49,8 +49,9 @@ import {
 
 export function SupplySideRevenues() {
   const [openPartner, setOpenPartner] = React.useState<SsrPartner | null>(null);
-  const kpis = ssrKpis();
-  const partners = orderedPartners();
+  const ssr = useSsr();
+  const kpis = ssrKpis(ssr);
+  const partners = orderedPartners(ssr);
 
   const meta = openPartner ? partnerMeta(openPartner) : null;
 
@@ -72,7 +73,7 @@ export function SupplySideRevenues() {
                 <MetaItem label="window" value="Jan–May 2026" />
                 <MetaItem
                   label="sky rev"
-                  value={formatCompactUSD(partnerSkyRevenue(openPartner))}
+                  value={formatCompactUSD(partnerSkyRevenue(ssr, openPartner))}
                 />
               </>
             ) : (
@@ -106,10 +107,12 @@ function Summary({
   partners: SsrPartner[];
   onOpenPartner: (p: SsrPartner) => void;
 }) {
-  const kpis = ssrKpis();
-  const grand = grandSkyRevenue();
-  const totals = monthSkyRevenues();
-  const maxPartner = Math.max(1, ...partners.map((p) => partnerSkyRevenue(p)));
+  const ssr = useSsr();
+  const { months, monthLabels } = ssr;
+  const kpis = ssrKpis(ssr);
+  const grand = grandSkyRevenue(ssr);
+  const totals = monthSkyRevenues(ssr);
+  const maxPartner = Math.max(1, ...partners.map((p) => partnerSkyRevenue(ssr, p)));
 
   return (
     <div className="space-y-10">
@@ -120,9 +123,9 @@ function Summary({
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {partners.map((p) => {
             const meta = partnerMeta(p);
-            const sky = partnerSkyRevenue(p);
+            const sky = partnerSkyRevenue(ssr, p);
             const share = grand > 0 ? (sky / grand) * 100 : 0;
-            const latest = reportFor(p, kpis.latestMonth)?.headline.skyRevenue ?? 0;
+            const latest = reportFor(ssr, p, kpis.latestMonth)?.headline.skyRevenue ?? 0;
             return (
               <Card
                 key={p}
@@ -141,13 +144,13 @@ function Summary({
 
                 <div className="mt-6 space-y-2.5">
                   <StatRow
-                    label={`latest · ${SSR_MONTH_LABELS[kpis.latestMonth]}`}
+                    label={`latest · ${monthLabels[kpis.latestMonth]}`}
                     value={formatCompactUSD(latest)}
                   />
                   <StatRow label="share of total" value={`${share.toFixed(1)}%`} />
                   <StatRow
                     label="prime profit"
-                    value={formatCompactUSD(partnerPrimeProfit(p))}
+                    value={formatCompactUSD(partnerPrimeProfit(ssr, p))}
                   />
                 </div>
 
@@ -182,9 +185,9 @@ function Summary({
                 <tr className="bg-thead">
                   <Th className="w-[200px]">Prime</Th>
                   <Th className="w-[150px]">Distribution</Th>
-                  {SSR_MONTHS.map((m) => (
+                  {months.map((m) => (
                     <Th key={m} className="text-right">
-                      {SSR_MONTH_LABELS[m]}
+                      {monthLabels[m]}
                     </Th>
                   ))}
                   <Th className="text-right">Total</Th>
@@ -193,7 +196,7 @@ function Summary({
               </thead>
               <tbody>
                 {partners.map((p) => {
-                  const sky = partnerSkyRevenue(p);
+                  const sky = partnerSkyRevenue(ssr, p);
                   const share = grand > 0 ? (sky / grand) * 100 : 0;
                   return (
                     <tr
@@ -213,9 +216,9 @@ function Summary({
                       <Td>
                         <Bar value={sky} max={maxPartner} color={partnerColor(p)} />
                       </Td>
-                      {SSR_MONTHS.map((m) => (
+                      {months.map((m) => (
                         <Td key={m} className="text-right text-muted">
-                          {fmtCell(reportFor(p, m)?.headline.skyRevenue)}
+                          {fmtCell(reportFor(ssr, p, m)?.headline.skyRevenue)}
                         </Td>
                       ))}
                       <Td className="text-right font-semibold text-gold">
@@ -241,7 +244,7 @@ function Summary({
         <SectionTitle title="Monthly totals" />
         {/* auto-fit so the row stays full whatever the month count */}
         <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3">
-          {SSR_MONTHS.map((m) => (
+          {months.map((m) => (
             <Card key={m} className="px-4 py-3">
               <p className="font-sans text-[10.5px] tracking-[0.12em] text-muted uppercase">
                 {monthLong(m)}
@@ -264,18 +267,20 @@ function PartnerBreakdown({
   partner: SsrPartner;
   onBack: () => void;
 }) {
+  const ssr = useSsr();
+  const { months, monthLabels } = ssr;
   const [month, setMonth] = React.useState<string>(
-    SSR_MONTHS[SSR_MONTHS.length - 1]
+    months[months.length - 1]
   );
   const [onlyEarning, setOnlyEarning] = React.useState(true);
 
-  const report = reportFor(partner, month);
+  const report = reportFor(ssr, partner, month);
   const h = report?.headline;
-  const monthly = partnerMonthlyRevenues(partner);
+  const monthly = partnerMonthlyRevenues(ssr, partner);
   // Negative prime months contribute no stacked segment, only tooltip detail.
   const maxMonthly = Math.max(1, ...monthly.map((x) => x.sky + Math.max(0, x.prime)));
 
-  const venues = venuesFor(partner, month);
+  const venues = venuesFor(ssr, partner, month);
   const shownVenues = onlyEarning
     ? venues.filter((v) => v.revenue !== 0)
     : venues;
@@ -293,9 +298,9 @@ function PartnerBreakdown({
         <span className="mx-1 font-sans text-[10.5px] tracking-[0.14em] text-muted uppercase">
           Month
         </span>
-        {SSR_MONTHS.map((m) => (
+        {months.map((m) => (
           <FilterButton key={m} active={month === m} onClick={() => setMonth(m)}>
-            {SSR_MONTH_LABELS[m]}
+            {monthLabels[m]}
           </FilterButton>
         ))}
       </div>
@@ -401,7 +406,7 @@ function PartnerBreakdown({
                         : "text-muted group-hover/bar:text-ink"
                     )}
                   >
-                    {SSR_MONTH_LABELS[x.month]}
+                    {monthLabels[x.month]}
                   </span>
                 </button>
               );

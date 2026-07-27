@@ -4,7 +4,7 @@
  *
  * Both scripts import it: fetch-prime-payments.mjs uses the column order and
  * `dune` mappings to append newly-returned payments, generate-data.mjs uses
- * `parse` + the checks to build src/lib/prime-data.ts. Adding a column means
+ * `parse` + the checks to build data/generated/prime.json. Adding a column means
  * editing this file (and the matching field on PrimePayment in
  * src/lib/prime-types.ts, which is hand-written for its doc comments).
  *
@@ -71,7 +71,7 @@ const check = {
  *   required — blank is an error
  *   dune     — field on the Dune result row that seeds this column on a new row
  *   fromDune — how to render that Dune value as a cell (default: trimmed string)
- *   parse    — cell → value for prime-data.ts
+ *   parse    — cell → value for prime.json
  *   check    — validates a NON-BLANK value
  */
 export const COLUMNS = [
@@ -161,7 +161,7 @@ export const HEADER = COLUMNS.map((c) => c.header);
  * Field order of the generated PrimePayment objects — the CSV columns plus the
  * three fields resolved from data/prime/wallets.csv at generate time. Pinned
  * here so reordering or adding a CSV column cannot silently reshuffle
- * src/lib/prime-data.ts, and must stay in step with src/lib/prime-types.ts.
+ * data/generated/prime.json, and must stay in step with src/lib/prime-types.ts.
  */
 export const OUTPUT_FIELDS = [
   ...COLUMNS.map((c) => c.key).filter((k) => k !== "lineItem"),

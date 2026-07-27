@@ -1,5 +1,5 @@
 /**
- * Dune → data/prime/payments.csv → src/lib/prime-data.ts.
+ * Dune → data/prime/payments.csv → data/generated/prime.json.
  * Fetches the latest results of the Dune query and appends new payments.
  *
  * The column contract lives in schema/prime-payments.mjs; this script only
@@ -37,7 +37,7 @@ function cellsFromDune(d) {
   return row;
 }
 
-// prime-data.ts is regenerated from the CSV by generate-data.mjs, the single
+// prime.json is regenerated from the CSV by generate-data.mjs, the single
 // owner of the CSV → .ts step (incl. validation and derived fields like
 // walletType). Delegating here keeps this script from re-implementing — and
 // drifting from — that logic.
@@ -138,7 +138,7 @@ async function main() {
   }
 
   writeTs();
-  console.log(`[fetch-prime-payments] ${summary} (+ regenerated prime-data.ts)`);
+  console.log(`[fetch-prime-payments] ${summary} (+ regenerated prime.json)`);
   if (unexpectedOrphans.length) {
     console.warn(`[fetch-prime-payments] ${unexpectedOrphans.length} spell row(s) in the CSV were NOT returned by Dune (kept):`);
     for (const o of unexpectedOrphans) console.warn(`  - ${o["Cast date"]} ${o.Prime} (${o["Tx hash"]})`);
