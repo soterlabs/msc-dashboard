@@ -17,6 +17,7 @@ import { fileURLToPath } from "node:url";
 
 import { COLUMNS, HAND_FILLED, rowKey } from "../schema/prime-payments.mjs";
 import { PRIME_PAYMENTS_CSV, readCells, writeCells } from "./lib/prime-payments.mjs";
+import { readPrimeWallets } from "./lib/prime-wallets.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -70,6 +71,17 @@ async function main() {
     readCells().map((r) => [rowKey(r["Tx hash"], r["Log index"]), r]),
   );
 
+  // Wallet names and categories now live in data/prime/wallets.csv, so a new
+  // payment to or from an unregistered wallet has to be registered before it
+  // can be generated. Dune knows the names, so offer them for pasting rather
+  // than letting generate-data.mjs fail with only an address.
+  const wallets = readPrimeWallets();
+  const unregistered = new Map();
+  const noteWallet = (address, label) => {
+    const a = str(address).toLowerCase();
+    if (a && !wallets.has(a) && !unregistered.has(a)) unregistered.set(a, str(label));
+  };
+
   const seen = new Set();
   const merged = [];
   const added = [];
@@ -81,6 +93,10 @@ async function main() {
     if (prev) {
       merged.push(prev);
       continue;
+    }
+    if (row.Source === "transfer") {
+      noteWallet(row["Receiving wallet"], d.to_label);
+      noteWallet(row["From address"], d.from_label);
     }
     added.push(`${row["Cast date"]} ${row.Prime} ${row.USDS} (${row["Tx hash"]})`);
     merged.push(row);
@@ -102,13 +118,27 @@ async function main() {
   });
 
   writeCells(merged);
-  writeTs();
 
   const transferCount = orphans.length - unexpectedOrphans.length;
-  console.log(
-    `[fetch-prime-payments] ${merged.length} rows → ${path.relative(ROOT, PRIME_PAYMENTS_CSV)} (+ regenerated prime-data.ts)` +
-      (transferCount ? ` (incl. ${transferCount} hand-maintained transfer row(s))` : ""),
-  );
+  const summary = `${merged.length} rows → ${path.relative(ROOT, PRIME_PAYMENTS_CSV)}${
+    transferCount ? ` (incl. ${transferCount} hand-maintained transfer row(s))` : ""
+  }`;
+
+  // Regenerating would fail on an unregistered wallet. Stop with the lines to
+  // paste instead, so the CSV update is not paired with an opaque error.
+  if (unregistered.size) {
+    console.log(`[fetch-prime-payments] ${summary}`);
+    console.error(
+      `[fetch-prime-payments] ${unregistered.size} new wallet(s) — add to data/prime/wallets.csv, then run \`pnpm generate-data\`:`,
+    );
+    for (const [address, label] of unregistered) {
+      console.error(`  ${address},${label},<subproxy|foundation|msig|other>`);
+    }
+    process.exit(1);
+  }
+
+  writeTs();
+  console.log(`[fetch-prime-payments] ${summary} (+ regenerated prime-data.ts)`);
   if (unexpectedOrphans.length) {
     console.warn(`[fetch-prime-payments] ${unexpectedOrphans.length} spell row(s) in the CSV were NOT returned by Dune (kept):`);
     for (const o of unexpectedOrphans) console.warn(`  - ${o["Cast date"]} ${o.Prime} (${o["Tx hash"]})`);
