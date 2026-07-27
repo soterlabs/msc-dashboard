@@ -7,8 +7,11 @@
  * inside prime-payments.tsx, which left that component doing filtering,
  * sorting, search and option-building alongside its markup.
  */
-import { monthLong } from "../format";
-import type { PrimePayment, PrimeWallet } from "./types";
+// Extension is explicit so `node --test` can resolve this at runtime: type-only
+// imports are erased, but a value import needs the real filename. tsconfig sets
+// allowImportingTsExtensions for exactly this.
+import { monthLong } from "../format.ts";
+import type { PrimeKind, PrimePayment, PrimeWallet } from "./types";
 
 /** Columns the table can be ordered by. */
 export type SortKey =
@@ -33,14 +36,25 @@ export const isNumericKey = (key: SortKey): boolean => NUMERIC_KEYS.has(key);
 export const defaultSortDir = (key: SortKey): SortDir =>
   isNumericKey(key) || key === "castDate" ? "desc" : "asc";
 
+/** A wallet-category filter: a PrimeWallet, or "all" for no filtering. */
+export type WalletFilter = "all" | PrimeWallet;
+
 /** Wallet categories offered by the filter, "all" first. */
-export const WALLET_OPTIONS: string[] = [
+export const WALLET_OPTIONS: WalletFilter[] = [
   "all",
   "subproxy",
   "foundation",
   "msig",
   "other",
-] satisfies ("all" | PrimeWallet)[];
+];
+
+/**
+ * Narrows a dropdown's string back to WalletFilter. The dropdown only ever
+ * yields a member of WALLET_OPTIONS, so this is a check rather than a cast —
+ * which keeps the closed set closed all the way to the filter.
+ */
+export const isWalletFilter = (value: string): value is WalletFilter =>
+  (WALLET_OPTIONS as string[]).includes(value);
 
 /** Accrual months a row covers: "2025-11 + 2025-12" → ["2025-11", "2025-12"]. */
 export function accrualMonths(accrual: string): string[] {
@@ -96,10 +110,14 @@ export function compareBy(key: SortKey, dir: SortDir) {
 }
 
 export interface PaymentFilters {
-  /** "all", or a PrimeKind. */
-  kind: string;
+  /**
+   * `kind` and `wallet` are closed sets, so they stay closed here — a typo like
+   * "settlment cycle" should not compile into a filter that silently matches
+   * nothing. `prime` and `month` are open: they come from the data.
+   */
+  kind: "all" | PrimeKind;
+  wallet: WalletFilter;
   prime: string;
-  wallet: string;
   /** "all", or a single `YYYY-MM` accrual month. */
   month: string;
   query: string;

@@ -6,6 +6,7 @@ import { ArrowUpRight, ChevronDown, ChevronUp, ChevronsUpDown, Search } from "lu
 import {
   WALLET_OPTIONS,
   accrualLabel,
+  isWalletFilter,
   defaultSortDir,
   filterPayments,
   primeKpis,
@@ -14,6 +15,7 @@ import {
   sumUsds,
   type SortDir,
   type SortKey,
+  type WalletFilter,
 } from "@/lib/prime/domain";
 import type { PrimeKind } from "@/lib/prime/types";
 import { formatCompactTokens, formatTokens, monthLong, shortAddress } from "@/lib/format";
@@ -32,6 +34,14 @@ import {
 } from "../dr/primitives";
 
 type Filter = "all" | PrimeKind;
+/**
+ * Prime payments are all mainnet today, and PrimePayment carries no chain, so
+ * the explorer chain is an assumption of this view rather than data. Add a
+ * `chain` column to data/prime/payments.csv before any prime is paid elsewhere,
+ * and read it here instead.
+ */
+const PAYMENT_CHAIN = "ethereum";
+
 const FILTERS: { key: Filter; label: string }[] = [
   { key: "all", label: "All" },
   { key: "settlement cycle", label: "Settlement cycles" },
@@ -111,7 +121,7 @@ export function PrimePayments() {
   const kpis = React.useMemo(() => primeKpis(ROWS), [ROWS]);
   const [filter, setFilter] = React.useState<Filter>("all");
   const [prime, setPrime] = React.useState("all");
-  const [wallet, setWallet] = React.useState("all");
+  const [wallet, setWallet] = React.useState<WalletFilter>("all");
   const [month, setMonth] = React.useState("all");
   const [query, setQuery] = React.useState("");
   const [sortKey, setSortKey] = React.useState<SortKey>("castDate");
@@ -148,7 +158,7 @@ export function PrimePayments() {
             Prime payments
           </DisplayTitle>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 lg:justify-end">
-            <MetaItem label="payments" value={ROWS.length} />
+            <MetaItem label="payments" value={kpis.paymentCount} />
             <MetaItem label="settlement" value={formatCompactTokens(kpis.cycleTotal)} />
             <MetaItem label="other" value={formatCompactTokens(kpis.otherTotal)} />
             <MetaItem label="total USDS" value={formatCompactTokens(kpis.cycleTotal + kpis.otherTotal)} />
@@ -162,7 +172,7 @@ export function PrimePayments() {
           label="Total paid"
           value={formatCompactTokens(kpis.cycleTotal + kpis.otherTotal)}
           unit="USDS"
-          note={`${ROWS.length} payments to primes`}
+          note={`${kpis.paymentCount} payments to primes`}
         />
         <KpiCard
           label="Settlement cycles"
@@ -198,7 +208,7 @@ export function PrimePayments() {
           <Dropdown
             label="Wallet"
             value={wallet}
-            onChange={setWallet}
+            onChange={(v) => isWalletFilter(v) && setWallet(v)}
             options={WALLET_OPTIONS}
             render={(v) => (v === "all" ? "All" : v)}
           />
@@ -281,17 +291,29 @@ export function PrimePayments() {
                   )}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
-                  <ExplorerLink href={txUrl("ethereum", r.txHash)!}>
-                    {shortAddress(r.txHash)}
-                  </ExplorerLink>
+                  {txUrl(PAYMENT_CHAIN, r.txHash) ? (
+                    <ExplorerLink href={txUrl(PAYMENT_CHAIN, r.txHash)!}>
+                      {shortAddress(r.txHash)}
+                    </ExplorerLink>
+                  ) : (
+                    <span className="font-mono text-[11px] text-muted">
+                      {shortAddress(r.txHash)}
+                    </span>
+                  )}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
                   {r.spellAddress ? (
                     <>
                       <span className="text-muted">{r.spell} · </span>
-                      <ExplorerLink href={explorerUrl("ethereum", r.spellAddress)!}>
-                        {shortAddress(r.spellAddress)}
-                      </ExplorerLink>
+                      {explorerUrl(PAYMENT_CHAIN, r.spellAddress) ? (
+                        <ExplorerLink href={explorerUrl(PAYMENT_CHAIN, r.spellAddress)!}>
+                          {shortAddress(r.spellAddress)}
+                        </ExplorerLink>
+                      ) : (
+                        <span className="font-mono text-[11px] text-muted">
+                          {shortAddress(r.spellAddress)}
+                        </span>
+                      )}
                     </>
                   ) : (
                     <span className="text-faint">—</span>
@@ -318,7 +340,7 @@ export function PrimePayments() {
       </Card>
 
       <p className={cn("font-mono text-[11px] text-faint")}>
-        Showing {rows.length} of {ROWS.length} payments · {formatTokens(total)} USDS ·
+        Showing {rows.length} of {kpis.paymentCount} payments · {formatTokens(total)} USDS ·
         amounts are whole tokens
       </p>
     </div>
