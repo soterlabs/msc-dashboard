@@ -61,7 +61,7 @@ function syncRepo(name, sparsePaths) {
     return envDir;
   }
   // Always start from a fresh shallow clone: no stale pulls and no half-cloned
-  // cache to wedge on. Any git failure throws and fails the build.
+  // cache to wedge on. Any git failure throws and fails the refresh.
   const dir = path.join(CACHE, name);
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(CACHE, { recursive: true });
