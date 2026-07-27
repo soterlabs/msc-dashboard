@@ -89,12 +89,14 @@ wallet Dune returns that is not registered yet.
 
 ## Validation
 
-`pnpm generate-data` validates every row and **fails the build** on a malformed
+`pnpm refresh:prime` validates every row and **fails the refresh** on a malformed
 one — a bad date, a non-address, an unknown `Kind`/`Source`, a non-positive
 amount, a duplicate Tx hash + Log index, a row that contradicts its own Source
 (a `spell` row with a payer, a `transfer` row with a spell address), or a
-transfer touching a wallet that is not in `wallets.csv`. Serving silently-wrong
-payment numbers is worse than a loud failure.
+transfer touching a wallet that is not in `wallets.csv`. Nothing is written when
+it fails, so a bad row cannot reach `data/generated/prime.json` — and if one ever
+did, `src/lib/dataset-schema.ts` rejects it at load and fails the build. Serving
+silently-wrong payment numbers is worse than a loud failure.
 
 `Kind` and `Label` say overlapping things, so they are cross-checked: `MSC`
 implies `settlement cycle` and every other label implies `other`, per

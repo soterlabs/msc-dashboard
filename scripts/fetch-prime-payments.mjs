@@ -129,7 +129,7 @@ async function main() {
   if (unregistered.size) {
     console.log(`[fetch-prime-payments] ${summary}`);
     console.error(
-      `[fetch-prime-payments] ${unregistered.size} new wallet(s) — add to data/prime/wallets.csv, then run \`pnpm generate-data\`:`,
+      `[fetch-prime-payments] ${unregistered.size} new wallet(s) — add to data/prime/wallets.csv, then run \`pnpm refresh:prime\`:`,
     );
     for (const [address, label] of unregistered) {
       console.error(`  ${address},${label},<subproxy|foundation|msig|other>`);

@@ -1,6 +1,6 @@
 # Generated datasets
 
-**Machine-written. Do not edit by hand** — run `pnpm generate-data` instead.
+**Machine-written. Do not edit by hand** — run `pnpm refresh` instead.
 Anything you type here is overwritten on the next run.
 
 | File | Built from | Read by |
@@ -30,5 +30,5 @@ them in git means:
 
 They are pretty-printed for that last reason — one value per line diffs cleanly.
 
-`prime.json` can be rebuilt on its own with `node scripts/generate-data.mjs
---prime-only`, which needs no network and no access to the private repos.
+`prime.json` can be rebuilt on its own with `pnpm refresh:prime`, which needs
+no network and no access to the private repos.
