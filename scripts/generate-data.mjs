@@ -8,14 +8,21 @@
  * The app reads those files on the server (src/lib/load.ts); nothing here
  * writes TypeScript.
  *
+ * This is the REFRESH step, not part of the build. It reaches the network, so
+ * it runs when someone chooses to (`pnpm refresh`), and its output is committed
+ * — which makes a data change a reviewable diff instead of something that
+ * happens silently at deploy time. `pnpm build` only reads the committed files.
+ *
  * Sources are freshly shallow-cloned into .data-sources/ on every run (any
  * previous checkout is deleted first), or point SETTLE_DR_DUNE_DIR /
- * SETTLEMENT_REPORTS_DIR at existing checkouts. The script FAILS (nonzero
- * exit, so `pnpm build` fails) if a source repo can't be cloned or if the
- * source format changed in a way the parsers don't recognize — serving stale
- * or silently-wrong revenue numbers is worse than a loud build failure.
+ * SETTLEMENT_REPORTS_DIR at existing checkouts. The script FAILS (nonzero exit)
+ * if a source repo can't be cloned or if the source format changed in a way the
+ * parsers don't recognize — writing stale or silently-wrong revenue numbers is
+ * worse than a loud failure.
  *
- * Usage: node scripts/generate-data.mjs
+ * Usage:
+ *   pnpm refresh          all three datasets (needs network + repo access)
+ *   pnpm refresh:prime    prime.json only, from the local CSVs (offline)
  */
 import { execFileSync } from "node:child_process";
 import * as fs from "node:fs";

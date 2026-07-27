@@ -89,7 +89,7 @@ wallet Dune returns that is not registered yet.
 
 ## Validation
 
-`pnpm generate-data` validates every row and **fails the build** on a malformed
+`pnpm refresh:prime` validates every row and **fails the build** on a malformed
 one — a bad date, a non-address, an unknown `Kind`/`Source`, a non-positive
 amount, a duplicate Tx hash + Log index, a row that contradicts its own Source
 (a `spell` row with a payer, a `transfer` row with a spell address), or a

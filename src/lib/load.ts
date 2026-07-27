@@ -1,5 +1,5 @@
 /**
- * Reads the datasets written by scripts/generate-data.mjs.
+ * Reads the datasets written by scripts/generate-data.mjs (`pnpm refresh`).
  *
  * SERVER ONLY. These functions use node:fs, so importing them from a client
  * component fails the build — which is the point: the datasets are handed to
@@ -44,7 +44,7 @@ function readGenerated<T>(name: string, validate: (value: unknown) => T): T {
     raw = fs.readFileSync(file, "utf8");
   } catch {
     throw new Error(
-      `data/generated/${name}.json could not be read — run \`pnpm generate-data\` to rebuild the datasets ` +
+      `data/generated/${name}.json could not be read — run \`pnpm refresh\` to rebuild the datasets ` +
         `(looked in ${DIR}).`,
     );
   }
@@ -53,7 +53,7 @@ function readGenerated<T>(name: string, validate: (value: unknown) => T): T {
     parsed = JSON.parse(raw);
   } catch (e) {
     throw new Error(
-      `data/generated/${name}.json is not valid JSON (${(e as Error).message}) — rerun \`pnpm generate-data\`.`,
+      `data/generated/${name}.json is not valid JSON (${(e as Error).message}) — rerun \`pnpm refresh\`.`,
     );
   }
   return validate(parsed);

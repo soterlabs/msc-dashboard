@@ -8,9 +8,9 @@
   },
   "scripts": {
     "dev": "next dev",
+    "refresh": "node scripts/generate-data.mjs",
+    "refresh:prime": "node scripts/generate-data.mjs --prime-only",
     "fetch-prime-payments": "node scripts/fetch-prime-payments.mjs",
-    "generate-data": "node scripts/generate-data.mjs",
-    "prebuild": "node scripts/generate-data.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

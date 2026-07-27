@@ -122,7 +122,7 @@ function finish(file: string, typesFile: string, problems: Problems) {
       `(${problems.length} problem${problems.length > 1 ? "s" : ""}):\n` +
       `  - ${shown.join("\n  - ")}` +
       (more > 0 ? `\n  …and ${more} more` : "") +
-      `\n\nThe generator and src/lib/${typesFile}.ts have drifted — rerun \`pnpm generate-data\`.`,
+      `\n\nThe generator and src/lib/${typesFile}.ts have drifted — rerun \`pnpm refresh\`.`,
   );
 }
 
