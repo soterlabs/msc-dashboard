@@ -19,8 +19,8 @@ export type PrimeSource = "spell" | "transfer";
 /**
  * Category of the wallet that received the payment. `spell` mints always land
  * in a `subproxy`; transfers go to a prime `foundation`, a budget `msig`
- * (Safe), or `other` (e.g. a Safe owner EOA). Derived in generate-data.mjs
- * from `source` + the receiving wallet, not stored in the markdown.
+ * (Safe), or `other` (e.g. a Safe owner EOA). Not a column: resolved at
+ * generate time from `source` and data/prime/wallets.csv.
  */
 export type PrimeWallet = "subproxy" | "foundation" | "msig" | "other";
 
@@ -57,9 +57,15 @@ export interface PrimePayment {
   source: PrimeSource;
   /** Payer wallet; "" for `spell` rows, which are minted rather than sent. */
   fromAddress: string;
-  /** Human name for the payer, e.g. "Core Council Buffer"; "" for `spell`. */
+  /**
+   * Human name for the payer, e.g. "Core Council Buffer"; "" for `spell`.
+   * Not a column: looked up from data/prime/wallets.csv at generate time.
+   */
   fromLabel: string;
-  /** Human name for the receiving wallet, e.g. "Grove Reimbursements". */
+  /**
+   * Human name for the receiving wallet, e.g. "Grove Reimbursements". Looked up
+   * from data/prime/wallets.csv; "" for subproxies, which are left unnamed.
+   */
   toLabel: string;
   /** What the payment covers, per a source document; "" when not stated. */
   lineItem: string;

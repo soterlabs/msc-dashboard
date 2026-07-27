@@ -27,6 +27,22 @@ const CONSTANT = /^[A-Z0-9_]+$/;
 export const KINDS = ["settlement cycle", "other"];
 export const SOURCES = ["spell", "transfer"];
 
+/**
+ * Label → the Kind it implies. Kind is stored rather than derived so the CSV
+ * reads on its own, but the two must agree: a row whose Kind contradicts its
+ * Label is an error, and so is a Label that is not listed here. Adding a label
+ * is a deliberate one-line change, not a free-text cell.
+ */
+export const LABEL_KINDS = {
+  MSC: "settlement cycle",
+  Reimbursement: "other",
+  "Genesis Transfer": "other",
+  "DR True-up": "other",
+  "Genesis Capital": "other",
+  Transfer: "other",
+  Test: "other",
+};
+
 /** Number from a CSV cell, tolerating thousands separators. */
 function toNumber(v) {
   const n = Number(str(v).replaceAll(",", "").replaceAll("$", ""));
@@ -136,12 +152,24 @@ export const COLUMNS = [
     parse: str,
     check: check.address,
   },
-  { header: "From label", key: "fromLabel", dune: "from_label", parse: str },
-  { header: "To label", key: "toLabel", dune: "to_label", parse: str },
   { header: "Line item", key: "lineItem", parse: str },
 ];
 
 export const HEADER = COLUMNS.map((c) => c.header);
+
+/**
+ * Field order of the generated PrimePayment objects — the CSV columns plus the
+ * three fields resolved from data/prime/wallets.csv at generate time. Pinned
+ * here so reordering or adding a CSV column cannot silently reshuffle
+ * src/lib/prime-data.ts, and must stay in step with src/lib/prime-types.ts.
+ */
+export const OUTPUT_FIELDS = [
+  ...COLUMNS.map((c) => c.key).filter((k) => k !== "lineItem"),
+  "fromLabel",
+  "toLabel",
+  "lineItem",
+  "walletType",
+];
 
 /** Cells a fresh Dune row cannot fill, so a human has to. */
 export const HAND_FILLED = COLUMNS.filter((c) => !c.dune).map((c) => c.header);
@@ -166,6 +194,19 @@ export function parseRow(cells) {
 function crossFieldErrors(row) {
   const out = [];
   const blank = (k) => row[k] === "";
+
+  // Kind restates Label, so the two must not disagree.
+  if (row.label !== "") {
+    const implied = LABEL_KINDS[row.label];
+    if (implied === undefined) {
+      out.push(
+        `unknown Label "${row.label}" — add it to LABEL_KINDS in schema/prime-payments.mjs with the Kind it implies`,
+      );
+    } else if (row.kind !== "" && row.kind !== implied) {
+      out.push(`Label "${row.label}" implies Kind "${implied}", but the row says "${row.kind}"`);
+    }
+  }
+
   if (row.source === "spell") {
     if (!blank("fromAddress")) out.push("spell rows are minted, so From address must be blank");
     if (blank("spellAddress")) out.push("spell rows need a Spell address");
