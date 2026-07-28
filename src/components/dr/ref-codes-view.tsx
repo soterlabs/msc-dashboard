@@ -10,6 +10,7 @@ import {
   tokenColor,
   visibleRefCodeRows,
 } from "@/lib/dr/domain";
+import { downloadCsv, toCsv } from "@/lib/csv";
 import { formatUSD, formatUSD2, monthLong, monthShort } from "@/lib/format";
 import type { RefCodeRow } from "@/lib/dr/types";
 import { cn } from "@/lib/utils";
@@ -449,32 +450,18 @@ function fmtCell(v: number | null | undefined) {
 }
 
 function exportCsv(rows: RefCodeRow[], reportMonths: string[]) {
-  const header = [
-    "ref_code",
-    "group",
-    ...reportMonths,
-    "total",
-    "tokens",
-    "notes",
-  ];
-  const body = rows.map((r) =>
-    [
-      r.refCode,
-      r.group,
-      ...reportMonths.map((m) => r.monthly[m] ?? ""),
-      r.total ?? "",
-      r.tokens.join(" "),
-      `"${r.notes.replace(/"/g, '""')}"`,
-    ].join(",")
-  );
-  const csv = [header.join(","), ...body].join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "soter_by_ref_code.csv";
-  a.click();
-  URL.revokeObjectURL(url);
+  // Was hand-rolled here, quoting only `notes` — a comma anywhere else shifted
+  // every column after it. Now goes through the shared RFC 4180 builder.
+  const header = ["ref_code", "group", ...reportMonths, "total", "tokens", "notes"];
+  const body = rows.map((r) => [
+    r.refCode,
+    r.group,
+    ...reportMonths.map((m) => r.monthly[m] ?? ""),
+    r.total ?? "",
+    r.tokens.join(" "),
+    r.notes,
+  ]);
+  downloadCsv("soter_by_ref_code.csv", toCsv(header, body));
 }
 
 function Th({

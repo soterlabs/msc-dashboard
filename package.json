@@ -15,7 +15,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test --experimental-strip-types \"src/**/*.test.ts\" \"scripts/**/*.test.mjs\""
+    "test": "node --test --experimental-strip-types \"src/**/*.test.ts\" \"scripts/**/*.test.mjs\" \"schema/**/*.test.mjs\""
   },
   "dependencies": {
     "clsx": "^2.1.1",

@@ -40,14 +40,15 @@ import {
   EXECUTION_COLUMNS,
   TRANSFERS_FILE,
   TRANSFER_COLUMNS,
-  primeDirection,
+  movement,
+  tagTransfer,
 } from "../schema/core-spells.mjs";
+import { readCells } from "./lib/prime-payments.mjs";
 import { toCsv } from "./lib/csv.mjs";
 import {
   ZERO_ADDRESS,
   createTokenInfo,
   formatUnits,
-  transferKind,
   transfersFromReceipt,
 } from "./lib/erc20.mjs";
 import { LOG_CHUNK, blockAtOrAfter, createRpc } from "./lib/rpc.mjs";
@@ -133,6 +134,14 @@ async function main() {
   const directory = await loadDirectory({ offline: !withNames });
   const archive = withNames ? await fetchArchiveSpells(from) : new Map();
   const tokenInfo = createTokenInfo(rpc);
+  // Payments already recorded by hand, keyed as the spell emitted them. A match
+  // means this transfer is covered; the absence of one is the interesting case.
+  const recorded = new Map(
+    readCells().map((r) => [
+      `${r["Tx hash"].toLowerCase()}|${r["Receiving wallet"].toLowerCase()}`,
+      r,
+    ]),
+  );
   if (archive.size) console.log(`[fetch-core-spells] ${archive.size} archived spell(s) to match against`);
 
   // Keep only the transactions that actually cast a spell.
@@ -181,10 +190,17 @@ async function main() {
       const { symbol, decimals } = await tokenInfo(t.token);
       const fromEntry = directory.lookup(t.from);
       const toEntry = directory.lookup(t.to);
-      const prime = toEntry.prime || fromEntry.prime || "";
-      const direction = primeDirection({ fromPrime: fromEntry.prime, toPrime: toEntry.prime });
+      const amount = formatUnits(t.value, decimals);
+      const { tag, coverage } = tagTransfer({
+        transfer: { ...t, amount },
+        fromPrime: fromEntry.prime,
+        toPrime: toEntry.prime,
+        fromNamed: Boolean(fromEntry.name),
+        toNamed: Boolean(toEntry.name),
+        payment: recorded.get(`${cast.hash.toLowerCase()}|${t.to}`),
+      });
 
-      if (direction === "inflow" && symbol === "USDS") {
+      if (symbol === "USDS" && (tag === "msc-payment" || tag === "capital-transfer")) {
         primesPaid.add(toEntry.prime);
         usdsToPrimes += t.value;
       }
@@ -205,13 +221,16 @@ async function main() {
         "Spell address": target,
         Token: t.token,
         Symbol: symbol,
-        Amount: formatUnits(t.value, decimals),
-        Kind: direction || transferKind(t),
+        Amount: amount,
+        Movement: movement(t),
+        Tag: tag,
+        Coverage: coverage,
         From: t.from,
         "From name": fromEntry.name,
+        "From prime": fromEntry.prime,
         To: t.to,
         "To name": toEntry.name,
-        Prime: prime,
+        "To prime": toEntry.prime,
       });
     }
 
@@ -259,11 +278,17 @@ async function main() {
   fs.writeFileSync(path.join(OUT_DIR, EXECUTIONS_FILE), toCsv(EXECUTION_COLUMNS, executionRows));
   fs.writeFileSync(path.join(OUT_DIR, TRANSFERS_FILE), toCsv(TRANSFER_COLUMNS, transferRows));
 
-  const withPrime = transferRows.filter((r) => r.Prime).length;
   console.log(
     `[fetch-core-spells] wrote data/spells/${EXECUTIONS_FILE} (${executionRows.length} spells) ` +
-      `and data/spells/${TRANSFERS_FILE} (${transferRows.length} transfers, ${withPrime} attributed to a prime)`,
+      `and data/spells/${TRANSFERS_FILE} (${transferRows.length} transfers)`,
   );
+  const byTag = new Map();
+  for (const r of transferRows) byTag.set(r.Tag, (byTag.get(r.Tag) ?? 0) + 1);
+  console.log("[fetch-core-spells] by tag:");
+  for (const [tag, n] of [...byTag].sort((a, b) => b[1] - a[1])) {
+    const covered = transferRows.filter((r) => r.Tag === tag && r.Coverage === "payments.csv").length;
+    console.log(`  ${tag.padEnd(18)} ${String(n).padStart(4)}  (${covered} already in payments.csv)`);
+  }
   const unnamedTotal = [...unnamed.entries()].sort((a, b) => b[1] - a[1]);
   if (unnamedTotal.length) {
     console.warn(

@@ -55,28 +55,68 @@ An address is tied to a prime through three layers, most authoritative first:
 
 1. `src/test/addresses_mainnet.sol` in the spells repo — the canonical name for
    every core contract, including one `<PRIME>_SUBPROXY` per prime. This is what
-   makes attribution possible at all.
-2. `../prime/wallets.csv` — our own names for payer and non-subproxy wallets.
+   makes attribution possible at all. The roster it defines: AMATSU, CCEA1,
+   GROVE, INTERVAL, KEEL, OBEX, OZONE, PATTERN, PRYSM, SKYBASE, SPARK.
+2. `../prime/wallets.csv` — our own names, and the `Prime` each wallet belongs
+   to. Governance and programme wallets are deliberately left unattributed: the
+   Core Council buffer pays primes but is not one.
 3. `../prime/payments.csv` — the prime each receiving wallet has been paid for.
 
-`Kind` says what the transfer means for a prime:
+## Tagging
 
-| Kind | Meaning |
+Two columns carry the classification, kept apart on purpose:
+
+- **`Movement`** — the mechanical fact: `mint`, `burn` or `transfer`.
+- **`Tag`** — what it means. Where `../prime/payments.csv` already records the
+  transfer, its hand-curated `Label` decides the tag, because a human did.
+  Otherwise the tag is derived from the parties, token and amount — never from
+  guessed intent.
+- **`Coverage`** — `payments.csv` if already recorded, `new` if not. **This is
+  the column to sort by.** Every `new` row is one nobody has classified.
+
+| Tag | Meaning |
 | --- | --- |
-| `inflow` | a prime wallet received the tokens |
-| `outflow` | a prime wallet sent them |
-| `mint` / `burn` / `transfer` | no prime on either side |
+| `msc-payment` | settlement-cycle payment to a prime |
+| `capital-transfer` | capital minted into a prime, not a settlement cycle |
+| `prime-mint` | minted into a prime, **not yet classified** in payments.csv |
+| `cross-prime` | between two different primes — e.g. Spark → Grove for Ethena |
+| `intra-prime` | between wallets of one prime |
+| `prime-inflow` / `prime-outflow` | a prime received from / sent to a non-prime |
+| `prime-test` | dust to or from a prime: the 1-unit address checks |
+| `plumbing` | no prime, both sides known Sky contracts |
+| `protocol-outflow` / `protocol-inflow` | value crossed the protocol boundary |
+| `unclassified` | neither side recognised |
 
-Most rows are the last case, and that is expected: a USDS payment travels
-through a DAI mint → `DAI_USDS` → burn, so the plumbing outnumbers the payments
-roughly ten to one.
+`prime-mint` deliberately does **not** guess between `msc-payment` and
+`capital-transfer`. The transfer says only that USDS was minted into a prime;
+which accrual it settles is the judgement payments.csv records. A row tagged
+`prime-mint` is a row somebody should classify.
+
+Current distribution over the 633 transfers:
+
+```
+plumbing          433      prime-outflow       8
+protocol-outflow  123      prime-test          6
+msc-payment        29 ✓    prime-mint          6  ← need classifying
+unclassified       17      prime-inflow        2
+capital-transfer    7 ✓    cross-prime         1
+                           protocol-inflow     1
+```
+
+`✓` = every row already in payments.csv. Plumbing dominating is expected: a
+USDS payment travels through a DAI mint → `DAI_USDS` → burn.
 
 ## Known gaps
 
+- **6 `prime-mint` rows are unclassified**: the five 2026-07-20 mints (an MSC
+  cycle that payments.csv has not caught up with) and a 10,000,000 USDS mint to
+  SKYBASE_SUBPROXY on 2026-02-02.
 - **37 addresses have no name.** Third parties a spell paid that appear in
-  neither reference list. They are reported by frequency at the end of a run, and
-  an unnamed address still gets its full row — nothing is dropped for being
-  unrecognised.
+  neither reference list. Six of them are named in the ecosystem address book —
+  BLUE-AD, Cloaky-AD, Bonapublica-AD, Aave-IB, the Aligned Delegate Buffer
+  Multisig and Integration Boost — but none is prime-related, so none is used
+  here. They are reported by frequency at the end of a run, and an unnamed
+  address still gets its full row.
 - **`2025-08-07-DssSpell` is archived but was never cast** in this window. Worth
   a look: either it was superseded before execution, or it executed by a route
   the `cast()` filter does not see.

@@ -8,7 +8,8 @@
  *      canonical name for every core contract, including one `<PRIME>_SUBPROXY`
  *      per prime — which is what makes prime attribution possible at all.
  *   2. data/prime/wallets.csv — our own names for the payer and non-subproxy
- *      recipient wallets, which the Sky list does not cover.
+ *      recipient wallets, which the Sky list does not cover, plus the prime each
+ *      belongs to where it belongs to one.
  *   3. data/prime/payments.csv — the prime each receiving wallet has been paid
  *      on behalf of, for wallets whose name does not encode it.
  *
@@ -73,12 +74,13 @@ export async function loadDirectory({ offline = false } = {}) {
     put(address, { name, source: "sky", ...(prime ? { prime } : {}) });
   }
 
-  // 2. Our wallet names, where Sky has none.
+  // 2. Our wallet names and prime attribution, where Sky has none.
   for (const [address, wallet] of readPrimeWallets()) {
     const existing = entries.get(address);
     put(address, {
       name: existing?.name || wallet.label,
       source: existing?.name ? existing.source : "wallets.csv",
+      ...(wallet.prime ? { prime: wallet.prime } : {}),
     });
   }
 

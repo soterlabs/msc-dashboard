@@ -142,6 +142,52 @@ export function filterPayments(
     .sort(compareBy(sortKey, sortDir));
 }
 
+/** Column order for a download, matching the on-screen table left to right. */
+export const CSV_COLUMNS = [
+  "Cast date",
+  "Prime",
+  "USDS",
+  "Kind",
+  "Settles accrual",
+  "Label",
+  "Wallet",
+  "Receiving wallet",
+  "To label",
+  "From address",
+  "From label",
+  "Tx hash",
+  "Log index",
+  "Spell",
+  "Spell address",
+  "Subproxy constant",
+  "Line item",
+  "Reference",
+  "Source",
+];
+
+/** One payment as a CSV row, in CSV_COLUMNS order. */
+export const toCsvRow = (p: PrimePayment): (string | number)[] => [
+  p.castDate,
+  p.prime,
+  p.usds,
+  p.kind,
+  p.settlesAccrual,
+  p.label,
+  p.walletType,
+  p.receivingWallet,
+  p.toLabel,
+  p.fromAddress,
+  p.fromLabel,
+  p.txHash,
+  p.logIndex,
+  p.spell,
+  p.spellAddress,
+  p.subproxyConstant,
+  p.lineItem,
+  p.reference,
+  p.source,
+];
+
 export const sumUsds = (payments: PrimePayment[]): number =>
   payments.reduce((sum, r) => sum + r.usds, 0);
 
