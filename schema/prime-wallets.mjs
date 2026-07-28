@@ -26,6 +26,14 @@ export const COLUMNS = [
   // Only meaningful for wallets that RECEIVE a transfer; payer-only wallets
   // leave it blank rather than assert a category we have not verified.
   { header: "Type", key: "type" },
+  /**
+   * The prime this wallet belongs to, where it belongs to one. Blank for
+   * governance and programme wallets — the Core Council buffer pays primes but
+   * is not one, and attributing it to whichever prime it last paid would be
+   * wrong. Primes are named as in the `<PRIME>_SUBPROXY` entries of
+   * sky-ecosystem/spells-mainnet, plus OSERO which has no subproxy.
+   */
+  { header: "Prime", key: "prime" },
 ];
 
 export const HEADER = COLUMNS.map((c) => c.header);
@@ -35,6 +43,7 @@ export function parseRow(cells) {
     address: str(cells.Address),
     label: str(cells.Label),
     type: str(cells.Type),
+    prime: str(cells.Prime),
   };
 }
 
@@ -56,6 +65,9 @@ export function validate(rows, { file = "wallets.csv" } = {}) {
       errors.push(
         `${at}: Type not one of ${WALLET_TYPES.map((t) => `"${t}"`).join(" / ")}: "${row.type}"`,
       );
+    }
+    if (row.prime !== "" && !/^[A-Z0-9]+$/.test(row.prime)) {
+      errors.push(`${at}: Prime should be an UPPERCASE prime name, got "${row.prime}"`);
     }
     const key = row.address.toLowerCase();
     if (byAddress.has(key)) errors.push(`${at}: duplicate Address`);

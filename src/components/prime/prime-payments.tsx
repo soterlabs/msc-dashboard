@@ -1,12 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { ArrowUpRight, ChevronDown, ChevronUp, ChevronsUpDown, Search } from "lucide-react";
+import { ArrowUpRight, ChevronDown, ChevronUp, ChevronsUpDown, Download, Search } from "lucide-react";
 
+import { downloadCsv, filteredFilename, toCsv } from "@/lib/csv";
 import {
+  CSV_COLUMNS,
   WALLET_OPTIONS,
   accrualLabel,
   isWalletFilter,
+  toCsvRow,
   defaultSortDir,
   filterPayments,
   primeKpis,
@@ -140,6 +143,17 @@ export function PrimePayments() {
 
   const total = sumUsds(rows);
 
+  /**
+   * Downloads exactly what is on screen — the filters and sort applied, every
+   * column included. A reviewer checking whether a payment is covered needs the
+   * same rows they are looking at, not the whole table.
+   */
+  const download = () =>
+    downloadCsv(
+      filteredFilename("prime_payments", { kind: filter, prime, wallet, month, query }),
+      toCsv(CSV_COLUMNS, rows.map(toCsvRow)),
+    );
+
   const onSort = (key: SortKey) => {
     if (key === sortKey) {
       setSortDir((d) => (d === "asc" ? "desc" : "asc"));
@@ -162,6 +176,14 @@ export function PrimePayments() {
             <MetaItem label="settlement" value={formatCompactTokens(kpis.cycleTotal)} />
             <MetaItem label="other" value={formatCompactTokens(kpis.otherTotal)} />
             <MetaItem label="total USDS" value={formatCompactTokens(kpis.cycleTotal + kpis.otherTotal)} />
+            <button
+              type="button"
+              onClick={download}
+              title={`Download the ${rows.length} row(s) currently shown, as CSV`}
+              className="neu-btn neu-focus inline-flex h-9 items-center gap-1.5 rounded-full px-3.5 font-sans text-[11px] font-medium tracking-wide text-muted hover:text-ink"
+            >
+              <Download className="size-3.5" /> Download CSV
+            </button>
           </div>
         </div>
       </header>

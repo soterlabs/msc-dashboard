@@ -11,10 +11,11 @@
     "refresh": "node scripts/generate-data.mjs",
     "refresh:prime": "node scripts/generate-data.mjs --prime-only",
     "fetch-prime-payments": "node scripts/fetch-prime-payments.mjs",
+    "fetch-core-spells": "node scripts/fetch-core-spells.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test --experimental-strip-types \"src/**/*.test.ts\""
+    "test": "node --test --experimental-strip-types \"src/**/*.test.ts\" \"scripts/**/*.test.mjs\" \"schema/**/*.test.mjs\""
   },
   "dependencies": {
     "clsx": "^2.1.1",
