@@ -58,6 +58,15 @@ test("filter values unsafe in a filename are made safe", () => {
   assert.equal(filteredFilename("x", { a: "a/b:c" }), "x_a-b-c.csv");
 });
 
+test("a search term reaches the filename, since it also filters the rows", () => {
+  // Without this, two downloads taken under different searches are
+  // indistinguishable on disk — and telling them apart is the point.
+  assert.equal(
+    filteredFilename("prime_payments", { prime: "GROVE", query: "reimbursement" }),
+    "prime_payments_GROVE_reimbursement.csv",
+  );
+});
+
 test("empty filter values are ignored", () => {
   assert.equal(filteredFilename("x", { a: "", b: "keep" }), "x_keep.csv");
 });

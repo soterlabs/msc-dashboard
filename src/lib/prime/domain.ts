@@ -142,51 +142,41 @@ export function filterPayments(
     .sort(compareBy(sortKey, sortDir));
 }
 
-/** Column order for a download, matching the on-screen table left to right. */
-export const CSV_COLUMNS = [
-  "Cast date",
-  "Prime",
-  "USDS",
-  "Kind",
-  "Settles accrual",
-  "Label",
-  "Wallet",
-  "Receiving wallet",
-  "To label",
-  "From address",
-  "From label",
-  "Tx hash",
-  "Log index",
-  "Spell",
-  "Spell address",
-  "Subproxy constant",
-  "Line item",
-  "Reference",
-  "Source",
+/**
+ * The download's columns, header and value together.
+ *
+ * One list rather than two parallel ones: a header array beside a value array is
+ * coupled by nothing but discipline, and an insert into one and not the other
+ * silently mislabels every column after it — in a file whose whole purpose is
+ * for a reviewer to trust the numbers.
+ */
+const CSV_FIELDS: { header: string; value: (p: PrimePayment) => string | number }[] = [
+  { header: "Cast date", value: (p) => p.castDate },
+  { header: "Prime", value: (p) => p.prime },
+  { header: "USDS", value: (p) => p.usds },
+  { header: "Kind", value: (p) => p.kind },
+  { header: "Settles accrual", value: (p) => p.settlesAccrual },
+  { header: "Label", value: (p) => p.label },
+  { header: "Wallet", value: (p) => p.walletType },
+  { header: "Receiving wallet", value: (p) => p.receivingWallet },
+  { header: "To label", value: (p) => p.toLabel },
+  { header: "From address", value: (p) => p.fromAddress },
+  { header: "From label", value: (p) => p.fromLabel },
+  { header: "Tx hash", value: (p) => p.txHash },
+  { header: "Log index", value: (p) => p.logIndex },
+  { header: "Spell", value: (p) => p.spell },
+  { header: "Spell address", value: (p) => p.spellAddress },
+  { header: "Subproxy constant", value: (p) => p.subproxyConstant },
+  { header: "Line item", value: (p) => p.lineItem },
+  { header: "Reference", value: (p) => p.reference },
+  { header: "Source", value: (p) => p.source },
 ];
 
-/** One payment as a CSV row, in CSV_COLUMNS order. */
-export const toCsvRow = (p: PrimePayment): (string | number)[] => [
-  p.castDate,
-  p.prime,
-  p.usds,
-  p.kind,
-  p.settlesAccrual,
-  p.label,
-  p.walletType,
-  p.receivingWallet,
-  p.toLabel,
-  p.fromAddress,
-  p.fromLabel,
-  p.txHash,
-  p.logIndex,
-  p.spell,
-  p.spellAddress,
-  p.subproxyConstant,
-  p.lineItem,
-  p.reference,
-  p.source,
-];
+export const CSV_COLUMNS: string[] = CSV_FIELDS.map((f) => f.header);
+
+/** One payment as a CSV row, in CSV_COLUMNS order — by construction. */
+export const toCsvRow = (p: PrimePayment): (string | number)[] =>
+  CSV_FIELDS.map((f) => f.value(p));
 
 export const sumUsds = (payments: PrimePayment[]): number =>
   payments.reduce((sum, r) => sum + r.usds, 0);

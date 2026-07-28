@@ -150,7 +150,7 @@ export function PrimePayments() {
    */
   const download = () =>
     downloadCsv(
-      filteredFilename("prime_payments", { kind: filter, prime, wallet, month }),
+      filteredFilename("prime_payments", { kind: filter, prime, wallet, month, query }),
       toCsv(CSV_COLUMNS, rows.map(toCsvRow)),
     );
 

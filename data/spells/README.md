@@ -18,7 +18,7 @@ Nothing in the app reads these yet.
 
 ```sh
 pnpm fetch-core-spells                    # since 2025-07-01
-pnpm fetch-core-spells --from 2026-01-01
+pnpm fetch-core-spells --from 2026-01-01 --to 2026-06-30   # --to is inclusive
 ETH_RPC_URL=https://… pnpm fetch-core-spells
 ```
 
@@ -82,10 +82,16 @@ Two columns carry the classification, kept apart on purpose:
 | `cross-prime` | between two different primes — e.g. Spark → Grove for Ethena |
 | `intra-prime` | between wallets of one prime |
 | `prime-inflow` / `prime-outflow` | a prime received from / sent to a non-prime |
-| `prime-test` | dust to or from a prime: the 1-unit address checks |
+| `prime-dust` | a sub-unit or 1-unit movement to or from a prime |
 | `plumbing` | no prime, both sides known Sky contracts |
 | `protocol-outflow` / `protocol-inflow` | value crossed the protocol boundary |
 | `unclassified` | neither side recognised |
+
+`prime-dust` and `prime-mint` both stop at what is known rather than naming a
+motive the data cannot support. Two of the six dust rows are spDAI/spUSDS residue
+from Spark's vault-share accounting, not the 1 USDS address checks — so the tag
+says "dust" and leaves why to a reader. Note the threshold counts **units, not
+value**: 1 WETH would qualify.
 
 `prime-mint` deliberately does **not** guess between `msc-payment` and
 `capital-transfer`. The transfer says only that USDS was minted into a prime;
@@ -95,10 +101,11 @@ which accrual it settles is the judgement payments.csv records. A row tagged
 Current distribution over the 633 transfers:
 
 ```
-plumbing          433      prime-outflow       8
-protocol-outflow  123      prime-test          6
-msc-payment        29 ✓    prime-mint          6  ← need classifying
-unclassified       17      prime-inflow        2
+plumbing          433
+protocol-outflow  123
+msc-payment        29 ✓    prime-dust          6
+unclassified       17      prime-mint          6  ← need classifying
+prime-outflow       8      prime-inflow        2
 capital-transfer    7 ✓    cross-prime         1
                            protocol-inflow     1
 ```

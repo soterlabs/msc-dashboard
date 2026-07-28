@@ -75,8 +75,18 @@ export const TAGS = {
   "prime-outflow": "out of a prime to a non-prime address",
   /** A prime received tokens from somewhere that is not a prime, and not by minting. */
   "prime-inflow": "into a prime from a non-prime address",
-  /** A dust amount to or from a prime: the 1-unit sends used to verify an address. */
-  "prime-test": "dust to or from a prime, an address check",
+  /**
+   * A sub-unit or 1-unit movement to or from a prime.
+   *
+   * Usually one of the 1 USDS address-verification sends, but not always —
+   * spDAI/spUSDS residue from Spark's vault-share accounting lands here too. The
+   * tag says the amount is dust and stops there, because why it is dust is not
+   * something the amount can establish.
+   *
+   * The threshold counts UNITS, not value: 1 WETH would qualify. That is fine
+   * for the stablecoins this mostly sees, and worth remembering if it is not.
+   */
+  "prime-dust": "a dust amount to or from a prime",
   /** No prime involved, and both sides are known Sky contracts: the DAI↔USDS and PSM machinery. */
   plumbing: "protocol plumbing, no prime involved",
   /** A known Sky contract paid an unrecognised address — a contributor or delegate, typically. */
@@ -95,7 +105,7 @@ const LABEL_TAGS = {
   "DR True-up": "capital-transfer",
   Reimbursement: "prime-inflow",
   Transfer: "capital-transfer",
-  Test: "prime-test",
+  Test: "prime-dust",
 };
 
 /** At or below this many whole units, a transfer to a prime is an address check. */
@@ -128,13 +138,13 @@ export function tagTransfer({ transfer, fromPrime, toPrime, fromNamed, toNamed, 
   const tag = (() => {
     if (fromPrime && toPrime) return fromPrime === toPrime ? "intra-prime" : "cross-prime";
     if (toPrime) {
-      if (Number.isFinite(amount) && amount <= TEST_MAX) return "prime-test";
+      if (Number.isFinite(amount) && amount <= TEST_MAX) return "prime-dust";
       // A mint into a prime is a payment of some kind, but which kind is the
       // accrual question payments.csv answers — so say only what is known.
       return minted ? "prime-mint" : "prime-inflow";
     }
     if (fromPrime) {
-      if (Number.isFinite(amount) && amount <= TEST_MAX) return "prime-test";
+      if (Number.isFinite(amount) && amount <= TEST_MAX) return "prime-dust";
       return "prime-outflow";
     }
     // No prime. Named on both sides (allowing for a mint or burn) is machinery;

@@ -60,7 +60,7 @@ async function fetchSkyNames() {
  * Builds the directory. Entries are `{ name, prime, source }`, where `prime` is
  * set only when the address is attributable to one.
  */
-export async function loadDirectory({ offline = false } = {}) {
+export async function loadDirectory({ offline = false, payments = null } = {}) {
   const entries = new Map();
   const put = (address, fields) => {
     const key = address.toLowerCase();
@@ -74,19 +74,27 @@ export async function loadDirectory({ offline = false } = {}) {
     put(address, { name, source: "sky", ...(prime ? { prime } : {}) });
   }
 
-  // 2. Our wallet names and prime attribution, where Sky has none.
+  // 2. Our wallet names and prime attribution, where Sky has none. A canonical
+  // <PRIME>_SUBPROXY name outranks this file, so an attribution that disagrees
+  // with layer 1 is reported rather than silently applied.
+  const conflicts = [];
   for (const [address, wallet] of readPrimeWallets()) {
     const existing = entries.get(address);
+    const clashes = existing?.prime && wallet.prime && existing.prime !== wallet.prime;
+    if (clashes) {
+      conflicts.push(
+        `${address}: wallets.csv says ${wallet.prime}, ${existing.name} says ${existing.prime}`,
+      );
+    }
     put(address, {
       name: existing?.name || wallet.label,
       source: existing?.name ? existing.source : "wallets.csv",
-      ...(wallet.prime ? { prime: wallet.prime } : {}),
+      ...(wallet.prime && !clashes ? { prime: wallet.prime } : {}),
     });
   }
 
   // 3. Prime attribution from payments we have already recorded.
-  const conflicts = [];
-  for (const row of readCells()) {
+  for (const row of payments ?? readCells()) {
     const address = row["Receiving wallet"]?.toLowerCase();
     const prime = row.Prime;
     if (!address || !prime) continue;

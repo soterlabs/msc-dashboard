@@ -46,7 +46,7 @@ test("a recorded payment takes its tag from payments.csv, not from the shape", (
     ["Genesis Transfer", "capital-transfer"],
     ["Genesis Capital", "capital-transfer"],
     ["DR True-up", "capital-transfer"],
-    ["Test", "prime-test"],
+    ["Test", "prime-dust"],
     ["Reimbursement", "prime-inflow"],
   ]) {
     const r = tag({ payment: { Label: label }, toPrime: "SPARK" });
@@ -110,10 +110,10 @@ test("a prime sending out is an outflow", () => {
 
 /* ------------------------------------------------------------- dust */
 
-test("dust to or from a prime is a test, beating inflow and outflow", () => {
+test("dust to or from a prime is tagged dust, beating inflow and outflow", () => {
   for (const amount of ["1", "0.0001", "0"]) {
-    assert.equal(tag({ toPrime: "SPARK", transfer: { amount } }).tag, "prime-test", `to, ${amount}`);
-    assert.equal(tag({ fromPrime: "SPARK", transfer: { amount } }).tag, "prime-test", `from, ${amount}`);
+    assert.equal(tag({ toPrime: "SPARK", transfer: { amount } }).tag, "prime-dust", `to, ${amount}`);
+    assert.equal(tag({ fromPrime: "SPARK", transfer: { amount } }).tag, "prime-dust", `from, ${amount}`);
   }
 });
 
@@ -121,13 +121,13 @@ test("just above dust is a real movement", () => {
   assert.equal(tag({ toPrime: "SPARK", transfer: { amount: "1.000001" } }).tag, "prime-inflow");
 });
 
-test("dust does not turn a cross-prime transfer into a test", () => {
+test("dust does not turn a cross-prime transfer into dust", () => {
   // Two primes is the more specific fact, and a small cross-prime move is still
   // a cross-prime move.
   assert.equal(tag({ fromPrime: "SPARK", toPrime: "GROVE", transfer: { amount: "1" } }).tag, "cross-prime");
 });
 
-test("an unparseable amount does not become a test", () => {
+test("an unparseable amount does not become dust", () => {
   assert.equal(tag({ toPrime: "SPARK", transfer: { amount: "" } }).tag, "prime-inflow");
   assert.equal(tag({ toPrime: "SPARK", transfer: { amount: "n/a" } }).tag, "prime-inflow");
 });

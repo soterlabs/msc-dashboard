@@ -28,7 +28,7 @@
  *
  * Options:
  *   --from <YYYY-MM-DD>  cut-off, by block timestamp (default 2025-07-01)
- *   --to <YYYY-MM-DD>    end date (default: latest block)
+ *   --to <YYYY-MM-DD>    last day to include, inclusive (default: latest block)
  *   --no-names           skip the GitHub lookups that name spells and addresses
  */
 import * as fs from "node:fs";
@@ -83,6 +83,7 @@ function arg(name, fallback = null) {
   return i === -1 ? fallback : process.argv[i + 1];
 }
 
+const DAY = 86_400;
 const dayStart = (date) => Math.floor(Date.parse(`${date}T00:00:00Z`) / 1000);
 const isoDate = (ts) => new Date(ts * 1000).toISOString().slice(0, 10);
 const isoTime = (ts) => new Date(ts * 1000).toISOString().replace(".000Z", "Z");
@@ -111,14 +112,27 @@ async function main() {
   const from = arg("from", DEFAULT_FROM);
   const to = arg("to");
   const withNames = !process.argv.includes("--no-names");
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(from)) throw new Error(`--from must be YYYY-MM-DD, got "${from}"`);
+  for (const [flag, value] of [["from", from], ["to", to]]) {
+    if (value !== null && !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      throw new Error(`--${flag} must be YYYY-MM-DD, got "${value}"`);
+    }
+  }
 
   const rpc = createRpc();
   console.log(`[fetch-core-spells] rpc ${rpc.url}`);
 
   const latest = await rpc.blockNumber();
   const fromBlock = await blockAtOrAfter(rpc, dayStart(from), { hi: latest });
-  const toBlock = to ? (await blockAtOrAfter(rpc, dayStart(to), { hi: latest })) - 1 : latest;
+  // Inclusive: --to 2026-07-20 has to cover that whole day, or a spell cast on
+  // the boundary date is silently dropped.
+  const toBlock = to
+    ? Math.min((await blockAtOrAfter(rpc, dayStart(to) + DAY, { hi: latest })) - 1, latest)
+    : latest;
+  if (fromBlock > toBlock) {
+    throw new Error(
+      `--from ${from} is after --to ${to} (blocks ${fromBlock} > ${toBlock}) — nothing to scan.`,
+    );
+  }
   console.log(
     `[fetch-core-spells] blocks ${fromBlock}–${toBlock} (${from} → ${to ?? "latest"})`,
   );
@@ -131,13 +145,16 @@ async function main() {
     );
   }
 
-  const directory = await loadDirectory({ offline: !withNames });
+  // Read once and share: the directory needs these rows for prime attribution
+  // and the tagger needs them to decide coverage.
+  const payments = readCells();
+  const directory = await loadDirectory({ offline: !withNames, payments });
   const archive = withNames ? await fetchArchiveSpells(from) : new Map();
   const tokenInfo = createTokenInfo(rpc);
   // Payments already recorded by hand, keyed as the spell emitted them. A match
   // means this transfer is covered; the absence of one is the interesting case.
   const recorded = new Map(
-    readCells().map((r) => [
+    payments.map((r) => [
       `${r["Tx hash"].toLowerCase()}|${r["Receiving wallet"].toLowerCase()}`,
       r,
     ]),
