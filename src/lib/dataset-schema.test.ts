@@ -19,7 +19,7 @@ import * as path from "node:path";
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { validateDr, validatePrime, validateSsr } from "./dataset-schema.ts";
+import { validateDr, validatePrime, validateSkyTotal, validateSsr } from "./dataset-schema.ts";
 
 const DIR = path.join(import.meta.dirname, "..", "..", "data", "generated");
 
@@ -49,7 +49,26 @@ function rejects(validate: (v: unknown) => unknown, data: unknown, field: string
 test("the committed datasets match their types", () => {
   assert.ok(validateDr(read("dr")).summaryGroups.length > 0);
   assert.ok(validateSsr(read("ssr")).reports.length > 0);
+  assert.ok(validateSkyTotal(read("sky-total")).reports.length > 0);
   assert.ok(validatePrime(read("prime")).payments.length > 0);
+});
+
+test("sky-total: a stringified number is rejected", () => {
+  const st = fixture("sky-total");
+  st.reports[0].skyTotalNetRevenue = "2773454.41";
+  rejects(validateSkyTotal, st, "reports[0].skyTotalNetRevenue");
+});
+
+test("sky-total: a stringified per-prime value is rejected", () => {
+  const st = fixture("sky-total");
+  st.reports[0].primeRevenue[0].value = "8959429.60";
+  rejects(validateSkyTotal, st, "reports[0].primeRevenue[0].value");
+});
+
+test("sky-total: a missing nested array is rejected (regression)", () => {
+  const st = fixture("sky-total");
+  delete st.reports[0].primeRevenue;
+  rejects(validateSkyTotal, st, "reports[0].primeRevenue");
 });
 
 test("validators return the same object they were given", () => {

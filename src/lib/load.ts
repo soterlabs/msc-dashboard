@@ -14,8 +14,9 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import { cache } from "react";
 
-import { validateDr, validatePrime, validateSsr } from "./dataset-schema";
+import { validateDr, validatePrime, validateSkyTotal, validateSsr } from "./dataset-schema";
 import type { PrimeDataset } from "./prime/types";
+import type { SkyTotalDataset } from "./sky-total/types";
 import type { SsrDataset } from "./ssr/types";
 import type { DrDataset } from "./dr/types";
 
@@ -61,4 +62,5 @@ function readGenerated<T>(name: string, validate: (value: unknown) => T): T {
 
 export const loadDr = cache((): DrDataset => readGenerated("dr", validateDr));
 export const loadSsr = cache((): SsrDataset => readGenerated("ssr", validateSsr));
+export const loadSkyTotal = cache((): SkyTotalDataset => readGenerated("sky-total", validateSkyTotal));
 export const loadPrime = cache((): PrimeDataset => readGenerated("prime", validatePrime));

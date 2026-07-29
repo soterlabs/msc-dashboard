@@ -1,0 +1,243 @@
+{
+  "months": [
+    "2026-01",
+    "2026-02",
+    "2026-03",
+    "2026-04",
+    "2026-05",
+    "2026-06"
+  ],
+  "monthLabels": {
+    "2026-01": "Jan",
+    "2026-02": "Feb",
+    "2026-03": "Mar",
+    "2026-04": "Apr",
+    "2026-05": "May",
+    "2026-06": "Jun"
+  },
+  "reports": [
+    {
+      "month": "2026-01",
+      "primeRevenue": [
+        {
+          "key": "spark",
+          "label": "SPARK",
+          "value": 7824194.47
+        },
+        {
+          "key": "grove",
+          "label": "GROVE",
+          "value": 6277336.09
+        },
+        {
+          "key": "obex",
+          "label": "OBEX",
+          "value": 2110933.27
+        },
+        {
+          "key": "keel",
+          "label": "KEEL",
+          "value": 0
+        },
+        {
+          "key": "skybase",
+          "label": "SKYBASE",
+          "value": 0
+        }
+      ],
+      "sumPrimeSkyRevenue": 16212463.83,
+      "demandSidePayments": -1516876.23,
+      "nonMscNetRevenue": -907828.26,
+      "skyTotalNetRevenue": 13787759.34,
+      "notes": [
+        "Reference (BA Labs `financials/settlements/historic`, not blended): net_revenue = 24,335,214.36"
+      ]
+    },
+    {
+      "month": "2026-02",
+      "primeRevenue": [
+        {
+          "key": "spark",
+          "label": "SPARK",
+          "value": 7489988.52
+        },
+        {
+          "key": "grove",
+          "label": "GROVE",
+          "value": 6137201.9
+        },
+        {
+          "key": "obex",
+          "label": "OBEX",
+          "value": 1948739.35
+        },
+        {
+          "key": "keel",
+          "label": "KEEL",
+          "value": 0
+        },
+        {
+          "key": "skybase",
+          "label": "SKYBASE",
+          "value": 0
+        }
+      ],
+      "sumPrimeSkyRevenue": 15575929.77,
+      "demandSidePayments": -1383393.82,
+      "nonMscNetRevenue": -2710774.2,
+      "skyTotalNetRevenue": 11481761.75,
+      "notes": [
+        "Reference (BA Labs `financials/settlements/historic`, not blended): net_revenue = 12,729,536.50"
+      ]
+    },
+    {
+      "month": "2026-03",
+      "primeRevenue": [
+        {
+          "key": "spark",
+          "label": "SPARK",
+          "value": 7807884.85
+        },
+        {
+          "key": "grove",
+          "label": "GROVE",
+          "value": 6308194.51
+        },
+        {
+          "key": "obex",
+          "label": "OBEX",
+          "value": 2073865.93
+        },
+        {
+          "key": "keel",
+          "label": "KEEL",
+          "value": 0
+        },
+        {
+          "key": "skybase",
+          "label": "SKYBASE",
+          "value": 0
+        }
+      ],
+      "sumPrimeSkyRevenue": 16189945.29,
+      "demandSidePayments": -2041536.62,
+      "nonMscNetRevenue": -2635789.04,
+      "skyTotalNetRevenue": 11512619.63,
+      "notes": [
+        "Reference (BA Labs `financials/settlements/historic`, not blended): net_revenue = 3,390,879.22"
+      ]
+    },
+    {
+      "month": "2026-04",
+      "primeRevenue": [
+        {
+          "key": "spark",
+          "label": "SPARK",
+          "value": 9264231.53
+        },
+        {
+          "key": "grove",
+          "label": "GROVE",
+          "value": 9335298.32
+        },
+        {
+          "key": "obex",
+          "label": "OBEX",
+          "value": 1968813.08
+        },
+        {
+          "key": "keel",
+          "label": "KEEL",
+          "value": 0
+        },
+        {
+          "key": "skybase",
+          "label": "SKYBASE",
+          "value": 0
+        }
+      ],
+      "sumPrimeSkyRevenue": 20568342.92,
+      "demandSidePayments": -2119439.52,
+      "nonMscNetRevenue": -4779038.14,
+      "skyTotalNetRevenue": 13669865.26,
+      "notes": [
+        "Reference (BA Labs `financials/settlements/historic`, not blended): net_revenue = 15,698,681.55"
+      ]
+    },
+    {
+      "month": "2026-05",
+      "primeRevenue": [
+        {
+          "key": "spark",
+          "label": "SPARK",
+          "value": 10681122.55
+        },
+        {
+          "key": "grove",
+          "label": "GROVE",
+          "value": 8588504.48
+        },
+        {
+          "key": "obex",
+          "label": "OBEX",
+          "value": 2005204.07
+        },
+        {
+          "key": "keel",
+          "label": "KEEL",
+          "value": 0
+        },
+        {
+          "key": "skybase",
+          "label": "SKYBASE",
+          "value": 0
+        }
+      ],
+      "sumPrimeSkyRevenue": 21274831.09,
+      "demandSidePayments": -2191106.27,
+      "nonMscNetRevenue": -4017282.84,
+      "skyTotalNetRevenue": 15066441.98,
+      "notes": [
+        "Reference (BA Labs `financials/settlements/historic`, not blended): net_revenue = 14,847,130.66"
+      ]
+    },
+    {
+      "month": "2026-06",
+      "primeRevenue": [
+        {
+          "key": "spark",
+          "label": "SPARK",
+          "value": 8959429.6
+        },
+        {
+          "key": "grove",
+          "label": "GROVE",
+          "value": 8000065.96
+        },
+        {
+          "key": "obex",
+          "label": "OBEX",
+          "value": 1997989.05
+        },
+        {
+          "key": "keel",
+          "label": "KEEL",
+          "value": 0
+        },
+        {
+          "key": "skybase",
+          "label": "SKYBASE",
+          "value": 0
+        }
+      ],
+      "sumPrimeSkyRevenue": 18957484.61,
+      "demandSidePayments": -2209588.72,
+      "nonMscNetRevenue": -13974441.48,
+      "skyTotalNetRevenue": 2773454.41,
+      "notes": [
+        "Reference (BA Labs `financials/settlements/historic`, not blended): net_revenue = n/a",
+        "⚠ non_msc: no jar burn found in (2026-06-30, 2026-07-31] at pin 25553046 — PSM income is $0 in this run; re-run after the monthly burn lands."
+      ]
+    }
+  ]
+}

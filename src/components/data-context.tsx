@@ -11,12 +11,14 @@
 import * as React from "react";
 
 import type { PrimeDataset } from "@/lib/prime/types";
+import type { SkyTotalDataset } from "@/lib/sky-total/types";
 import type { SsrDataset } from "@/lib/ssr/types";
 import type { DrDataset } from "@/lib/dr/types";
 
 export interface Datasets {
   dr: DrDataset;
   ssr: SsrDataset;
+  skyTotal: SkyTotalDataset;
   prime: PrimeDataset;
 }
 
@@ -42,4 +44,5 @@ function useDatasets(): Datasets {
 
 export const useDr = (): DrDataset => useDatasets().dr;
 export const useSsr = (): SsrDataset => useDatasets().ssr;
+export const useSkyTotal = (): SkyTotalDataset => useDatasets().skyTotal;
 export const usePrime = (): PrimeDataset => useDatasets().prime;

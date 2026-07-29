@@ -505,6 +505,73 @@ function generateSsr(reportsDir) {
   return { months, monthLabels, reports };
 }
 
+// ------------------------------------------------- Sky total net revenue (sky-total.json)
+
+const SKY_TOTAL_PRIME_RE = /^sky revenue — (.+)$/;
+const SKY_TOTAL_KEYS = {
+  "Σ prime sky revenue": "sumPrimeSkyRevenue",
+  "less: prime demand-side payments (agent rate + DR)": "demandSidePayments",
+  "non-MSC net revenue": "nonMscNetRevenue",
+  "sky total net revenue": "skyTotalNetRevenue",
+};
+
+function parseSkyTotalMd(md) {
+  const [table] = mdTables(md);
+  if (!table || table.header[0] !== "Component") {
+    throw new Error("no `Component | USDS` table");
+  }
+  const primeRevenue = [];
+  const totals = {
+    sumPrimeSkyRevenue: null,
+    demandSidePayments: null,
+    nonMscNetRevenue: null,
+    skyTotalNetRevenue: null,
+  };
+  const seen = new Set();
+  for (const [rawLabel, rawValue] of table.rows) {
+    const label = rawLabel.replaceAll("**", "").trim();
+    const prime = label.match(SKY_TOTAL_PRIME_RE);
+    if (prime) {
+      const key = prime[1].trim();
+      primeRevenue.push({ key, label: key.toUpperCase(), value: money(rawValue) });
+      continue;
+    }
+    const field = SKY_TOTAL_KEYS[label];
+    if (field) {
+      totals[field] = money(rawValue);
+      seen.add(field);
+    }
+  }
+  // A missing aggregate ROW is a format change; a null VALUE stays data.
+  const missing = Object.values(SKY_TOTAL_KEYS).filter((k) => !seen.has(k));
+  if (missing.length) throw new Error(`aggregate rows not found: ${missing.join(", ")}`);
+  if (!primeRevenue.length) throw new Error("no `sky revenue — <prime>` rows");
+
+  const notes = md
+    .split("\n")
+    .filter((l) => l.trim().startsWith(">"))
+    .map((l) => l.replace(/^>\s?/, "").trim());
+
+  return { primeRevenue, ...totals, notes };
+}
+
+function generateSkyTotal(reportsDir) {
+  const base = path.join(reportsDir, "reports", "sky_total");
+  if (!fs.existsSync(base)) throw new Error("settlement-reports has no reports/sky_total directory");
+  const months = fs.readdirSync(base).filter((m) => /^\d{4}-\d{2}$/.test(m)).sort();
+  const reports = months.map((month) => {
+    try {
+      const md = fs.readFileSync(path.join(base, month, "summary.md"), "utf8");
+      return { month, ...parseSkyTotalMd(md) };
+    } catch (e) {
+      throw new Error(`settlement-reports sky_total/${month}: ${e.message}`, { cause: e });
+    }
+  });
+  const monthLabels = Object.fromEntries(months.map((m) => [m, monthLabel(m)]));
+
+  return { months, monthLabels, reports };
+}
+
 // ------------------------------------------------------- Prime payments (prime.json)
 
 function generatePrime() {
@@ -539,6 +606,11 @@ function main() {
     return;
   }
 
+  if (process.argv.includes("--sky-total-only")) {
+    writeJson("sky-total", generateSkyTotal(syncRepo("settlement-reports")));
+    return;
+  }
+
   const drDir = syncRepo("settle-dr-dune", ["dune-results/dr_comparison_latest.xlsx"]);
   const reportsDir = syncRepo("settlement-reports");
 
@@ -546,9 +618,11 @@ function main() {
   // one regenerated file paired with a stale one.
   const dr = generateDr(drDir);
   const ssr = generateSsr(reportsDir);
+  const skyTotal = generateSkyTotal(reportsDir);
   const prime = generatePrime();
   writeJson("dr", dr);
   writeJson("ssr", ssr);
+  writeJson("sky-total", skyTotal);
   writeJson("prime", prime);
 }
 

@@ -18,6 +18,7 @@
  * Covered by dataset-schema.test.ts — `pnpm test`.
  */
 import type { PrimeDataset, PrimeKind, PrimeSource, PrimeWallet } from "./prime/types";
+import type { SkyTotalDataset } from "./sky-total/types";
 import type { SsrDataset, SsrPartner } from "./ssr/types";
 import type { DrDataset } from "./dr/types";
 
@@ -302,6 +303,41 @@ export function validateSsr(data: unknown): SsrDataset {
   // Double cast: the isObj guard narrowed `data` to Record<string, unknown>,
   // which TypeScript will not widen directly to SsrDataset.
   return data as unknown as SsrDataset;
+}
+
+/* ------------------------------------------------------------ Sky total */
+
+const SKY_TOTAL_AGGREGATES = [
+  "sumPrimeSkyRevenue",
+  "demandSidePayments",
+  "nonMscNetRevenue",
+  "skyTotalNetRevenue",
+];
+
+export function validateSkyTotal(data: unknown): SkyTotalDataset {
+  if (!isObj(data)) throw new Error("data/generated/sky-total.json should be an object");
+  const p: Problems = [];
+
+  stringList(p, data, "months");
+  monthLabels(p, data.monthLabels);
+
+  rowsOf(p, data, "reports").forEach((r, i) => {
+    const at = `reports[${i}]`;
+    str(p, `${at}.month`, r.month);
+
+    rowsOf(p, r, "primeRevenue", at).forEach((pr, j) => {
+      const prat = `${at}.primeRevenue[${j}]`;
+      str(p, `${prat}.key`, pr.key);
+      str(p, `${prat}.label`, pr.label);
+      num(p, `${prat}.value`, pr.value, true);
+    });
+
+    for (const f of SKY_TOTAL_AGGREGATES) num(p, `${at}.${f}`, r[f], true);
+    stringList(p, r, "notes", at);
+  });
+
+  finish("sky-total", "sky-total/types", p);
+  return data as unknown as SkyTotalDataset;
 }
 
 /* ---------------------------------------------------------------- Prime */
