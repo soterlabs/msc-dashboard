@@ -1,8 +1,9 @@
 /**
- * Regenerates data/generated/{dr,ssr,prime}.json from the sources of truth:
+ * Regenerates data/generated/{dr,ssr,sky-total,prime}.json from the sources of truth:
  *
  *   - github.com/soterlabs/settle-dr-dune      → dune-results/dr_comparison_latest.xlsx → dr.json
  *   - github.com/soterlabs/settlement-reports  → reports/<partner>/<month>/             → ssr.json
+ *   - github.com/soterlabs/settlement-reports  → reports/sky_total/<month>/summary.md   → sky-total.json
  *   - data/prime/payments.csv (local, see its README)                                   → prime.json
  *
  * The app reads those files on the server (src/lib/load.ts); nothing here
@@ -21,8 +22,9 @@
  * worse than a loud failure.
  *
  * Usage:
- *   pnpm refresh          all three datasets (needs network + repo access)
- *   pnpm refresh:prime    prime.json only, from the local CSVs (offline)
+ *   pnpm refresh            all datasets (needs network + repo access)
+ *   pnpm refresh:sky-total  sky-total.json only, from settlement-reports (needs network)
+ *   pnpm refresh:prime      prime.json only, from the local CSVs (offline)
  */
 import { execFileSync } from "node:child_process";
 import * as fs from "node:fs";
@@ -506,53 +508,164 @@ function generateSsr(reportsDir) {
 }
 
 // ------------------------------------------------- Sky total net revenue (sky-total.json)
+//
+// summary.md is "buffer basis" (methodology handoff 2026-07-16 §3): an MSC leg
+// broken down per prime, a non-MSC leg, and the Sky Net Revenue headline. We
+// read the explicit subtotal / headline rows the report prints rather than
+// re-summing, so the "of which" carve-outs never enter a total, then reconcile
+// the waterfall against those headlines and FAIL if it drifts by over a cent.
 
-const SKY_TOTAL_PRIME_RE = /^sky revenue — (.+)$/;
-const SKY_TOTAL_KEYS = {
-  "Σ prime sky revenue": "sumPrimeSkyRevenue",
-  "less: prime demand-side payments (agent rate + DR)": "demandSidePayments",
-  "non-MSC net revenue": "nonMscNetRevenue",
-  "sky total net revenue": "skyTotalNetRevenue",
-};
+/** Title-case a lowercase prime id: "spark" → "Spark", "skybase" → "Skybase". */
+const primeLabel = (key) => key.charAt(0).toUpperCase() + key.slice(1);
 
-function parseSkyTotalMd(md) {
-  const [table] = mdTables(md);
-  if (!table || table.header[0] !== "Component") {
-    throw new Error("no `Component | USDS` table");
-  }
-  const primeRevenue = [];
-  const totals = {
-    sumPrimeSkyRevenue: null,
-    demandSidePayments: null,
-    nonMscNetRevenue: null,
-    skyTotalNetRevenue: null,
-  };
-  const seen = new Set();
-  for (const [rawLabel, rawValue] of table.rows) {
-    const label = rawLabel.replaceAll("**", "").trim();
-    const prime = label.match(SKY_TOTAL_PRIME_RE);
-    if (prime) {
-      const key = prime[1].trim();
-      primeRevenue.push({ key, label: key.toUpperCase(), value: money(rawValue) });
+/** Strip markdown bold and trim: "**subtotal**" → "subtotal". */
+const plain = (s) => str(s).replaceAll("**", "").trim();
+
+/**
+ * Rows of each `## <heading>` section's table, keyed by heading. Each row is an
+ * array of trimmed cells; the header row (Section/Line/USDS …) is kept as row 0.
+ */
+function skyTotalSections(md) {
+  const sections = {};
+  let rows = null;
+  for (const line of md.split("\n")) {
+    const h2 = line.match(/^##\s+(.+)$/);
+    if (h2) {
+      rows = [];
+      sections[h2[1].trim()] = rows;
       continue;
     }
-    const field = SKY_TOTAL_KEYS[label];
-    if (field) {
-      totals[field] = money(rawValue);
-      seen.add(field);
+    const t = line.trim();
+    if (rows && t.startsWith("|")) {
+      const cells = t.slice(1, -1).split("|").map((c) => c.trim());
+      if (!cells.every((c) => /^:?-+:?$/.test(c))) rows.push(cells);
     }
   }
-  // A missing aggregate ROW is a format change; a null VALUE stays data.
-  const missing = Object.values(SKY_TOTAL_KEYS).filter((k) => !seen.has(k));
-  if (missing.length) throw new Error(`aggregate rows not found: ${missing.join(", ")}`);
-  if (!primeRevenue.length) throw new Error("no `sky revenue — <prime>` rows");
+  return sections;
+}
+
+function parseSkyTotalMd(md) {
+  const sections = skyTotalSections(md);
+  const msc = sections["MSC leg (buffer basis)"];
+  const nonMsc = sections["Non-MSC leg"];
+  const headline = sections["Sky Net Revenue"];
+  if (!msc || !nonMsc || !headline) {
+    throw new Error(
+      "expected `## MSC leg (buffer basis)`, `## Non-MSC leg` and `## Sky Net Revenue` sections",
+    );
+  }
+
+  const r = {
+    block: money(md.match(/settlement block \*\*(\d+)\*\*/)?.[1]),
+    debtMinted: [],
+    debtMintedSubtotal: null,
+    subproxy: [],
+    subproxySubtotalRaw: null,
+    demandSideBuffer: null,
+    coreCouncilGross: null,
+    coreCouncilStep1Capital: null,
+    coreCouncilGenesisRepayment: null,
+    groveTgePenalty: null,
+    mscNet: null,
+    nonMscIncome: null,
+    nonMscExpense: null,
+    nonMscNet: null,
+    skyNetRevenue: null,
+  };
+
+  // MSC leg: `| Section | Line | USDS |` (row 0 is the header).
+  for (const [rawSection, rawLine, rawValue] of msc.slice(1)) {
+    const section = plain(rawSection);
+    const line = plain(rawLine);
+    const value = money(rawValue);
+    if (section === "Debt minted to buffer") {
+      if (line === "subtotal") r.debtMintedSubtotal = value;
+      else r.debtMinted.push({ key: line, label: primeLabel(line), value });
+    } else if (section === "Sent to prime subproxy") {
+      if (line === "subtotal (raw)") r.subproxySubtotalRaw = value;
+      // "— of which:" rows are carve-out annotations, not prime lines.
+      else if (!/of which/i.test(line) && !line.startsWith("—")) {
+        r.subproxy.push({ key: line, label: primeLabel(line), value });
+      }
+    } else if (section === "Sent to Demand-side Buffer") {
+      r.demandSideBuffer = value;
+    } else if (section === "Sent to Core Council") {
+      if (line === "on-chain gross") r.coreCouncilGross = value;
+      else if (/step 1 capital/i.test(line)) r.coreCouncilStep1Capital = value;
+      // The printed "genesis repayment" line is derived below from gross + the
+      // add-back — its sign is unreliable in months where the add-back exceeds
+      // the gross (the report flags those with a warning).
+    } else if (section.startsWith("Grove TGE penalty")) {
+      r.groveTgePenalty = value;
+    } else if (section === "MSC net (buffer basis)") {
+      r.mscNet = value;
+    }
+  }
+
+  // Non-MSC leg: `| Line | USDS |`.
+  for (const [rawLine, rawValue] of nonMsc.slice(1)) {
+    const line = plain(rawLine);
+    const value = money(rawValue);
+    if (line === "non-MSC income") r.nonMscIncome = value;
+    else if (line === "non-MSC expense") r.nonMscExpense = value;
+    else if (line === "non-MSC net") r.nonMscNet = value;
+  }
+
+  // Sky Net Revenue: `| Field | USDS |`.
+  for (const [rawField, rawValue] of headline.slice(1)) {
+    if (plain(rawField) === "Sky Net Revenue") r.skyNetRevenue = money(rawValue);
+  }
+
+  // Core-Council net cost = on-chain gross + the Step 1 Capital add-back. That
+  // form reconciles every month and is what the report's own MSC net uses; the
+  // printed "genesis repayment" line's sign is unreliable (see above).
+  if (r.coreCouncilGross !== null && r.coreCouncilStep1Capital !== null) {
+    r.coreCouncilGenesisRepayment = round(r.coreCouncilGross + r.coreCouncilStep1Capital, 2);
+  }
+
+  // A missing ROW is a format change (fail loud). The waterfall inputs must be
+  // present as numbers — a null there can't be reconciled, so it's fatal too.
+  const required = {
+    debtMintedSubtotal: r.debtMintedSubtotal,
+    subproxySubtotalRaw: r.subproxySubtotalRaw,
+    demandSideBuffer: r.demandSideBuffer,
+    coreCouncilGross: r.coreCouncilGross,
+    coreCouncilStep1Capital: r.coreCouncilStep1Capital,
+    coreCouncilGenesisRepayment: r.coreCouncilGenesisRepayment,
+    groveTgePenalty: r.groveTgePenalty,
+    mscNet: r.mscNet,
+    nonMscNet: r.nonMscNet,
+    skyNetRevenue: r.skyNetRevenue,
+  };
+  const missing = Object.entries(required).filter(([, v]) => v === null).map(([k]) => k);
+  if (!r.debtMinted.length) missing.push("debtMinted rows");
+  if (!r.subproxy.length) missing.push("subproxy rows");
+  if (missing.length) throw new Error(`rows not found or empty: ${missing.join(", ")}`);
+
+  // Reconcile the waterfall against the report's own printed headlines.
+  reconcile(
+    "MSC net",
+    r.debtMintedSubtotal + r.subproxySubtotalRaw + r.demandSideBuffer +
+      r.coreCouncilGenesisRepayment + r.groveTgePenalty,
+    r.mscNet,
+  );
+  reconcile("Sky Net Revenue", r.mscNet + r.nonMscNet, r.skyNetRevenue);
 
   const notes = md
     .split("\n")
     .filter((l) => l.trim().startsWith(">"))
     .map((l) => l.replace(/^>\s?/, "").trim());
 
-  return { primeRevenue, ...totals, notes };
+  return { ...r, notes };
+}
+
+/** Throws if a derived total drifts from the report's printed figure. */
+function reconcile(what, derived, reported) {
+  if (Math.abs(derived - reported) > 0.02) {
+    throw new Error(
+      `${what} does not reconcile: derived ${derived.toFixed(2)} vs reported ${reported.toFixed(2)}`,
+    );
+  }
 }
 
 function generateSkyTotal(reportsDir) {

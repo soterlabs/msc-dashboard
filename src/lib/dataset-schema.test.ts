@@ -55,20 +55,20 @@ test("the committed datasets match their types", () => {
 
 test("sky-total: a stringified number is rejected", () => {
   const st = fixture("sky-total");
-  st.reports[0].skyTotalNetRevenue = "2773454.41";
-  rejects(validateSkyTotal, st, "reports[0].skyTotalNetRevenue");
+  st.reports[0].skyNetRevenue = "12809128.18";
+  rejects(validateSkyTotal, st, "reports[0].skyNetRevenue");
 });
 
 test("sky-total: a stringified per-prime value is rejected", () => {
   const st = fixture("sky-total");
-  st.reports[0].primeRevenue[0].value = "8959429.60";
-  rejects(validateSkyTotal, st, "reports[0].primeRevenue[0].value");
+  st.reports[0].debtMinted[0].value = "16190100.91";
+  rejects(validateSkyTotal, st, "reports[0].debtMinted[0].value");
 });
 
 test("sky-total: a missing nested array is rejected (regression)", () => {
   const st = fixture("sky-total");
-  delete st.reports[0].primeRevenue;
-  rejects(validateSkyTotal, st, "reports[0].primeRevenue");
+  delete st.reports[0].subproxy;
+  rejects(validateSkyTotal, st, "reports[0].subproxy");
 });
 
 test("validators return the same object they were given", () => {

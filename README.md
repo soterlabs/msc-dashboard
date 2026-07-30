@@ -41,6 +41,7 @@ days, silently, because both environments kept serving their last good build.
 | `pnpm dev` | dev server |
 | `pnpm build` / `pnpm start` | production build / serve. Offline. |
 | `pnpm refresh` | rebuild all datasets from source. Needs network and access to the private repos. |
+| `pnpm refresh:sky-total` | rebuild `sky-total.json` from `settlement-reports` only. Needs network. |
 | `pnpm refresh:prime` | rebuild `prime.json` from the local CSVs only. Offline. |
 | `pnpm fetch-prime-payments` | pull new payments from Dune into `data/prime/payments.csv`. Needs `DUNE_API_KEY`. |
 | `pnpm test` | validator tests (`node:test`, nothing to install) |
@@ -58,7 +59,7 @@ data/
     payments.csv            one row per on-chain payment to a prime
     wallets.csv             address → name + category
   generated/              machine-written, committed — see its README
-    dr.json  ssr.json  prime.json
+    dr.json  ssr.json  sky-total.json  prime.json
 ```
 
 Sources of truth:
@@ -67,13 +68,14 @@ Sources of truth:
 | --- | --- |
 | `dr.json` | `soterlabs/settle-dr-dune` → `dune-results/dr_comparison_latest.xlsx` |
 | `ssr.json` | `soterlabs/settlement-reports` → `reports/<partner>/<month>/` |
+| `sky-total.json` | `soterlabs/settlement-reports` → `reports/sky_total/<month>/summary.md` |
 | `prime.json` | `data/prime/*.csv` in this repo, fed by a Dune query |
 
 ## How the app reads it
 
 `src/app/page.tsx` is a server component: it reads `data/generated/` through
 `src/lib/load.ts` and passes the datasets to the client views as props, which
-reach them via `useDr()` / `useSsr()` / `usePrime()`. The loaders use `node:fs`,
+reach them via `useDr()` / `useSsr()` / `useSkyTotal()` / `usePrime()`. The loaders use `node:fs`,
 so importing one from a client component fails the build on purpose — the
 datasets are not meant to be part of the browser bundle.
 
@@ -88,6 +90,7 @@ otherwise render silently wrong, and `sum()` concatenates rather than adds.
 src/lib/
   dr/{types,domain}.ts       one directory per report section
   ssr/{types,domain}.ts
+  sky-total/types.ts
   prime/{types,domain}.ts
   load.ts                    server-only reads of data/generated/
   dataset-schema.ts          runtime validation of those files (+ .test.ts)
@@ -108,6 +111,10 @@ state, which is what lets client components use them without pulling the data in
   `scripts/generate-data.mjs`, `SSR_PARTNER_META` in `src/lib/ssr/domain.ts`, and
   `SSR_PARTNERS` in `src/lib/dataset-schema.ts`. A protocol-wide aggregate that
   is not a partner goes in `SSR_NON_PARTNER_DIRS` instead.
+- **A new sky_total month** — publish `reports/sky_total/<month>/summary.md` in
+  `settlement-reports`, then `pnpm refresh:sky-total`. Picked up automatically;
+  the parser reconciles the waterfall against the report's own headline and fails
+  if it drifts by over a cent.
 - **A new payment label** — add it to `LABEL_KINDS` in
   `schema/prime-payments.mjs` with the `Kind` it implies.
 

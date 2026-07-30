@@ -307,11 +307,21 @@ export function validateSsr(data: unknown): SsrDataset {
 
 /* ------------------------------------------------------------ Sky total */
 
-const SKY_TOTAL_AGGREGATES = [
-  "sumPrimeSkyRevenue",
-  "demandSidePayments",
-  "nonMscNetRevenue",
-  "skyTotalNetRevenue",
+/** Nullable-number scalars on each SkyTotalReport (mirror sky-total/types.ts). */
+const SKY_TOTAL_NUMBERS = [
+  "block",
+  "debtMintedSubtotal",
+  "subproxySubtotalRaw",
+  "demandSideBuffer",
+  "coreCouncilGross",
+  "coreCouncilStep1Capital",
+  "coreCouncilGenesisRepayment",
+  "groveTgePenalty",
+  "mscNet",
+  "nonMscIncome",
+  "nonMscExpense",
+  "nonMscNet",
+  "skyNetRevenue",
 ];
 
 export function validateSkyTotal(data: unknown): SkyTotalDataset {
@@ -325,14 +335,16 @@ export function validateSkyTotal(data: unknown): SkyTotalDataset {
     const at = `reports[${i}]`;
     str(p, `${at}.month`, r.month);
 
-    rowsOf(p, r, "primeRevenue", at).forEach((pr, j) => {
-      const prat = `${at}.primeRevenue[${j}]`;
-      str(p, `${prat}.key`, pr.key);
-      str(p, `${prat}.label`, pr.label);
-      num(p, `${prat}.value`, pr.value, true);
-    });
+    for (const field of ["debtMinted", "subproxy"] as const) {
+      rowsOf(p, r, field, at).forEach((line, j) => {
+        const lat = `${at}.${field}[${j}]`;
+        str(p, `${lat}.key`, line.key);
+        str(p, `${lat}.label`, line.label);
+        num(p, `${lat}.value`, line.value, true);
+      });
+    }
 
-    for (const f of SKY_TOTAL_AGGREGATES) num(p, `${at}.${f}`, r[f], true);
+    for (const f of SKY_TOTAL_NUMBERS) num(p, `${at}.${f}`, r[f], true);
     stringList(p, r, "notes", at);
   });
 
