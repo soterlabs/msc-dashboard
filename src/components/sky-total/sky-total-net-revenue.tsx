@@ -3,7 +3,7 @@
 import * as React from "react";
 
 import type { SkyTotalReport } from "@/lib/sky-total/types";
-import { formatCompactUSD, formatUSD, monthShort } from "@/lib/format";
+import { formatCompactTokens, formatTokens, monthShort } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 import { useSkyTotal } from "../data-context";
@@ -11,9 +11,9 @@ import { Card, DisplayTitle, KpiCard, SectionTitle, Swatch } from "../dr/primiti
 
 const num = (v: number | null) => v ?? 0;
 
-/** Signed compact figure for a waterfall delta, e.g. "+$12.3M" / "−$1.4M". */
+/** Signed compact figure for a waterfall delta, e.g. "+12.3M" / "−1.4M". */
 function signedCompact(v: number) {
-  const s = formatCompactUSD(Math.abs(v));
+  const s = formatCompactTokens(Math.abs(v));
   return v < 0 ? `−${s}` : `+${s}`;
 }
 
@@ -39,19 +39,19 @@ export function SkyTotalNetRevenue() {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <KpiCard
           label="Total Sky Net Revenue"
-          value={formatCompactUSD(sum((r) => r.skyNetRevenue))}
+          value={formatCompactTokens(sum((r) => r.skyNetRevenue))}
           unit="USDS"
           note={`Consolidated, across ${months.length} monthly settlements`}
         />
         <KpiCard
           label="Total MSC net"
-          value={formatCompactUSD(sum((r) => r.mscNet))}
+          value={formatCompactTokens(sum((r) => r.mscNet))}
           unit="USDS"
           note="Prime-agent perimeter, buffer basis"
         />
         <KpiCard
           label="Total non-MSC net"
-          value={formatCompactUSD(sum((r) => r.nonMscNet))}
+          value={formatCompactTokens(sum((r) => r.nonMscNet))}
           unit="USDS"
           note="Protocol P&L outside the MSC perimeter"
         />
@@ -177,7 +177,7 @@ function Waterfall({
                 dominantBaseline="middle"
                 className="fill-faint font-mono text-[10px]"
               >
-                {formatCompactUSD(t)}
+                {formatCompactTokens(t)}
               </text>
             </g>
           ))}
@@ -216,7 +216,7 @@ function Waterfall({
                   textAnchor="middle"
                   className={cn("font-mono text-[10px]", isTotal ? "fill-ink font-medium" : "fill-muted")}
                 >
-                  {isTotal ? formatCompactUSD(b.value) : signedCompact(b.value)}
+                  {isTotal ? formatCompactTokens(b.value) : signedCompact(b.value)}
                 </text>
                 {/* two-line x label */}
                 <text
@@ -377,7 +377,7 @@ function ReconciliationTable({
                               : "text-ink",
                         )}
                       >
-                        {v === null ? <span className="text-faint">—</span> : formatUSD(v)}
+                        {v === null ? <span className="text-faint">—</span> : formatTokens(v)}
                       </td>
                     );
                   })}
