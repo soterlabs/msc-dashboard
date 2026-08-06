@@ -8,6 +8,7 @@
  */
 import type {
   DrDataset,
+  RateWindow,
   RefCodeRow,
   RefCodeTokenSeries,
   SummaryGroup,
@@ -198,9 +199,14 @@ export function seriesForRefCode(dr: DrDataset, refCode: string): RefCodeTokenSe
 
 /* --------------------------------------------------------------- rates */
 
+/**
+ * Presentation for a rate family. The APY deliberately does NOT live here: it
+ * changes by dated step (XR was cut 0.5% → 0.2% on 2026-07-09) and belongs to
+ * the dataset, which takes it from the pipeline's own schedule. A copy kept
+ * next to the wording would go stale the next time a rate moves, silently.
+ */
 export interface RateFamily {
   key: string;
-  apy: number;
   title: string;
   blurb: string;
   colorVar: string;
@@ -209,14 +215,12 @@ export interface RateFamily {
 export const RATE_FAMILIES: RateFamily[] = [
   {
     key: "XR",
-    apy: 0.005,
     title: "DR boosted rate",
     blurb: "Default rate for USDS and sUSDS deposits.",
     colorVar: "--rate-xr",
   },
   {
     key: "XR*",
-    apy: 0.002,
     title: "DR basic rate",
     blurb:
       "Rate of tokens held by Prime Agents, like sUSDS held by Spark Liquidity Layer.",
@@ -224,7 +228,6 @@ export const RATE_FAMILIES: RateFamily[] = [
   },
   {
     key: "XR-stUSDS",
-    apy: 0.001,
     title: "DR rate for stUSDS",
     blurb: "stUSDS earns the lowest exchange-rate tier.",
     colorVar: "--rate-stusds",
@@ -233,6 +236,26 @@ export const RATE_FAMILIES: RateFamily[] = [
 
 export function rateFamilyMeta(rateType: string): RateFamily {
   return RATE_FAMILIES.find((f) => f.key === rateType) ?? RATE_FAMILIES[0];
+}
+
+/** The family's window covering `dr.ratesAsOf`, i.e. the rate on screen. */
+export function currentRateWindow(dr: DrDataset, rateType: string): RateWindow | undefined {
+  return dr.rateSchedule.find(
+    (w) => w.rateType === rateType && w.start <= dr.ratesAsOf && dr.ratesAsOf <= w.end
+  );
+}
+
+/**
+ * The window that ran immediately before the current one, if the rate moved
+ * within the reporting window. Undefined when the family has held one rate
+ * throughout — there is then no change worth putting on screen.
+ */
+export function previousRateWindow(dr: DrDataset, rateType: string): RateWindow | undefined {
+  const current = currentRateWindow(dr, rateType);
+  if (!current || current.start < dr.reportMonths[0]) return undefined;
+  return dr.rateSchedule
+    .filter((w) => w.rateType === rateType && w.end < current.start)
+    .sort((a, b) => (a.end < b.end ? 1 : -1))[0];
 }
 
 /**

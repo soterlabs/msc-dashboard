@@ -5,7 +5,8 @@
     "2026-03",
     "2026-04",
     "2026-05",
-    "2026-06"
+    "2026-06",
+    "2026-07"
   ],
   "monthLabels": {
     "2026-01": "Jan",
@@ -13,7 +14,8 @@
     "2026-03": "Mar",
     "2026-04": "Apr",
     "2026-05": "May",
-    "2026-06": "Jun"
+    "2026-06": "Jun",
+    "2026-07": "Jul"
   },
   "reports": [
     {
@@ -24,11 +26,11 @@
         "agentRate": 6275.53,
         "distributionRewards": 0,
         "demandSideRevenue": 6275.53,
-        "primeSupplySideRevenue": -52784.58,
-        "primeCostOfFunds": 3322924.21,
+        "primeSupplySideRevenue": -48158.05,
+        "primeCostOfFunds": 3318297.69,
         "skyDirectExposure": 2954411.88,
-        "skyRevenue": 6277336.09,
-        "primeAgentProfit": -46509.05
+        "skyRevenue": 6272709.56,
+        "primeAgentProfit": -41882.52
       },
       "venues": [
         {
@@ -394,22 +396,12 @@
       ],
       "refCodes": [
         {
-          "refCode": "2000",
-          "dr": 0,
-          "notes": ""
-        },
-        {
           "refCode": "2001",
           "dr": 0,
           "notes": ""
         },
         {
           "refCode": "2002",
-          "dr": 0,
-          "notes": ""
-        },
-        {
-          "refCode": "2003",
           "dr": 0,
           "notes": ""
         },
@@ -437,16 +429,16 @@
       "rateBuild": {
         "timeWeightedUtilized": 1071984731.030483,
         "baseRate": 0.04312000189646037,
-        "referenceRate": 0.0367,
+        "referenceRate": 0.03664516129032258,
         "referenceRateKind": "tbill_3m",
-        "subsidisedRate": 0.0367,
-        "effectiveRate": 0.03717115181169214,
-        "diffVsBaseBps": -59.48850084768234,
-        "subsidyBenefit": 520885.9412035887,
+        "subsidisedRate": 0.03664516129032258,
+        "effectiveRate": 0.03711850878908277,
+        "diffVsBaseBps": -60.01493107377607,
+        "subsidyBenefit": 525512.4653087845,
         "cofAtFullBase": 3843810.152904379,
-        "cofOnUtilized": 3322924.21170079,
+        "cofOnUtilized": 3318297.687595594,
         "skyDirectComponent": 2954411.877337005,
-        "skyRevenueMax": 6577707.820120571,
+        "skyRevenueMax": 6573211.86191684,
         "subsidyEnabled": true,
         "capUsd": 1000000000
       },
@@ -499,61 +491,61 @@
           "date": "2026-01-02",
           "cumDebt": 1985828055,
           "utilized": 1222967317,
-          "dailySkyCharge": 124541.79
+          "dailySkyCharge": 124013.14
         },
         {
           "date": "2026-01-03",
           "cumDebt": 1985828055,
           "utilized": 1222967317,
-          "dailySkyCharge": 124541.79
+          "dailySkyCharge": 124013.14
         },
         {
           "date": "2026-01-04",
           "cumDebt": 1985828055,
           "utilized": 1222927951,
-          "dailySkyCharge": 124537.24
+          "dailySkyCharge": 124008.59
         },
         {
           "date": "2026-01-05",
           "cumDebt": 1995828055,
           "utilized": 1232805367,
-          "dailySkyCharge": 125679.73
+          "dailySkyCharge": 124886.72
         },
         {
           "date": "2026-01-06",
           "cumDebt": 2012328055,
           "utilized": 1249265009,
-          "dailySkyCharge": 127583.58
+          "dailySkyCharge": 126526.18
         },
         {
           "date": "2026-01-07",
           "cumDebt": 2006577041,
           "utilized": 1203471935,
-          "dailySkyCharge": 122286.81
+          "dailySkyCharge": 120964.99
         },
         {
           "date": "2026-01-08",
           "cumDebt": 2026577041,
           "utilized": 1223433063,
-          "dailySkyCharge": 124595.66
+          "dailySkyCharge": 123273.84
         },
         {
           "date": "2026-01-09",
           "cumDebt": 1926524961,
           "utilized": 1103339226,
-          "dailySkyCharge": 110704.7
+          "dailySkyCharge": 109382.88
         },
         {
           "date": "2026-01-10",
           "cumDebt": 1926524961,
           "utilized": 1103339226,
-          "dailySkyCharge": 110704.7
+          "dailySkyCharge": 109382.88
         },
         {
           "date": "2026-01-11",
           "cumDebt": 1926524961,
           "utilized": 1103339226,
-          "dailySkyCharge": 110704.7
+          "dailySkyCharge": 109382.88
         },
         {
           "date": "2026-01-12",
@@ -577,7 +569,7 @@
           "date": "2026-01-15",
           "cumDebt": 1961776234,
           "utilized": 1018329389,
-          "dailySkyCharge": 100871.82
+          "dailySkyCharge": 101136.1
         },
         {
           "date": "2026-01-16",
@@ -607,37 +599,37 @@
           "date": "2026-01-20",
           "cumDebt": 1933909643,
           "utilized": 970172372,
-          "dailySkyCharge": 95806.17
+          "dailySkyCharge": 96575.31
         },
         {
           "date": "2026-01-21",
           "cumDebt": 1934309643,
           "utilized": 950517206,
-          "dailySkyCharge": 93865.19
+          "dailySkyCharge": 94618.75
         },
         {
           "date": "2026-01-22",
           "cumDebt": 1972909643,
           "utilized": 989061022,
-          "dailySkyCharge": 97671.46
+          "dailySkyCharge": 98716.89
         },
         {
           "date": "2026-01-23",
           "cumDebt": 1972909643,
           "utilized": 989001947,
-          "dailySkyCharge": 97665.62
+          "dailySkyCharge": 98449.69
         },
         {
           "date": "2026-01-24",
           "cumDebt": 1974009643,
           "utilized": 970100208,
-          "dailySkyCharge": 95799.05
+          "dailySkyCharge": 96568.13
         },
         {
           "date": "2026-01-25",
           "cumDebt": 1974009643,
           "utilized": 970100208,
-          "dailySkyCharge": 95799.05
+          "dailySkyCharge": 96568.13
         },
         {
           "date": "2026-01-26",
@@ -655,7 +647,7 @@
           "date": "2026-01-28",
           "cumDebt": 2027509643,
           "utilized": 1003284553,
-          "dailySkyCharge": 99131.62
+          "dailySkyCharge": 99395.9
         },
         {
           "date": "2026-01-29",
@@ -1093,22 +1085,12 @@
       ],
       "refCodes": [
         {
-          "refCode": "2000",
-          "dr": 0,
-          "notes": ""
-        },
-        {
           "refCode": "2001",
           "dr": 0,
           "notes": ""
         },
         {
           "refCode": "2002",
-          "dr": 0,
-          "notes": ""
-        },
-        {
-          "refCode": "2003",
           "dr": 0,
           "notes": ""
         },
@@ -1404,11 +1386,11 @@
         "agentRate": 6287.12,
         "distributionRewards": 191719.25,
         "demandSideRevenue": 198006.37,
-        "primeSupplySideRevenue": -2000509.4,
-        "primeCostOfFunds": 3056810.76,
+        "primeSupplySideRevenue": -2066170.07,
+        "primeCostOfFunds": 3122471.43,
         "skyDirectExposure": 3251383.75,
-        "skyRevenue": 6308194.51,
-        "primeAgentProfit": -1802503.03
+        "skyRevenue": 6373855.19,
+        "primeAgentProfit": -1868163.7
       },
       "venues": [
         {
@@ -1774,11 +1756,6 @@
       ],
       "refCodes": [
         {
-          "refCode": "2000",
-          "dr": 0,
-          "notes": ""
-        },
-        {
           "refCode": "2001",
           "dr": 0,
           "notes": ""
@@ -1786,11 +1763,6 @@
         {
           "refCode": "2002",
           "dr": 174574.28,
-          "notes": ""
-        },
-        {
-          "refCode": "2003",
-          "dr": 0,
           "notes": ""
         },
         {
@@ -1817,16 +1789,16 @@
       "rateBuild": {
         "timeWeightedUtilized": 996033011.4242479,
         "baseRate": 0.04128728437554429,
-        "referenceRate": 0.03628064516129032,
+        "referenceRate": 0.03717741935483871,
         "referenceRateKind": "tbill_3m",
-        "subsidisedRate": 0.03669555805697115,
-        "effectiveRate": 0.03679407153085185,
-        "diffVsBaseBps": -44.93212844692437,
-        "subsidyBenefit": 365834.9611412594,
+        "subsidisedRate": 0.03751760106772383,
+        "effectiveRate": 0.03759893383144367,
+        "diffVsBaseBps": -36.8835054410062,
+        "subsidyBenefit": 300174.2874459205,
         "cofAtFullBase": 3422645.721799293,
-        "cofOnUtilized": 3056810.760658033,
+        "cofOnUtilized": 3122471.434353372,
         "skyDirectComponent": 3251383.753143241,
-        "skyRevenueMax": 7972910.096261334,
+        "skyRevenueMax": 8040239.473993795,
         "subsidyEnabled": true,
         "capUsd": 1000000000
       },
@@ -1879,181 +1851,181 @@
           "date": "2026-03-02",
           "cumDebt": 2425226753,
           "utilized": 1058475678,
-          "dailySkyCharge": 106686.92
+          "dailySkyCharge": 108139.57
         },
         {
           "date": "2026-03-03",
           "cumDebt": 2425226753,
           "utilized": 1058386897,
-          "dailySkyCharge": 106676.65
+          "dailySkyCharge": 107887.24
         },
         {
           "date": "2026-03-04",
           "cumDebt": 2435226753,
           "utilized": 1068286485,
-          "dailySkyCharge": 107821.71
+          "dailySkyCharge": 109032.3
         },
         {
           "date": "2026-03-05",
           "cumDebt": 2421231753,
           "utilized": 1054194005,
-          "dailySkyCharge": 106191.67
+          "dailySkyCharge": 107160.19
         },
         {
           "date": "2026-03-06",
           "cumDebt": 2371238377,
           "utilized": 1004100013,
-          "dailySkyCharge": 100397.42
+          "dailySkyCharge": 101123.84
         },
         {
           "date": "2026-03-07",
           "cumDebt": 2371238377,
           "utilized": 1004100013,
-          "dailySkyCharge": 100397.42
+          "dailySkyCharge": 101123.84
         },
         {
           "date": "2026-03-08",
           "cumDebt": 2371238377,
           "utilized": 1004100013,
-          "dailySkyCharge": 100397.42
+          "dailySkyCharge": 101123.84
         },
         {
           "date": "2026-03-09",
           "cumDebt": 2351242377,
           "utilized": 983805984,
-          "dailySkyCharge": 97285.23
+          "dailySkyCharge": 98953.09
         },
         {
           "date": "2026-03-10",
           "cumDebt": 2400317530,
           "utilized": 1032790209,
-          "dailySkyCharge": 102463.13
+          "dailySkyCharge": 104158.45
         },
         {
           "date": "2026-03-11",
           "cumDebt": 2128458957,
           "utilized": 760834301,
-          "dailySkyCharge": 75236.32
+          "dailySkyCharge": 76526.17
         },
         {
           "date": "2026-03-12",
           "cumDebt": 2173459307,
           "utilized": 1080736916,
-          "dailySkyCharge": 107692.82
+          "dailySkyCharge": 109630.24
         },
         {
           "date": "2026-03-13",
           "cumDebt": 2219029307,
           "utilized": 980637055,
-          "dailySkyCharge": 96971.87
+          "dailySkyCharge": 98871.77
         },
         {
           "date": "2026-03-14",
           "cumDebt": 2219029307,
           "utilized": 980637055,
-          "dailySkyCharge": 96971.87
+          "dailySkyCharge": 98871.77
         },
         {
           "date": "2026-03-15",
           "cumDebt": 2219029307,
           "utilized": 980637055,
-          "dailySkyCharge": 96971.87
+          "dailySkyCharge": 98871.77
         },
         {
           "date": "2026-03-16",
           "cumDebt": 2269029307,
           "utilized": 1030295309,
-          "dailySkyCharge": 101706.43
+          "dailySkyCharge": 104128.42
         },
         {
           "date": "2026-03-17",
           "cumDebt": 2328029551,
           "utilized": 1039187509,
-          "dailySkyCharge": 102676.33
+          "dailySkyCharge": 105098.32
         },
         {
           "date": "2026-03-18",
           "cumDebt": 2378029551,
           "utilized": 1039064397,
-          "dailySkyCharge": 102662.91
+          "dailySkyCharge": 105326.98
         },
         {
           "date": "2026-03-19",
           "cumDebt": 2378039549,
           "utilized": 988975213,
-          "dailySkyCharge": 97317.17
+          "dailySkyCharge": 99951.87
         },
         {
           "date": "2026-03-20",
           "cumDebt": 2378039549,
           "utilized": 938881377,
-          "dailySkyCharge": 92387.84
+          "dailySkyCharge": 95116.35
         },
         {
           "date": "2026-03-21",
           "cumDebt": 2378039549,
           "utilized": 938881377,
-          "dailySkyCharge": 92387.84
+          "dailySkyCharge": 95116.35
         },
         {
           "date": "2026-03-22",
           "cumDebt": 2392039549,
           "utilized": 952881377,
-          "dailySkyCharge": 93765.46
+          "dailySkyCharge": 96534.66
         },
         {
           "date": "2026-03-23",
           "cumDebt": 2493039549,
           "utilized": 1003476417,
-          "dailySkyCharge": 98296.56
+          "dailySkyCharge": 101687.35
         },
         {
           "date": "2026-03-24",
           "cumDebt": 2543039549,
           "utilized": 978325716,
-          "dailySkyCharge": 95795.09
+          "dailySkyCharge": 99112.38
         },
         {
           "date": "2026-03-25",
           "cumDebt": 2593039549,
           "utilized": 978201706,
-          "dailySkyCharge": 95782.95
+          "dailySkyCharge": 98863.04
         },
         {
           "date": "2026-03-26",
           "cumDebt": 2621953033,
           "utilized": 956958241,
-          "dailySkyCharge": 93702.84
+          "dailySkyCharge": 96716.04
         },
         {
           "date": "2026-03-27",
           "cumDebt": 2681953033,
           "utilized": 966822989,
-          "dailySkyCharge": 94668.77
+          "dailySkyCharge": 97713.03
         },
         {
           "date": "2026-03-28",
           "cumDebt": 2686953033,
           "utilized": 971822989,
-          "dailySkyCharge": 95158.36
+          "dailySkyCharge": 98218.36
         },
         {
           "date": "2026-03-29",
           "cumDebt": 2686953033,
           "utilized": 971822989,
-          "dailySkyCharge": 95158.36
+          "dailySkyCharge": 98218.36
         },
         {
           "date": "2026-03-30",
           "cumDebt": 2792299936,
           "utilized": 1026675145,
-          "dailySkyCharge": 100342.18
+          "dailySkyCharge": 103491.46
         },
         {
           "date": "2026-03-31",
           "cumDebt": 2851300106,
           "utilized": 985504853,
-          "dailySkyCharge": 96020.34
+          "dailySkyCharge": 98885.36
         }
       ],
       "excludedVenues": [
@@ -2102,12 +2074,12 @@
       "headline": {
         "agentRate": 45332.83,
         "distributionRewards": 125090.17,
-        "demandSideRevenue": 170423,
-        "primeSupplySideRevenue": 3682517.18,
-        "primeCostOfFunds": 2940291.82,
+        "demandSideRevenue": 187424.13,
+        "primeSupplySideRevenue": 3593490.27,
+        "primeCostOfFunds": 2946944.56,
         "skyDirectExposure": 6395006.5,
-        "skyRevenue": 9335298.32,
-        "primeAgentProfit": 3852940.18
+        "skyRevenue": 9341951.06,
+        "primeAgentProfit": 3780914.4
       },
       "venues": [
         {
@@ -2354,10 +2326,10 @@
           "id": "E22",
           "label": "Anemoy Tokenized Apollo Diversified Credit Fund (ACRDX)",
           "valueSom": 50674767.86,
-          "valueEom": 50865822.22,
+          "valueEom": 50783448.06,
           "periodInflow": 0,
-          "actualRev": 191054.36,
-          "revenue": 191054.36,
+          "actualRev": 108680.2,
+          "revenue": 108680.2,
           "sdRevenue": 0,
           "sdShare": 0,
           "spreadReimb": 0
@@ -2469,14 +2441,33 @@
           "sdRevenue": 0,
           "sdShare": 0,
           "spreadReimb": 0
+        },
+        {
+          "id": "E40",
+          "label": "USDS raw (Diamond PAU ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E41",
+          "label": "JTRSY Basin escrow — USDS pending subscription (Diamond PAU)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
         }
       ],
       "refCodes": [
-        {
-          "refCode": "2000",
-          "dr": 0,
-          "notes": ""
-        },
         {
           "refCode": "2001",
           "dr": 82.24,
@@ -2485,11 +2476,6 @@
         {
           "refCode": "2002",
           "dr": 116737.37,
-          "notes": ""
-        },
-        {
-          "refCode": "2003",
-          "dr": 0,
           "notes": ""
         },
         {
@@ -2516,16 +2502,16 @@
       "rateBuild": {
         "timeWeightedUtilized": 976625153.4840184,
         "baseRate": 0.04030997361747411,
-        "referenceRate": 0.03686666666666667,
-        "referenceRateKind": "tbill_3m",
-        "subsidisedRate": 0.0372972837362202,
-        "effectiveRate": 0.03730709608600075,
-        "diffVsBaseBps": -30.02877531473362,
-        "subsidyBenefit": 232061.9088782076,
+        "referenceRate": 0.03696666666666667,
+        "referenceRateKind": "tbill_3m→sofr@2026-07-23",
+        "subsidisedRate": 0.03738478373622021,
+        "effectiveRate": 0.03739298437091029,
+        "diffVsBaseBps": -29.16989246563823,
+        "subsidyBenefit": 225409.1628966965,
         "cofAtFullBase": 3172353.724369952,
-        "cofOnUtilized": 2940291.815491744,
+        "cofOnUtilized": 2946944.561473255,
         "skyDirectComponent": 6395006.500245043,
-        "skyRevenueMax": 10336519.98374095,
+        "skyRevenueMax": 10343459.72176785,
         "subsidyEnabled": true,
         "capUsd": 1000000000
       },
@@ -2572,31 +2558,31 @@
           "date": "2026-04-01",
           "cumDebt": 2902299106,
           "utilized": 986310351,
-          "dailySkyCharge": 96621.74
+          "dailySkyCharge": 99358.3
         },
         {
           "date": "2026-04-02",
           "cumDebt": 2942299611,
           "utilized": 976142033,
-          "dailySkyCharge": 95625.63
+          "dailySkyCharge": 98333.97
         },
         {
           "date": "2026-04-03",
           "cumDebt": 2942299611,
           "utilized": 975699580,
-          "dailySkyCharge": 95582.28
+          "dailySkyCharge": 98514.87
         },
         {
           "date": "2026-04-04",
           "cumDebt": 2942299611,
           "utilized": 950699580,
-          "dailySkyCharge": 93133.21
+          "dailySkyCharge": 95990.66
         },
         {
           "date": "2026-04-05",
           "cumDebt": 2942299611,
           "utilized": 950699580,
-          "dailySkyCharge": 93133.21
+          "dailySkyCharge": 95990.66
         },
         {
           "date": "2026-04-06",
@@ -2608,37 +2594,37 @@
           "date": "2026-04-07",
           "cumDebt": 3092300857,
           "utilized": 1000237800,
-          "dailySkyCharge": 101225.45
+          "dailySkyCharge": 100994.39
         },
         {
           "date": "2026-04-08",
           "cumDebt": 3144300857,
           "utilized": 977019400,
-          "dailySkyCharge": 98873.89
+          "dailySkyCharge": 98196.56
         },
         {
           "date": "2026-04-09",
           "cumDebt": 3171300857,
           "utilized": 978793769,
-          "dailySkyCharge": 99053.45
+          "dailySkyCharge": 98148.68
         },
         {
           "date": "2026-04-10",
           "cumDebt": 3243944282,
           "utilized": 976208183,
-          "dailySkyCharge": 98791.79
+          "dailySkyCharge": 98115.03
         },
         {
           "date": "2026-04-11",
           "cumDebt": 3243944282,
           "utilized": 976208183,
-          "dailySkyCharge": 98791.79
+          "dailySkyCharge": 98115.03
         },
         {
           "date": "2026-04-12",
           "cumDebt": 3243944282,
           "utilized": 976208183,
-          "dailySkyCharge": 98791.79
+          "dailySkyCharge": 98115.03
         },
         {
           "date": "2026-04-13",
@@ -2662,25 +2648,25 @@
           "date": "2026-04-16",
           "cumDebt": 3455786805,
           "utilized": 966849753,
-          "dailySkyCharge": 97621.32
+          "dailySkyCharge": 97397.89
         },
         {
           "date": "2026-04-17",
           "cumDebt": 3443791779,
           "utilized": 954571725,
-          "dailySkyCharge": 96381.63
+          "dailySkyCharge": 96161.04
         },
         {
           "date": "2026-04-18",
           "cumDebt": 3437781540,
           "utilized": 948561486,
-          "dailySkyCharge": 95774.78
+          "dailySkyCharge": 95555.58
         },
         {
           "date": "2026-04-19",
           "cumDebt": 3452781540,
           "utilized": 963561486,
-          "dailySkyCharge": 97289.31
+          "dailySkyCharge": 97066.64
         },
         {
           "date": "2026-04-20",
@@ -2692,37 +2678,37 @@
           "date": "2026-04-21",
           "cumDebt": 3458781761,
           "utilized": 968601959,
-          "dailySkyCharge": 97798.24
+          "dailySkyCharge": 97350.56
         },
         {
           "date": "2026-04-22",
           "cumDebt": 3463781761,
           "utilized": 973365300,
-          "dailySkyCharge": 97956.88
+          "dailySkyCharge": 97506.95
         },
         {
           "date": "2026-04-23",
           "cumDebt": 3462781841,
           "utilized": 1022132049,
-          "dailySkyCharge": 102992.86
+          "dailySkyCharge": 102530.61
         },
         {
           "date": "2026-04-24",
           "cumDebt": 3363717598,
           "utilized": 972840520,
-          "dailySkyCharge": 97904.07
+          "dailySkyCharge": 97454.38
         },
         {
           "date": "2026-04-25",
           "cumDebt": 3364717598,
           "utilized": 973840520,
-          "dailySkyCharge": 98004.71
+          "dailySkyCharge": 97554.56
         },
         {
           "date": "2026-04-26",
           "cumDebt": 3365717598,
           "utilized": 974840520,
-          "dailySkyCharge": 98105.35
+          "dailySkyCharge": 97654.73
         },
         {
           "date": "2026-04-27",
@@ -2795,12 +2781,12 @@
       "headline": {
         "agentRate": 71960.6,
         "distributionRewards": 20518.52,
-        "demandSideRevenue": 92479.12,
-        "primeSupplySideRevenue": 239722.76,
-        "primeCostOfFunds": 3345973.19,
+        "demandSideRevenue": 111064.57,
+        "primeSupplySideRevenue": 369669.53,
+        "primeCostOfFunds": 3343569.52,
         "skyDirectExposure": 5242531.29,
-        "skyRevenue": 8588504.48,
-        "primeAgentProfit": 332201.88
+        "skyRevenue": 8586100.81,
+        "primeAgentProfit": 480734.1
       },
       "venues": [
         {
@@ -3046,11 +3032,11 @@
         {
           "id": "E22",
           "label": "Anemoy Tokenized Apollo Diversified Credit Fund (ACRDX)",
-          "valueSom": 50865822.22,
-          "valueEom": 32739638.94,
-          "periodInflow": -18077669.47,
-          "actualRev": -48513.8,
-          "revenue": -48513.8,
+          "valueSom": 50783448.06,
+          "valueEom": 32754774.89,
+          "periodInflow": -18107702.48,
+          "actualRev": 79029.3,
+          "revenue": 79029.3,
           "sdRevenue": 0,
           "sdShare": 0,
           "spreadReimb": 0
@@ -3162,14 +3148,33 @@
           "sdRevenue": 0,
           "sdShare": 0,
           "spreadReimb": 0
+        },
+        {
+          "id": "E40",
+          "label": "USDS raw (Diamond PAU ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E41",
+          "label": "JTRSY Basin escrow — USDS pending subscription (Diamond PAU)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
         }
       ],
       "refCodes": [
-        {
-          "refCode": "2000",
-          "dr": 0,
-          "notes": ""
-        },
         {
           "refCode": "2001",
           "dr": 8467.99,
@@ -3177,11 +3182,6 @@
         },
         {
           "refCode": "2002",
-          "dr": 0,
-          "notes": ""
-        },
-        {
-          "refCode": "2003",
           "dr": 0,
           "notes": ""
         },
@@ -3209,16 +3209,16 @@
       "rateBuild": {
         "timeWeightedUtilized": 1070796625.540224,
         "baseRate": 0.03951024672617314,
-        "referenceRate": 0.03689032258064516,
-        "referenceRateKind": "tbill_3m",
-        "subsidisedRate": 0.03732734186107307,
-        "effectiveRate": 0.03747483383441957,
-        "diffVsBaseBps": -20.35412891753571,
-        "subsidyBenefit": 178277.9868267714,
+        "referenceRate": 0.03685483870967742,
+        "referenceRateKind": "tbill_3m→sofr@2026-07-23",
+        "subsidisedRate": 0.03729777196859994,
+        "effectiveRate": 0.03744741878907706,
+        "diffVsBaseBps": -20.62827937096083,
+        "subsidyBenefit": 180681.655360523,
         "cofAtFullBase": 3524251.177648756,
-        "cofOnUtilized": 3345973.190821985,
+        "cofOnUtilized": 3343569.522288233,
         "skyDirectComponent": 5242531.28537233,
-        "skyRevenueMax": 9534049.06224379,
+        "skyRevenueMax": 9531627.875473827,
         "subsidyEnabled": true,
         "capUsd": 1000000000
       },
@@ -3289,37 +3289,37 @@
           "date": "2026-05-05",
           "cumDebt": 3081184252,
           "utilized": 973007934,
-          "dailySkyCharge": 97975.48
+          "dailySkyCharge": 97761.31
         },
         {
           "date": "2026-05-06",
           "cumDebt": 3082184252,
           "utilized": 973803861,
-          "dailySkyCharge": 98055.62
+          "dailySkyCharge": 97841.28
         },
         {
           "date": "2026-05-07",
           "cumDebt": 3082184252,
           "utilized": 973597157,
-          "dailySkyCharge": 98034.81
+          "dailySkyCharge": 97820.52
         },
         {
           "date": "2026-05-08",
           "cumDebt": 3131184328,
           "utilized": 1022396082,
-          "dailySkyCharge": 103077.03
+          "dailySkyCharge": 102856.93
         },
         {
           "date": "2026-05-09",
           "cumDebt": 3131184328,
           "utilized": 1022396082,
-          "dailySkyCharge": 103077.03
+          "dailySkyCharge": 102856.93
         },
         {
           "date": "2026-05-10",
           "cumDebt": 3131184328,
           "utilized": 1022396082,
-          "dailySkyCharge": 103077.03
+          "dailySkyCharge": 102856.93
         },
         {
           "date": "2026-05-11",
@@ -3337,31 +3337,31 @@
           "date": "2026-05-13",
           "cumDebt": 3098127250,
           "utilized": 1088386090,
-          "dailySkyCharge": 110100.4
+          "dailySkyCharge": 109880.3
         },
         {
           "date": "2026-05-14",
           "cumDebt": 3049133871,
           "utilized": 1089206574,
-          "dailySkyCharge": 110187.72
+          "dailySkyCharge": 109967.62
         },
         {
           "date": "2026-05-15",
           "cumDebt": 3024125400,
           "utilized": 1114011912,
-          "dailySkyCharge": 112827.78
+          "dailySkyCharge": 112607.67
         },
         {
           "date": "2026-05-16",
           "cumDebt": 3024125400,
           "utilized": 1114011912,
-          "dailySkyCharge": 112827.78
+          "dailySkyCharge": 112607.67
         },
         {
           "date": "2026-05-17",
           "cumDebt": 3024125400,
           "utilized": 1114011912,
-          "dailySkyCharge": 112827.78
+          "dailySkyCharge": 112607.67
         },
         {
           "date": "2026-05-18",
@@ -3373,13 +3373,13 @@
           "date": "2026-05-19",
           "cumDebt": 2927122354,
           "utilized": 1116269333,
-          "dailySkyCharge": 112627.81
+          "dailySkyCharge": 112407.67
         },
         {
           "date": "2026-05-20",
           "cumDebt": 2857131782,
           "utilized": 1096098867,
-          "dailySkyCharge": 110481.05
+          "dailySkyCharge": 109820.58
         },
         {
           "date": "2026-05-21",
@@ -3427,25 +3427,25 @@
           "date": "2026-05-28",
           "cumDebt": 2647157440,
           "utilized": 1084937666,
-          "dailySkyCharge": 108960.06
+          "dailySkyCharge": 109180.2
         },
         {
           "date": "2026-05-29",
           "cumDebt": 2652157440,
           "utilized": 1089869757,
-          "dailySkyCharge": 109478.47
+          "dailySkyCharge": 109698.61
         },
         {
           "date": "2026-05-30",
           "cumDebt": 2657157440,
           "utilized": 1094869757,
-          "dailySkyCharge": 110004.01
+          "dailySkyCharge": 110224.15
         },
         {
           "date": "2026-05-31",
           "cumDebt": 2660157440,
           "utilized": 1097869757,
-          "dailySkyCharge": 110319.34
+          "dailySkyCharge": 110539.48
         }
       ],
       "excludedVenues": [
@@ -3494,12 +3494,12 @@
       "headline": {
         "agentRate": 66624.62,
         "distributionRewards": 55456.33,
-        "demandSideRevenue": 122080.95,
-        "primeSupplySideRevenue": -347710.08,
-        "primeCostOfFunds": 3291039.78,
+        "demandSideRevenue": 137730.85,
+        "primeSupplySideRevenue": -270948.27,
+        "primeCostOfFunds": 3291457.59,
         "skyDirectExposure": 4709026.18,
-        "skyRevenue": 8000065.96,
-        "primeAgentProfit": -225629.13
+        "skyRevenue": 8000483.77,
+        "primeAgentProfit": -133217.42
       },
       "venues": [
         {
@@ -3745,11 +3745,11 @@
         {
           "id": "E22",
           "label": "Anemoy Tokenized Apollo Diversified Credit Fund (ACRDX)",
-          "valueSom": 32739638.94,
-          "valueEom": 32739638.94,
+          "valueSom": 32754774.89,
+          "valueEom": 32831954.51,
           "periodInflow": 0,
-          "actualRev": 0,
-          "revenue": 0,
+          "actualRev": 77179.62,
+          "revenue": 77179.62,
           "sdRevenue": 0,
           "sdShare": 0,
           "spreadReimb": 0
@@ -3861,14 +3861,33 @@
           "sdRevenue": 0,
           "sdShare": 0,
           "spreadReimb": 0
+        },
+        {
+          "id": "E40",
+          "label": "USDS raw (Diamond PAU ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E41",
+          "label": "JTRSY Basin escrow — USDS pending subscription (Diamond PAU)",
+          "valueSom": 0,
+          "valueEom": 1,
+          "periodInflow": 1,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
         }
       ],
       "refCodes": [
-        {
-          "refCode": "2000",
-          "dr": 0,
-          "notes": ""
-        },
         {
           "refCode": "2001",
           "dr": 21945.29,
@@ -3876,11 +3895,6 @@
         },
         {
           "refCode": "2002",
-          "dr": 0,
-          "notes": ""
-        },
-        {
-          "refCode": "2003",
           "dr": 0,
           "notes": ""
         },
@@ -3908,16 +3922,16 @@
       "rateBuild": {
         "timeWeightedUtilized": 1063854744.993378,
         "baseRate": 0.03910800426568259,
-        "referenceRate": 0.03809333333333333,
-        "referenceRateKind": "tbill_3m",
-        "subsidisedRate": 0.0383047231109061,
-        "effectiveRate": 0.03835293769427627,
-        "diffVsBaseBps": -7.550665714063191,
-        "subsidyBenefit": 63571.67819359694,
+        "referenceRate": 0.0381,
+        "referenceRateKind": "tbill_3m→sofr@2026-07-23",
+        "subsidisedRate": 0.03831000088868387,
+        "effectiveRate": 0.03835789868900098,
+        "diffVsBaseBps": -7.501055766816042,
+        "subsidyBenefit": 63153.86653210641,
         "cofAtFullBase": 3354611.45943857,
-        "cofOnUtilized": 3291039.781244973,
+        "cofOnUtilized": 3291457.592906464,
         "skyDirectComponent": 4709026.177726324,
-        "skyRevenueMax": 8225450.871941987,
+        "skyRevenueMax": 8225868.683603478,
         "subsidyEnabled": true,
         "capUsd": 1000000000
       },
@@ -3970,7 +3984,7 @@
           "date": "2026-06-02",
           "cumDebt": 2635712848,
           "utilized": 1072793806,
-          "dailySkyCharge": 110028.09
+          "dailySkyCharge": 109819.12
         },
         {
           "date": "2026-06-03",
@@ -4012,37 +4026,37 @@
           "date": "2026-06-09",
           "cumDebt": 2610717847,
           "utilized": 1046768861,
-          "dailySkyCharge": 107710.53
+          "dailySkyCharge": 107501.59
         },
         {
           "date": "2026-06-10",
           "cumDebt": 2607346109,
           "utilized": 1043245534,
-          "dailySkyCharge": 107340.2
+          "dailySkyCharge": 107131.26
         },
         {
           "date": "2026-06-11",
           "cumDebt": 2587350108,
           "utilized": 1023103144,
-          "dailySkyCharge": 105223.06
+          "dailySkyCharge": 104805.17
         },
         {
           "date": "2026-06-12",
           "cumDebt": 2571628720,
           "utilized": 1007225518,
-          "dailySkyCharge": 103554.18
+          "dailySkyCharge": 103136.29
         },
         {
           "date": "2026-06-13",
           "cumDebt": 2588630800,
           "utilized": 1024227598,
-          "dailySkyCharge": 105341.25
+          "dailySkyCharge": 104923.36
         },
         {
           "date": "2026-06-14",
           "cumDebt": 2601630800,
           "utilized": 1037227598,
-          "dailySkyCharge": 106707.66
+          "dailySkyCharge": 106289.77
         },
         {
           "date": "2026-06-15",
@@ -4060,31 +4074,31 @@
           "date": "2026-06-17",
           "cumDebt": 2642631196,
           "utilized": 1077489391,
-          "dailySkyCharge": 110730.59
+          "dailySkyCharge": 111566.24
         },
         {
           "date": "2026-06-18",
           "cumDebt": 2642631196,
           "utilized": 1077363452,
-          "dailySkyCharge": 110717.35
+          "dailySkyCharge": 111553.01
         },
         {
           "date": "2026-06-19",
           "cumDebt": 2642631196,
           "utilized": 1077053458,
-          "dailySkyCharge": 110684.77
+          "dailySkyCharge": 111520.42
         },
         {
           "date": "2026-06-20",
           "cumDebt": 2642631196,
           "utilized": 1077053458,
-          "dailySkyCharge": 110684.77
+          "dailySkyCharge": 111520.42
         },
         {
           "date": "2026-06-21",
           "cumDebt": 2652631196,
           "utilized": 1087053458,
-          "dailySkyCharge": 111735.86
+          "dailySkyCharge": 112571.51
         },
         {
           "date": "2026-06-22",
@@ -4108,25 +4122,25 @@
           "date": "2026-06-25",
           "cumDebt": 2647260545,
           "utilized": 1080984690,
-          "dailySkyCharge": 112351.36
+          "dailySkyCharge": 112142.5
         },
         {
           "date": "2026-06-26",
           "cumDebt": 2643470692,
           "utilized": 1077045998,
-          "dailySkyCharge": 111937.37
+          "dailySkyCharge": 111519.64
         },
         {
           "date": "2026-06-27",
           "cumDebt": 2643470692,
           "utilized": 1077045998,
-          "dailySkyCharge": 111937.37
+          "dailySkyCharge": 111519.64
         },
         {
           "date": "2026-06-28",
           "cumDebt": 2643470692,
           "utilized": 1077045998,
-          "dailySkyCharge": 111937.37
+          "dailySkyCharge": 111519.64
         },
         {
           "date": "2026-06-29",
@@ -4181,35 +4195,743 @@
       ]
     },
     {
+      "partner": "grove",
+      "month": "2026-07",
+      "periodDays": 31,
+      "headline": {
+        "agentRate": 72023.77,
+        "distributionRewards": 28898.24,
+        "demandSideRevenue": 114024.09,
+        "primeSupplySideRevenue": 1563758.89,
+        "primeCostOfFunds": 3299017.14,
+        "skyDirectExposure": 4704533.2,
+        "skyRevenue": 8003550.33,
+        "primeAgentProfit": 1677782.98
+      },
+      "venues": [
+        {
+          "id": "E1",
+          "label": "Aave Horizon RWA RLUSD (aToken)",
+          "valueSom": 171742374.63,
+          "valueEom": 0.01,
+          "periodInflow": -171860336.42,
+          "actualRev": 117961.8,
+          "revenue": 1586143.24,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E2",
+          "label": "Aave Horizon RWA USDC (aToken)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E3",
+          "label": "Aave Ethereum RLUSD (aToken)",
+          "valueSom": 0.37,
+          "valueEom": 0.37,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E4",
+          "label": "Grove x Steakhouse USDC (Morpho 4626)",
+          "valueSom": 1000397.09,
+          "valueEom": 1003527.32,
+          "periodInflow": 0,
+          "actualRev": 3130.22,
+          "revenue": 3130.22,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E5",
+          "label": "Grove x Steakhouse USDC High Yield (Morpho 4626)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E6",
+          "label": "Grove x Steakhouse AUSD (Morpho 4626)",
+          "valueSom": 25126531.48,
+          "valueEom": 25197943.55,
+          "periodInflow": 0,
+          "actualRev": 71412.07,
+          "revenue": 71412.07,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E7",
+          "label": "Securitize Tokenized AAA CLO Fund (STAC)",
+          "valueSom": 102059776.1,
+          "valueEom": 102600718.7,
+          "periodInflow": 0,
+          "actualRev": 540942.6,
+          "revenue": 540942.6,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E8",
+          "label": "Janus Henderson Anemoy AAA CLO (JAAA)",
+          "valueSom": 129713310.95,
+          "valueEom": 130164330.43,
+          "periodInflow": 0,
+          "actualRev": 451019.48,
+          "revenue": 451019.48,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E9",
+          "label": "Janus Henderson Anemoy Treasury Fund (JTRSY)",
+          "valueSom": 852967438.98,
+          "valueEom": 855559413.99,
+          "periodInflow": 0,
+          "actualRev": 2591975.01,
+          "revenue": 0,
+          "sdRevenue": 2591975.01,
+          "sdShare": 1,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E10",
+          "label": "BlackRock USD Institutional Digital Liquidity Fund (BUIDL-I)",
+          "valueSom": 714029269.83,
+          "valueEom": 716141828.02,
+          "periodInflow": 0,
+          "actualRev": 2112558.19,
+          "revenue": 0,
+          "sdRevenue": 2112558.19,
+          "sdShare": 1,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E11",
+          "label": "Curve AUSD/USDC stableswap LP",
+          "valueSom": 25001777.83,
+          "valueEom": 25001934.08,
+          "periodInflow": 0,
+          "actualRev": 156.25,
+          "revenue": 156.25,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E12",
+          "label": "Uniswap V3 AUSD/USDC pool (NFT positions)",
+          "valueSom": 25049891.34,
+          "valueEom": 25057232.61,
+          "periodInflow": 0,
+          "actualRev": 7341.27,
+          "revenue": 7341.27,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E13",
+          "label": "RLUSD raw (ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E15",
+          "label": "USDC raw (ALM idle)",
+          "valueSom": 7547666.11,
+          "valueEom": 0,
+          "periodInflow": -7547666.11,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E16",
+          "label": "DAI raw (ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E17",
+          "label": "USDS raw / POL (ALM idle — already netted out of utilized)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E18",
+          "label": "sUSDS raw / POL (ALM idle — Cat B 4626)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E19",
+          "label": "Grove x Steakhouse USDC High Yield (Base, Morpho 4626)",
+          "valueSom": 6027300.89,
+          "valueEom": 74985592.3,
+          "periodInflow": 68903055.98,
+          "actualRev": 55235.43,
+          "revenue": 55235.43,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E20",
+          "label": "Janus Henderson Anemoy AAA CLO (JAAA-avalanche)",
+          "valueSom": 259827767.94,
+          "valueEom": 260731201.71,
+          "periodInflow": 0,
+          "actualRev": 903433.77,
+          "revenue": 903433.77,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E21",
+          "label": "Galaxy Arch CLO Token (GACLO-1)",
+          "valueSom": 27586956.37,
+          "valueEom": 27586956.37,
+          "periodInflow": 0,
+          "actualRev": 267818.71,
+          "revenue": 267818.71,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E22",
+          "label": "Anemoy Tokenized Apollo Diversified Credit Fund (ACRDX)",
+          "valueSom": 32831954.51,
+          "valueEom": 32853651.73,
+          "periodInflow": 0,
+          "actualRev": 21697.22,
+          "revenue": 21697.22,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E23",
+          "label": "Steakhouse Prime Instant (Base, Morpho V2)",
+          "valueSom": 173617481.65,
+          "valueEom": 204310140.7,
+          "periodInflow": 30000943.33,
+          "actualRev": 691715.72,
+          "revenue": 691715.72,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E24",
+          "label": "Steakhouse High Yield PYUSD (Morpho 4626)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E26",
+          "label": "PYUSD raw (ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E27",
+          "label": "USDC raw on Base (ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E30",
+          "label": "Uniswap V3 AUSD/USDC pool (NFT positions — alt holder)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E31",
+          "label": "AUSD raw (alt holder idle)",
+          "valueSom": 10068.98,
+          "valueEom": 10068.98,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E32",
+          "label": "USDC raw (alt holder idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E37",
+          "label": "Maple syrupUSDC (ERC-4626)",
+          "valueSom": 100671412.01,
+          "valueEom": 0,
+          "periodInflow": -100934142.04,
+          "actualRev": 262730.04,
+          "revenue": 262730.04,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E38",
+          "label": "Agora AUSD incentives (cash distribution to Grove Eth ALM)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E40",
+          "label": "USDS raw (Diamond PAU ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E41",
+          "label": "JTRSY Basin escrow — USDS pending subscription (Diamond PAU)",
+          "valueSom": 1,
+          "valueEom": 1000000,
+          "periodInflow": 999999,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        }
+      ],
+      "refCodes": [
+        {
+          "refCode": "2001",
+          "dr": 8574.04,
+          "notes": ""
+        },
+        {
+          "refCode": "2002",
+          "dr": 0,
+          "notes": ""
+        },
+        {
+          "refCode": "2005",
+          "dr": 0,
+          "notes": ""
+        },
+        {
+          "refCode": "2008",
+          "dr": 17489.64,
+          "notes": ""
+        },
+        {
+          "refCode": "2012",
+          "dr": 2834.56,
+          "notes": ""
+        },
+        {
+          "refCode": "2222",
+          "dr": 0,
+          "notes": ""
+        }
+      ],
+      "rateBuild": {
+        "timeWeightedUtilized": 1040369959.51144,
+        "baseRate": 0.03852302248128459,
+        "referenceRate": 0.0379,
+        "referenceRateKind": "tbill_3m→sofr@2026-07-23",
+        "subsidisedRate": 0.03806862645474302,
+        "effectiveRate": 0.03804017286855644,
+        "diffVsBaseBps": -4.828496127281479,
+        "subsidyBenefit": 41099.72297488574,
+        "cofAtFullBase": 3340116.861192898,
+        "cofOnUtilized": 3299017.138218012,
+        "skyDirectComponent": 4704533.195761743,
+        "skyRevenueMax": 8343733.524121915,
+        "subsidyEnabled": true,
+        "capUsd": 1000000000
+      },
+      "skyDirect": [
+        {
+          "id": "E10",
+          "kind": "fixed",
+          "cap": null,
+          "start": "2025-10-30",
+          "end": "—",
+          "active": true,
+          "source": "Atlas A.2.2.9.1.1.1.1.1 — Treasury Bills",
+          "label": "BUIDL on Eth",
+          "actualRevenue": 2112558.19,
+          "sdRevenue": 2112558.19
+        },
+        {
+          "id": "E9",
+          "kind": "fixed",
+          "cap": null,
+          "start": "2025-10-30",
+          "end": "—",
+          "active": true,
+          "source": "Atlas A.2.2.9.1.1.1.1.1 — Treasury Bills",
+          "label": "JTRSY on Eth",
+          "actualRevenue": 2591975.005761743,
+          "sdRevenue": 2591975.005761743
+        },
+        {
+          "id": "E8",
+          "kind": "capped",
+          "cap": 325000000,
+          "start": "2025-10-23",
+          "end": "2026-03-12",
+          "active": false,
+          "source": "Atlas A.2.2.9.1.1.1.1.3.0.6.1 — Historical SDE",
+          "label": "JAAA on Eth (≤ $325M)",
+          "actualRevenue": 451019.4848234538,
+          "sdRevenue": 0
+        }
+      ],
+      "debtDaily": [
+        {
+          "date": "2026-07-01",
+          "cumDebt": 2636471423,
+          "utilized": 1069314051,
+          "dailySkyCharge": 111191.51
+        },
+        {
+          "date": "2026-07-02",
+          "cumDebt": 2620472606,
+          "utilized": 1053144793,
+          "dailySkyCharge": 108898.36
+        },
+        {
+          "date": "2026-07-03",
+          "cumDebt": 2602475724,
+          "utilized": 1034788567,
+          "dailySkyCharge": 106968.96
+        },
+        {
+          "date": "2026-07-04",
+          "cumDebt": 2602475724,
+          "utilized": 1034788567,
+          "dailySkyCharge": 106968.96
+        },
+        {
+          "date": "2026-07-05",
+          "cumDebt": 2602475724,
+          "utilized": 1034788567,
+          "dailySkyCharge": 106968.96
+        },
+        {
+          "date": "2026-07-06",
+          "cumDebt": 2597476895,
+          "utilized": 1029516186,
+          "dailySkyCharge": 107404.09
+        },
+        {
+          "date": "2026-07-07",
+          "cumDebt": 2592477660,
+          "utilized": 1024378820,
+          "dailySkyCharge": 106666.27
+        },
+        {
+          "date": "2026-07-08",
+          "cumDebt": 2587478099,
+          "utilized": 1019237798,
+          "dailySkyCharge": 106323.74
+        },
+        {
+          "date": "2026-07-09",
+          "cumDebt": 2561481536,
+          "utilized": 993095419,
+          "dailySkyCharge": 102795.57
+        },
+        {
+          "date": "2026-07-10",
+          "cumDebt": 2556482111,
+          "utilized": 987923847,
+          "dailySkyCharge": 102651.21
+        },
+        {
+          "date": "2026-07-11",
+          "cumDebt": 2556214291,
+          "utilized": 987656026,
+          "dailySkyCharge": 102623.39
+        },
+        {
+          "date": "2026-07-12",
+          "cumDebt": 2556214291,
+          "utilized": 987656026,
+          "dailySkyCharge": 102623.39
+        },
+        {
+          "date": "2026-07-13",
+          "cumDebt": 2562714291,
+          "utilized": 993726255,
+          "dailySkyCharge": 104040.45
+        },
+        {
+          "date": "2026-07-14",
+          "cumDebt": 2564714190,
+          "utilized": 995613023,
+          "dailySkyCharge": 103253.17
+        },
+        {
+          "date": "2026-07-15",
+          "cumDebt": 2570714190,
+          "utilized": 1001442088,
+          "dailySkyCharge": 103661.84
+        },
+        {
+          "date": "2026-07-16",
+          "cumDebt": 2570714190,
+          "utilized": 1001292413,
+          "dailySkyCharge": 103843.98
+        },
+        {
+          "date": "2026-07-17",
+          "cumDebt": 2570714546,
+          "utilized": 1001145525,
+          "dailySkyCharge": 104026.4
+        },
+        {
+          "date": "2026-07-18",
+          "cumDebt": 2570714546,
+          "utilized": 1001145525,
+          "dailySkyCharge": 104026.4
+        },
+        {
+          "date": "2026-07-19",
+          "cumDebt": 2570714546,
+          "utilized": 1001145525,
+          "dailySkyCharge": 104026.4
+        },
+        {
+          "date": "2026-07-20",
+          "cumDebt": 2482128028,
+          "utilized": 912114862,
+          "dailySkyCharge": 94954.66
+        },
+        {
+          "date": "2026-07-21",
+          "cumDebt": 2456799611,
+          "utilized": 886641582,
+          "dailySkyCharge": 92478.2
+        },
+        {
+          "date": "2026-07-22",
+          "cumDebt": 2504299611,
+          "utilized": 934009389,
+          "dailySkyCharge": 97788.26
+        },
+        {
+          "date": "2026-07-23",
+          "cumDebt": 2559799836,
+          "utilized": 989389037,
+          "dailySkyCharge": 97488.37
+        },
+        {
+          "date": "2026-07-24",
+          "cumDebt": 2607299836,
+          "utilized": 1036802155,
+          "dailySkyCharge": 102223.65
+        },
+        {
+          "date": "2026-07-25",
+          "cumDebt": 2658799836,
+          "utilized": 1088302155,
+          "dailySkyCharge": 107386.98
+        },
+        {
+          "date": "2026-07-26",
+          "cumDebt": 2714299836,
+          "utilized": 1143802155,
+          "dailySkyCharge": 112951.35
+        },
+        {
+          "date": "2026-07-27",
+          "cumDebt": 2733299836,
+          "utilized": 1162347215,
+          "dailySkyCharge": 114810.65
+        },
+        {
+          "date": "2026-07-28",
+          "cumDebt": 2752299836,
+          "utilized": 1181202655,
+          "dailySkyCharge": 116899.31
+        },
+        {
+          "date": "2026-07-29",
+          "cumDebt": 2793199824,
+          "utilized": 1221905600,
+          "dailySkyCharge": 120980.14
+        },
+        {
+          "date": "2026-07-30",
+          "cumDebt": 2793199824,
+          "utilized": 1221654337,
+          "dailySkyCharge": 120954.95
+        },
+        {
+          "date": "2026-07-31",
+          "cumDebt": 2793199824,
+          "utilized": 1221498582,
+          "dailySkyCharge": 121137.55
+        }
+      ],
+      "excludedVenues": [
+        {
+          "id": "E14",
+          "label": "AUSD raw (ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0
+        },
+        {
+          "id": "E25",
+          "label": "Grove x Steakhouse High Yield AUSD (Monad, Morpho 4626)",
+          "valueSom": 0,
+          "valueEom": 0
+        },
+        {
+          "id": "E33",
+          "label": "Uniswap V3 AUSD/USDC pool (Monad, NFT positions)",
+          "valueSom": 0,
+          "valueEom": 0
+        },
+        {
+          "id": "E34",
+          "label": "AUSD raw (Monad, alt holder idle)",
+          "valueSom": 0,
+          "valueEom": 0
+        },
+        {
+          "id": "E35",
+          "label": "USDC raw (Monad, alt holder idle)",
+          "valueSom": 207788.13,
+          "valueEom": 152288.13
+        },
+        {
+          "id": "E36",
+          "label": "OOB principal via 0xd94f (relay to Monad ALM EOA → AUSD acquisition)",
+          "valueSom": 50001000,
+          "valueEom": 50001000
+        }
+      ]
+    },
+    {
       "partner": "keel",
       "month": "2026-01",
       "periodDays": 31,
       "headline": {
         "agentRate": 0,
-        "distributionRewards": 28435.59,
-        "demandSideRevenue": 28435.59,
+        "distributionRewards": 28500.23,
+        "demandSideRevenue": 28500.23,
         "primeSupplySideRevenue": 0,
         "primeCostOfFunds": 0,
         "skyDirectExposure": 0,
         "skyRevenue": 0,
-        "primeAgentProfit": 28435.59
+        "primeAgentProfit": 28500.23
       },
       "venues": [],
       "refCodes": [
         {
           "refCode": "4001",
-          "dr": 28435.59,
-          "notes": "Synthetic code: USDS in Solana OFT Bridge (0x1e1D42781FC170EF9da004Fb735f56F0276d01B8). No on-chain Referral event; entire contract balance attributed. XR rate."
+          "dr": 28500.23,
+          "notes": "Synthetic code: USDS in Solana OFT Bridge; entire contract balance. Intraday TWA (clean methodology; Dune query used EOD snapshots)."
         },
         {
           "refCode": "4011",
           "dr": 0,
-          "notes": "Included in aggregators, needs methodology update. 1inch"
-        },
-        {
-          "refCode": "4012",
-          "dr": 0,
-          "notes": ""
+          "notes": "1inch — re-routed executor-owned Referral(4011) in the unified stream."
         }
       ],
       "rateBuild": {
@@ -4238,30 +4960,25 @@
       "periodDays": 28,
       "headline": {
         "agentRate": 0,
-        "distributionRewards": 25260.48,
-        "demandSideRevenue": 25260.48,
+        "distributionRewards": 25181.36,
+        "demandSideRevenue": 25181.36,
         "primeSupplySideRevenue": 0,
         "primeCostOfFunds": 0,
         "skyDirectExposure": 0,
         "skyRevenue": 0,
-        "primeAgentProfit": 25260.48
+        "primeAgentProfit": 25181.36
       },
       "venues": [],
       "refCodes": [
         {
           "refCode": "4001",
-          "dr": 25260.48,
-          "notes": "Synthetic code: USDS in Solana OFT Bridge (0x1e1D42781FC170EF9da004Fb735f56F0276d01B8). No on-chain Referral event; entire contract balance attributed. XR rate."
+          "dr": 25181.36,
+          "notes": "Synthetic code: USDS in Solana OFT Bridge; entire contract balance. Intraday TWA (clean methodology; Dune query used EOD snapshots)."
         },
         {
           "refCode": "4011",
           "dr": 0,
-          "notes": "Included in aggregators, needs methodology update. 1inch"
-        },
-        {
-          "refCode": "4012",
-          "dr": 0,
-          "notes": ""
+          "notes": "1inch — re-routed executor-owned Referral(4011) in the unified stream."
         }
       ],
       "rateBuild": {
@@ -4290,30 +5007,25 @@
       "periodDays": 31,
       "headline": {
         "agentRate": 2126.8,
-        "distributionRewards": 29059.5,
-        "demandSideRevenue": 31186.3,
+        "distributionRewards": 29061.49,
+        "demandSideRevenue": 31188.29,
         "primeSupplySideRevenue": 0,
         "primeCostOfFunds": 0,
         "skyDirectExposure": 0,
         "skyRevenue": 0,
-        "primeAgentProfit": 31186.3
+        "primeAgentProfit": 31188.29
       },
       "venues": [],
       "refCodes": [
         {
           "refCode": "4001",
-          "dr": 29059.5,
-          "notes": "Synthetic code: USDS in Solana OFT Bridge (0x1e1D42781FC170EF9da004Fb735f56F0276d01B8). No on-chain Referral event; entire contract balance attributed. XR rate."
+          "dr": 29061.49,
+          "notes": "Synthetic code: USDS in Solana OFT Bridge; entire contract balance. Intraday TWA (clean methodology; Dune query used EOD snapshots)."
         },
         {
           "refCode": "4011",
           "dr": 0,
-          "notes": "Included in aggregators, needs methodology update. 1inch"
-        },
-        {
-          "refCode": "4012",
-          "dr": 0,
-          "notes": ""
+          "notes": "1inch — re-routed executor-owned Referral(4011) in the unified stream."
         }
       ],
       "rateBuild": {
@@ -4342,30 +5054,25 @@
       "periodDays": 30,
       "headline": {
         "agentRate": 31676.69,
-        "distributionRewards": 23206.77,
-        "demandSideRevenue": 54883.46,
+        "distributionRewards": 23261.27,
+        "demandSideRevenue": 54937.96,
         "primeSupplySideRevenue": 0,
         "primeCostOfFunds": 0,
         "skyDirectExposure": 0,
         "skyRevenue": 0,
-        "primeAgentProfit": 54883.46
+        "primeAgentProfit": 54937.96
       },
       "venues": [],
       "refCodes": [
         {
           "refCode": "4001",
-          "dr": 23206.77,
-          "notes": "Synthetic code: USDS in Solana OFT Bridge (0x1e1D42781FC170EF9da004Fb735f56F0276d01B8). No on-chain Referral event; entire contract balance attributed. XR rate."
+          "dr": 23261.27,
+          "notes": "Synthetic code: USDS in Solana OFT Bridge; entire contract balance. Intraday TWA (clean methodology; Dune query used EOD snapshots)."
         },
         {
           "refCode": "4011",
           "dr": 0,
-          "notes": "Included in aggregators, needs methodology update. 1inch"
-        },
-        {
-          "refCode": "4012",
-          "dr": 0,
-          "notes": ""
+          "notes": "1inch — re-routed executor-owned Referral(4011) in the unified stream."
         }
       ],
       "rateBuild": {
@@ -4394,30 +5101,25 @@
       "periodDays": 31,
       "headline": {
         "agentRate": 32278.71,
-        "distributionRewards": 22600.1,
-        "demandSideRevenue": 54878.81,
+        "distributionRewards": 22724.74,
+        "demandSideRevenue": 55003.45,
         "primeSupplySideRevenue": 0,
         "primeCostOfFunds": 0,
         "skyDirectExposure": 0,
         "skyRevenue": 0,
-        "primeAgentProfit": 54878.81
+        "primeAgentProfit": 55003.45
       },
       "venues": [],
       "refCodes": [
         {
           "refCode": "4001",
-          "dr": 22600.1,
-          "notes": "Synthetic code: USDS in Solana OFT Bridge (0x1e1D42781FC170EF9da004Fb735f56F0276d01B8). No on-chain Referral event; entire contract balance attributed. XR rate."
+          "dr": 22648.4,
+          "notes": "Synthetic code: USDS in Solana OFT Bridge; entire contract balance. Intraday TWA (clean methodology; Dune query used EOD snapshots)."
         },
         {
           "refCode": "4011",
-          "dr": 0.01,
-          "notes": "Included in aggregators, needs methodology update. 1inch"
-        },
-        {
-          "refCode": "4012",
-          "dr": 0,
-          "notes": ""
+          "dr": 76.34,
+          "notes": "1inch — re-routed executor-owned Referral(4011) in the unified stream."
         }
       ],
       "rateBuild": {
@@ -4446,30 +5148,72 @@
       "periodDays": 30,
       "headline": {
         "agentRate": 30997.79,
-        "distributionRewards": 19571.76,
-        "demandSideRevenue": 50569.55,
+        "distributionRewards": 19688.27,
+        "demandSideRevenue": 50686.06,
         "primeSupplySideRevenue": 0,
         "primeCostOfFunds": 0,
         "skyDirectExposure": 0,
         "skyRevenue": 0,
-        "primeAgentProfit": 50569.55
+        "primeAgentProfit": 50686.06
       },
       "venues": [],
       "refCodes": [
         {
           "refCode": "4001",
-          "dr": 19571.76,
-          "notes": "Synthetic code: USDS in Solana OFT Bridge (0x1e1D42781FC170EF9da004Fb735f56F0276d01B8). No on-chain Referral event; entire contract balance attributed. XR rate."
+          "dr": 19688.27,
+          "notes": "Synthetic code: USDS in Solana OFT Bridge; entire contract balance. Intraday TWA (clean methodology; Dune query used EOD snapshots)."
         },
         {
           "refCode": "4011",
           "dr": 0,
-          "notes": "Included in aggregators, needs methodology update. 1inch"
+          "notes": "1inch — re-routed executor-owned Referral(4011) in the unified stream."
+        }
+      ],
+      "rateBuild": {
+        "timeWeightedUtilized": null,
+        "baseRate": null,
+        "referenceRate": null,
+        "referenceRateKind": null,
+        "subsidisedRate": null,
+        "effectiveRate": null,
+        "diffVsBaseBps": null,
+        "subsidyBenefit": null,
+        "cofAtFullBase": null,
+        "cofOnUtilized": 0,
+        "skyDirectComponent": 0,
+        "skyRevenueMax": null,
+        "subsidyEnabled": null,
+        "capUsd": null
+      },
+      "skyDirect": [],
+      "debtDaily": [],
+      "excludedVenues": []
+    },
+    {
+      "partner": "keel",
+      "month": "2026-07",
+      "periodDays": 31,
+      "headline": {
+        "agentRate": 32003.53,
+        "distributionRewards": 4227.11,
+        "demandSideRevenue": 36230.64,
+        "primeSupplySideRevenue": 0,
+        "primeCostOfFunds": 0,
+        "skyDirectExposure": 0,
+        "skyRevenue": 0,
+        "primeAgentProfit": 36230.64
+      },
+      "venues": [],
+      "refCodes": [
+        {
+          "refCode": "4001",
+          "dr": 4107.61,
+          "notes": "Synthetic code: USDS in Solana OFT Bridge; entire contract balance. Intraday TWA (clean methodology; Dune query used EOD snapshots)."
         },
         {
-          "refCode": "4012",
-          "dr": 0,
-          "notes": ""
+          "refCode": "4011",
+          "dr": 119.5,
+          "notes": "1inch — re-routed executor-owned Referral(4011) in the unified stream."
         }
       ],
       "rateBuild": {
@@ -5879,18 +6623,513 @@
       "excludedVenues": []
     },
     {
+      "partner": "obex",
+      "month": "2026-07",
+      "periodDays": 31,
+      "headline": {
+        "agentRate": 71996.7,
+        "distributionRewards": 0,
+        "demandSideRevenue": 71996.7,
+        "primeSupplySideRevenue": 764734.69,
+        "primeCostOfFunds": 1761245.42,
+        "skyDirectExposure": 0,
+        "skyRevenue": 1761245.42,
+        "primeAgentProfit": 836731.39
+      },
+      "venues": [
+        {
+          "id": "V1",
+          "label": "Maple syrupUSDC (Category B — ERC-4626 vault)",
+          "valueSom": 615784009.83,
+          "valueEom": 402261461.63,
+          "periodInflow": -216048528.31,
+          "actualRev": 2525980.11,
+          "revenue": 2525980.11,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        }
+      ],
+      "refCodes": [],
+      "rateBuild": {
+        "timeWeightedUtilized": null,
+        "baseRate": null,
+        "referenceRate": null,
+        "referenceRateKind": null,
+        "subsidisedRate": null,
+        "effectiveRate": null,
+        "diffVsBaseBps": null,
+        "subsidyBenefit": null,
+        "cofAtFullBase": null,
+        "cofOnUtilized": 1761245.421886497,
+        "skyDirectComponent": 0,
+        "skyRevenueMax": 1761245.421886497,
+        "subsidyEnabled": null,
+        "capUsd": null
+      },
+      "skyDirect": [],
+      "debtDaily": [
+        {
+          "date": "2026-07-01",
+          "cumDebt": 612320008,
+          "utilized": 612320008,
+          "dailySkyCharge": 64360.16
+        },
+        {
+          "date": "2026-07-02",
+          "cumDebt": 612320008,
+          "utilized": 612320008,
+          "dailySkyCharge": 64360.16
+        },
+        {
+          "date": "2026-07-03",
+          "cumDebt": 612320008,
+          "utilized": 612320008,
+          "dailySkyCharge": 64360.16
+        },
+        {
+          "date": "2026-07-04",
+          "cumDebt": 612320008,
+          "utilized": 612320008,
+          "dailySkyCharge": 64360.16
+        },
+        {
+          "date": "2026-07-05",
+          "cumDebt": 612320008,
+          "utilized": 612320008,
+          "dailySkyCharge": 64360.16
+        },
+        {
+          "date": "2026-07-06",
+          "cumDebt": 612320008,
+          "utilized": 612320008,
+          "dailySkyCharge": 64360.16
+        },
+        {
+          "date": "2026-07-07",
+          "cumDebt": 612320008,
+          "utilized": 612320008,
+          "dailySkyCharge": 64360.16
+        },
+        {
+          "date": "2026-07-08",
+          "cumDebt": 612320008,
+          "utilized": 612320008,
+          "dailySkyCharge": 64360.16
+        },
+        {
+          "date": "2026-07-09",
+          "cumDebt": 612320008,
+          "utilized": 612320008,
+          "dailySkyCharge": 64360.16
+        },
+        {
+          "date": "2026-07-10",
+          "cumDebt": 612320008,
+          "utilized": 612320008,
+          "dailySkyCharge": 64360.16
+        },
+        {
+          "date": "2026-07-11",
+          "cumDebt": 612320008,
+          "utilized": 612320008,
+          "dailySkyCharge": 64360.16
+        },
+        {
+          "date": "2026-07-12",
+          "cumDebt": 612320008,
+          "utilized": 612320008,
+          "dailySkyCharge": 64360.16
+        },
+        {
+          "date": "2026-07-13",
+          "cumDebt": 612320008,
+          "utilized": 612320008,
+          "dailySkyCharge": 64360.16
+        },
+        {
+          "date": "2026-07-14",
+          "cumDebt": 612320008,
+          "utilized": 612320008,
+          "dailySkyCharge": 64360.16
+        },
+        {
+          "date": "2026-07-15",
+          "cumDebt": 612320008,
+          "utilized": 612320008,
+          "dailySkyCharge": 64360.16
+        },
+        {
+          "date": "2026-07-16",
+          "cumDebt": 612320008,
+          "utilized": 612320008,
+          "dailySkyCharge": 64360.16
+        },
+        {
+          "date": "2026-07-17",
+          "cumDebt": 612320008,
+          "utilized": 612320008,
+          "dailySkyCharge": 64360.16
+        },
+        {
+          "date": "2026-07-18",
+          "cumDebt": 612320008,
+          "utilized": 612320008,
+          "dailySkyCharge": 64360.16
+        },
+        {
+          "date": "2026-07-19",
+          "cumDebt": 612320008,
+          "utilized": 612320008,
+          "dailySkyCharge": 64360.16
+        },
+        {
+          "date": "2026-07-20",
+          "cumDebt": 570770791,
+          "utilized": 570770791,
+          "dailySkyCharge": 59992.97
+        },
+        {
+          "date": "2026-07-21",
+          "cumDebt": 525770791,
+          "utilized": 525770791,
+          "dailySkyCharge": 55263.08
+        },
+        {
+          "date": "2026-07-22",
+          "cumDebt": 480770791,
+          "utilized": 480770791,
+          "dailySkyCharge": 50533.19
+        },
+        {
+          "date": "2026-07-23",
+          "cumDebt": 480770791,
+          "utilized": 480770791,
+          "dailySkyCharge": 48201.53
+        },
+        {
+          "date": "2026-07-24",
+          "cumDebt": 435770791,
+          "utilized": 435770791,
+          "dailySkyCharge": 43689.88
+        },
+        {
+          "date": "2026-07-25",
+          "cumDebt": 399995772,
+          "utilized": 399995772,
+          "dailySkyCharge": 40103.12
+        },
+        {
+          "date": "2026-07-26",
+          "cumDebt": 399995772,
+          "utilized": 399995772,
+          "dailySkyCharge": 40103.12
+        },
+        {
+          "date": "2026-07-27",
+          "cumDebt": 399995772,
+          "utilized": 399995772,
+          "dailySkyCharge": 40103.12
+        },
+        {
+          "date": "2026-07-28",
+          "cumDebt": 399995772,
+          "utilized": 399995772,
+          "dailySkyCharge": 40103.12
+        },
+        {
+          "date": "2026-07-29",
+          "cumDebt": 399995772,
+          "utilized": 399995772,
+          "dailySkyCharge": 40103.12
+        },
+        {
+          "date": "2026-07-30",
+          "cumDebt": 399995772,
+          "utilized": 399995772,
+          "dailySkyCharge": 40103.12
+        },
+        {
+          "date": "2026-07-31",
+          "cumDebt": 399995772,
+          "utilized": 399995772,
+          "dailySkyCharge": 40103.12
+        }
+      ],
+      "excludedVenues": []
+    },
+    {
+      "partner": "osero",
+      "month": "2026-07",
+      "periodDays": 31,
+      "headline": {
+        "agentRate": 12094.56,
+        "distributionRewards": 54.87,
+        "demandSideRevenue": 12149.43,
+        "primeSupplySideRevenue": -106.69,
+        "primeCostOfFunds": 496.99,
+        "skyDirectExposure": 0,
+        "skyRevenue": 496.99,
+        "primeAgentProfit": 12042.74
+      },
+      "venues": [
+        {
+          "id": "O1",
+          "label": "Spark USDS (SparkLend spToken)",
+          "valueSom": 0,
+          "valueEom": 1000426.11,
+          "periodInflow": 1000035.81,
+          "actualRev": 390.31,
+          "revenue": 390.31,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "O2",
+          "label": "USDS raw (Diamond PAU ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        }
+      ],
+      "refCodes": [
+        {
+          "refCode": "3000",
+          "dr": 54.63,
+          "notes": ""
+        },
+        {
+          "refCode": "3333",
+          "dr": 0.24,
+          "notes": ""
+        }
+      ],
+      "rateBuild": {
+        "timeWeightedUtilized": null,
+        "baseRate": null,
+        "referenceRate": null,
+        "referenceRateKind": null,
+        "subsidisedRate": null,
+        "effectiveRate": null,
+        "diffVsBaseBps": null,
+        "subsidyBenefit": null,
+        "cofAtFullBase": null,
+        "cofOnUtilized": 496.9928515100239,
+        "skyDirectComponent": 0,
+        "skyRevenueMax": 802.0708016083233,
+        "subsidyEnabled": null,
+        "capUsd": null
+      },
+      "skyDirect": [],
+      "debtDaily": [
+        {
+          "date": "2026-07-01",
+          "cumDebt": 0,
+          "utilized": 0,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-07-02",
+          "cumDebt": 0,
+          "utilized": 0,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-07-03",
+          "cumDebt": 0,
+          "utilized": 0,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-07-04",
+          "cumDebt": 0,
+          "utilized": 0,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-07-05",
+          "cumDebt": 0,
+          "utilized": 0,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-07-06",
+          "cumDebt": 0,
+          "utilized": 0,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-07-07",
+          "cumDebt": 0,
+          "utilized": 0,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-07-08",
+          "cumDebt": 0,
+          "utilized": 0,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-07-09",
+          "cumDebt": 0,
+          "utilized": 0,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-07-10",
+          "cumDebt": 0,
+          "utilized": 0,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-07-11",
+          "cumDebt": 0,
+          "utilized": 0,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-07-12",
+          "cumDebt": 0,
+          "utilized": 0,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-07-13",
+          "cumDebt": 0,
+          "utilized": 0,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-07-14",
+          "cumDebt": 0,
+          "utilized": 0,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-07-15",
+          "cumDebt": 0,
+          "utilized": 0,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-07-16",
+          "cumDebt": 0,
+          "utilized": 0,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-07-17",
+          "cumDebt": 0,
+          "utilized": 0,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-07-18",
+          "cumDebt": 0,
+          "utilized": 0,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-07-19",
+          "cumDebt": 0,
+          "utilized": 0,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-07-20",
+          "cumDebt": 0,
+          "utilized": 0,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-07-21",
+          "cumDebt": 0,
+          "utilized": 0,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-07-22",
+          "cumDebt": 0,
+          "utilized": 0,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-07-23",
+          "cumDebt": 0,
+          "utilized": 0,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-07-24",
+          "cumDebt": 1000000,
+          "utilized": 619714,
+          "dailySkyCharge": 62.13
+        },
+        {
+          "date": "2026-07-25",
+          "cumDebt": 1000000,
+          "utilized": 619693,
+          "dailySkyCharge": 62.13
+        },
+        {
+          "date": "2026-07-26",
+          "cumDebt": 1000000,
+          "utilized": 619658,
+          "dailySkyCharge": 62.13
+        },
+        {
+          "date": "2026-07-27",
+          "cumDebt": 1000000,
+          "utilized": 619649,
+          "dailySkyCharge": 62.13
+        },
+        {
+          "date": "2026-07-28",
+          "cumDebt": 1000000,
+          "utilized": 619629,
+          "dailySkyCharge": 62.12
+        },
+        {
+          "date": "2026-07-29",
+          "cumDebt": 1000000,
+          "utilized": 619602,
+          "dailySkyCharge": 62.12
+        },
+        {
+          "date": "2026-07-30",
+          "cumDebt": 1000000,
+          "utilized": 619585,
+          "dailySkyCharge": 62.12
+        },
+        {
+          "date": "2026-07-31",
+          "cumDebt": 1000000,
+          "utilized": 619566,
+          "dailySkyCharge": 62.12
+        }
+      ],
+      "excludedVenues": []
+    },
+    {
       "partner": "spark",
       "month": "2026-01",
       "periodDays": 31,
       "headline": {
         "agentRate": 106392.55,
-        "distributionRewards": 1154488.13,
-        "demandSideRevenue": 1260880.68,
-        "primeSupplySideRevenue": -318866.82,
-        "primeCostOfFunds": 7822171.39,
+        "distributionRewards": 1140484.75,
+        "demandSideRevenue": 1246877.3,
+        "primeSupplySideRevenue": -338954.3,
+        "primeCostOfFunds": 7842258.86,
         "skyDirectExposure": 2023.08,
-        "skyRevenue": 7824194.47,
-        "primeAgentProfit": 942013.86
+        "skyRevenue": 7844281.94,
+        "primeAgentProfit": 907923
       },
       "venues": [
         {
@@ -6532,23 +7771,13 @@
       ],
       "refCodes": [
         {
-          "refCode": "2",
-          "dr": 0,
-          "notes": ""
-        },
-        {
-          "refCode": "100",
-          "dr": 0,
-          "notes": ""
-        },
-        {
           "refCode": "127",
           "dr": 7581.55,
           "notes": "Synthetic code: untagged sUSDC"
         },
         {
           "refCode": "128",
-          "dr": 1021651,
+          "dr": 1007554.52,
           "notes": ""
         },
         {
@@ -6559,22 +7788,17 @@
         {
           "refCode": "130",
           "dr": 284.57,
-          "notes": "Synthetic code: Untagged spUSDT."
+          "notes": "Synthetic code: Untagged spUSDT — Spark's own product; Spark reports this code directly (payable to Spark)."
         },
         {
           "refCode": "131",
           "dr": 2533.88,
-          "notes": "Synthetic code: Untagged spUSDC. Combined into 128 by Spark on Dune."
+          "notes": "Synthetic code: Untagged spUSDC — folded into 128 by Spark on their side (payable to Spark)."
         },
         {
           "refCode": "132",
           "dr": 0,
-          "notes": "Synthetic code: Untagged spPYUSD. Combined into 128 by Spark on Dune."
-        },
-        {
-          "refCode": "170",
-          "dr": 0,
-          "notes": ""
+          "notes": "Synthetic code: Untagged spPYUSD — folded into 128 by Spark on their side (payable to Spark)."
         },
         {
           "refCode": "171",
@@ -6592,18 +7816,13 @@
           "notes": ""
         },
         {
-          "refCode": "184",
-          "dr": 0,
-          "notes": ""
-        },
-        {
           "refCode": "186",
           "dr": 978.23,
           "notes": ""
         },
         {
           "refCode": "188",
-          "dr": 1186.52,
+          "dr": 1186.54,
           "notes": ""
         },
         {
@@ -6667,11 +7886,6 @@
           "notes": ""
         },
         {
-          "refCode": "206",
-          "dr": 0,
-          "notes": ""
-        },
-        {
           "refCode": "214",
           "dr": 0,
           "notes": ""
@@ -6682,12 +7896,12 @@
           "notes": ""
         },
         {
-          "refCode": "219",
+          "refCode": "217",
           "dr": 0,
           "notes": ""
         },
         {
-          "refCode": "223",
+          "refCode": "219",
           "dr": 0,
           "notes": ""
         },
@@ -6707,29 +7921,24 @@
           "notes": ""
         },
         {
-          "refCode": "999",
-          "dr": 0,
-          "notes": ""
-        },
-        {
           "refCode": "9001",
-          "dr": 17637.13,
-          "notes": "Synthetic code: USDS in Aave aEthUSDS (0x32a6268f9Ba3642Dda7892aDd74f1D34469A4259). No on-chain Referral event; entire contract balance attributed. XR rate."
+          "dr": 17730.23,
+          "notes": "Synthetic code: USDS in Aave aEthUSDS; entire contract balance. Intraday TWA (clean methodology) — the deployed Dune query used EOD snapshots, which under-count ~20% on heavy-flow months."
         }
       ],
       "rateBuild": {
         "timeWeightedUtilized": 2368433176.884962,
         "baseRate": 0.04312000189646037,
-        "referenceRate": 0.0364,
-        "referenceRateKind": "effr",
-        "subsidisedRate": 0.0364,
-        "effectiveRate": 0.040282682287005,
-        "diffVsBaseBps": -28.37319609455365,
-        "subsidyBenefit": 548975.5674283891,
+        "referenceRate": 0.03664516129032258,
+        "referenceRateKind": "tbill_3m",
+        "subsidisedRate": 0.03664516129032258,
+        "effectiveRate": 0.04038619430191649,
+        "diffVsBaseBps": -27.33807594543876,
+        "subsidyBenefit": 528888.0918654647,
         "cofAtFullBase": 8492478.697000314,
-        "cofOnUtilized": 7822171.387061289,
+        "cofOnUtilized": 7842258.862624213,
         "skyDirectComponent": 2023.078108892489,
-        "skyRevenueMax": 10677050.23587752,
+        "skyRevenueMax": 10697137.71144044,
         "subsidyEnabled": true,
         "capUsd": 1000000000
       },
@@ -6788,25 +7997,25 @@
           "date": "2026-01-01",
           "cumDebt": 3115938887,
           "utilized": 2382602735,
-          "dailySkyCharge": 257880.99
+          "dailySkyCharge": 258674.01
         },
         {
           "date": "2026-01-02",
           "cumDebt": 3135982066,
           "utilized": 2406146321,
-          "dailySkyCharge": 260604.22
+          "dailySkyCharge": 260868.59
         },
         {
           "date": "2026-01-03",
           "cumDebt": 3132345455,
           "utilized": 2405852867,
-          "dailySkyCharge": 260570.28
+          "dailySkyCharge": 260834.64
         },
         {
           "date": "2026-01-04",
           "cumDebt": 3159565316,
           "utilized": 2426024815,
-          "dailySkyCharge": 262903.52
+          "dailySkyCharge": 263167.89
         },
         {
           "date": "2026-01-05",
@@ -6818,157 +8027,157 @@
           "date": "2026-01-06",
           "cumDebt": 3124600128,
           "utilized": 2390328086,
-          "dailySkyCharge": 258774.57
+          "dailySkyCharge": 258510.18
         },
         {
           "date": "2026-01-07",
           "cumDebt": 3141267545,
           "utilized": 2412970897,
-          "dailySkyCharge": 261393.61
+          "dailySkyCharge": 260864.8
         },
         {
           "date": "2026-01-08",
           "cumDebt": 3265561524,
           "utilized": 2500980229,
-          "dailySkyCharge": 271573.43
+          "dailySkyCharge": 271044.63
         },
         {
           "date": "2026-01-09",
           "cumDebt": 3094864924,
           "utilized": 2328610395,
-          "dailySkyCharge": 251635.83
+          "dailySkyCharge": 251107.03
         },
         {
           "date": "2026-01-10",
           "cumDebt": 3062061485,
           "utilized": 2294563884,
-          "dailySkyCharge": 247697.75
+          "dailySkyCharge": 247168.95
         },
         {
           "date": "2026-01-11",
           "cumDebt": 3048008204,
           "utilized": 2280809702,
-          "dailySkyCharge": 246106.84
+          "dailySkyCharge": 245578.04
         },
         {
           "date": "2026-01-12",
           "cumDebt": 3055540788,
           "utilized": 2276789885,
-          "dailySkyCharge": 245641.88
+          "dailySkyCharge": 246434.89
         },
         {
           "date": "2026-01-13",
           "cumDebt": 2987427990,
           "utilized": 2207818179,
-          "dailySkyCharge": 237664.09
+          "dailySkyCharge": 238457.1
         },
         {
           "date": "2026-01-14",
           "cumDebt": 2903838073,
           "utilized": 2177578242,
-          "dailySkyCharge": 234166.31
+          "dailySkyCharge": 234959.32
         },
         {
           "date": "2026-01-15",
           "cumDebt": 2886685922,
           "utilized": 2141309922,
-          "dailySkyCharge": 229971.24
+          "dailySkyCharge": 231028.54
         },
         {
           "date": "2026-01-16",
           "cumDebt": 2888675648,
           "utilized": 2137192388,
-          "dailySkyCharge": 229494.97
+          "dailySkyCharge": 230287.99
         },
         {
           "date": "2026-01-17",
           "cumDebt": 2887645848,
           "utilized": 2139145245,
-          "dailySkyCharge": 229720.86
+          "dailySkyCharge": 230513.87
         },
         {
           "date": "2026-01-18",
           "cumDebt": 2889707369,
           "utilized": 2142749521,
-          "dailySkyCharge": 230137.75
+          "dailySkyCharge": 230930.77
         },
         {
           "date": "2026-01-19",
           "cumDebt": 3243246357,
           "utilized": 2490397319,
-          "dailySkyCharge": 270349.33
+          "dailySkyCharge": 271142.35
         },
         {
           "date": "2026-01-20",
           "cumDebt": 3222620802,
           "utilized": 2471864955,
-          "dailySkyCharge": 268205.74
+          "dailySkyCharge": 269791.54
         },
         {
           "date": "2026-01-21",
           "cumDebt": 3126710227,
           "utilized": 2378631592,
-          "dailySkyCharge": 257421.66
+          "dailySkyCharge": 259007.46
         },
         {
           "date": "2026-01-22",
           "cumDebt": 3146456083,
           "utilized": 2383083193,
-          "dailySkyCharge": 257936.57
+          "dailySkyCharge": 259786.58
         },
         {
           "date": "2026-01-23",
           "cumDebt": 3171100297,
           "utilized": 2394736708,
-          "dailySkyCharge": 259284.5
+          "dailySkyCharge": 260870.3
         },
         {
           "date": "2026-01-24",
           "cumDebt": 3172623318,
           "utilized": 2395258448,
-          "dailySkyCharge": 259344.85
+          "dailySkyCharge": 260930.65
         },
         {
           "date": "2026-01-25",
           "cumDebt": 3183140976,
           "utilized": 2407417618,
-          "dailySkyCharge": 260751.27
+          "dailySkyCharge": 262337.07
         },
         {
           "date": "2026-01-26",
           "cumDebt": 3205334696,
           "utilized": 2429007867,
-          "dailySkyCharge": 263248.56
+          "dailySkyCharge": 264041.58
         },
         {
           "date": "2026-01-27",
           "cumDebt": 3246510342,
           "utilized": 2451073788,
-          "dailySkyCharge": 265800.88
+          "dailySkyCharge": 266593.89
         },
         {
           "date": "2026-01-28",
           "cumDebt": 3268984218,
           "utilized": 2462788174,
-          "dailySkyCharge": 267155.85
+          "dailySkyCharge": 268213.15
         },
         {
           "date": "2026-01-29",
           "cumDebt": 3404188305,
           "utilized": 2574820031,
-          "dailySkyCharge": 280114.3
+          "dailySkyCharge": 280907.32
         },
         {
           "date": "2026-01-30",
           "cumDebt": 3386327420,
           "utilized": 2555046495,
-          "dailySkyCharge": 277827.15
+          "dailySkyCharge": 278620.16
         },
         {
           "date": "2026-01-31",
           "cumDebt": 3341062222,
           "utilized": 2520638343,
-          "dailySkyCharge": 273847.24
+          "dailySkyCharge": 274640.25
         }
       ],
       "excludedVenues": [
@@ -7004,13 +8213,13 @@
       "periodDays": 28,
       "headline": {
         "agentRate": 114973.5,
-        "distributionRewards": 1022253.36,
-        "demandSideRevenue": 1137226.86,
-        "primeSupplySideRevenue": 2805156.84,
-        "primeCostOfFunds": 7486257.24,
+        "distributionRewards": 1009112.93,
+        "demandSideRevenue": 1124086.43,
+        "primeSupplySideRevenue": 2772995.7,
+        "primeCostOfFunds": 7518418.38,
         "skyDirectExposure": 3731.28,
-        "skyRevenue": 7489988.52,
-        "primeAgentProfit": 3942383.7
+        "skyRevenue": 7522149.66,
+        "primeAgentProfit": 3897082.13
       },
       "venues": [
         {
@@ -7652,23 +8861,13 @@
       ],
       "refCodes": [
         {
-          "refCode": "2",
-          "dr": 0,
-          "notes": ""
-        },
-        {
-          "refCode": "100",
-          "dr": 0,
-          "notes": ""
-        },
-        {
           "refCode": "127",
           "dr": 6588.11,
           "notes": "Synthetic code: untagged sUSDC"
         },
         {
           "refCode": "128",
-          "dr": 924737.42,
+          "dr": 911631,
           "notes": ""
         },
         {
@@ -7679,22 +8878,17 @@
         {
           "refCode": "130",
           "dr": 263.83,
-          "notes": "Synthetic code: Untagged spUSDT."
+          "notes": "Synthetic code: Untagged spUSDT — Spark's own product; Spark reports this code directly (payable to Spark)."
         },
         {
           "refCode": "131",
           "dr": 801.17,
-          "notes": "Synthetic code: Untagged spUSDC. Combined into 128 by Spark on Dune."
+          "notes": "Synthetic code: Untagged spUSDC — folded into 128 by Spark on their side (payable to Spark)."
         },
         {
           "refCode": "132",
           "dr": 0,
-          "notes": "Synthetic code: Untagged spPYUSD. Combined into 128 by Spark on Dune."
-        },
-        {
-          "refCode": "170",
-          "dr": 0,
-          "notes": ""
+          "notes": "Synthetic code: Untagged spPYUSD — folded into 128 by Spark on their side (payable to Spark)."
         },
         {
           "refCode": "171",
@@ -7712,18 +8906,13 @@
           "notes": ""
         },
         {
-          "refCode": "184",
-          "dr": 0,
-          "notes": ""
-        },
-        {
           "refCode": "186",
           "dr": 1266.98,
           "notes": ""
         },
         {
           "refCode": "188",
-          "dr": 270.21,
+          "dr": 270.24,
           "notes": ""
         },
         {
@@ -7787,11 +8976,6 @@
           "notes": ""
         },
         {
-          "refCode": "206",
-          "dr": 0,
-          "notes": ""
-        },
-        {
           "refCode": "214",
           "dr": 0,
           "notes": ""
@@ -7802,12 +8986,12 @@
           "notes": ""
         },
         {
-          "refCode": "219",
+          "refCode": "217",
           "dr": 0,
           "notes": ""
         },
         {
-          "refCode": "223",
+          "refCode": "219",
           "dr": 0,
           "notes": ""
         },
@@ -7827,29 +9011,24 @@
           "notes": ""
         },
         {
-          "refCode": "999",
-          "dr": 0,
-          "notes": ""
-        },
-        {
           "refCode": "9001",
-          "dr": 14381.46,
-          "notes": "Synthetic code: USDS in Aave aEthUSDS (0x32a6268f9Ba3642Dda7892aDd74f1D34469A4259). No on-chain Referral event; entire contract balance attributed. XR rate."
+          "dr": 14347.44,
+          "notes": "Synthetic code: USDS in Aave aEthUSDS; entire contract balance. Intraday TWA (clean methodology) — the deployed Dune query used EOD snapshots, which under-count ~20% on heavy-flow months."
         }
       ],
       "rateBuild": {
         "timeWeightedUtilized": 2507919163.266385,
         "baseRate": 0.04312000189646037,
-        "referenceRate": 0.0364,
-        "referenceRateKind": "effr",
-        "subsidisedRate": 0.03668000007901918,
-        "effectiveRate": 0.04055213531137732,
-        "diffVsBaseBps": -25.67866585083047,
-        "subsidyBenefit": 475124.5953942272,
+        "referenceRate": 0.03685357142857143,
+        "referenceRateKind": "tbill_3m",
+        "subsidisedRate": 0.0371146726980668,
+        "effectiveRate": 0.04072545533915744,
+        "diffVsBaseBps": -23.9454655730293,
+        "subsidyBenefit": 442963.4499965028,
         "cofAtFullBase": 8122378.087945241,
-        "cofOnUtilized": 7486257.239294591,
+        "cofOnUtilized": 7518418.384692316,
         "skyDirectComponent": 3731.279390607106,
-        "skyRevenueMax": 10052985.99596801,
+        "skyRevenueMax": 10085147.14136574,
         "subsidyEnabled": true,
         "capUsd": 1000000000
       },
@@ -7908,169 +9087,169 @@
           "date": "2026-02-01",
           "cumDebt": 3302687682,
           "utilized": 2496067660,
-          "dailySkyCharge": 271745.36
+          "dailySkyCharge": 272505.13
         },
         {
           "date": "2026-02-02",
           "cumDebt": 3249848458,
           "utilized": 2456202150,
-          "dailySkyCharge": 267134.21
+          "dailySkyCharge": 268400.38
         },
         {
           "date": "2026-02-03",
           "cumDebt": 3281812558,
           "utilized": 2487186681,
-          "dailySkyCharge": 270718.12
+          "dailySkyCharge": 271984.29
         },
         {
           "date": "2026-02-04",
           "cumDebt": 3283598242,
           "utilized": 2492170041,
-          "dailySkyCharge": 271294.53
+          "dailySkyCharge": 272560.7
         },
         {
           "date": "2026-02-05",
           "cumDebt": 3192373856,
           "utilized": 2417229955,
-          "dailySkyCharge": 262626.4
+          "dailySkyCharge": 263386.17
         },
         {
           "date": "2026-02-06",
           "cumDebt": 3119581319,
           "utilized": 2386394304,
-          "dailySkyCharge": 259059.71
+          "dailySkyCharge": 260072.69
         },
         {
           "date": "2026-02-07",
           "cumDebt": 3108659979,
           "utilized": 2385104097,
-          "dailySkyCharge": 258910.48
+          "dailySkyCharge": 259923.46
         },
         {
           "date": "2026-02-08",
           "cumDebt": 3108645884,
           "utilized": 2396902998,
-          "dailySkyCharge": 260275.23
+          "dailySkyCharge": 261288.21
         },
         {
           "date": "2026-02-09",
           "cumDebt": 3232676857,
           "utilized": 2509639458,
-          "dailySkyCharge": 273315.18
+          "dailySkyCharge": 274581.35
         },
         {
           "date": "2026-02-10",
           "cumDebt": 3250373396,
           "utilized": 2526769549,
-          "dailySkyCharge": 275296.57
+          "dailySkyCharge": 276562.74
         },
         {
           "date": "2026-02-11",
           "cumDebt": 3288028684,
           "utilized": 2551312466,
-          "dailySkyCharge": 278135.39
+          "dailySkyCharge": 279654.73
         },
         {
           "date": "2026-02-12",
           "cumDebt": 3278949491,
           "utilized": 2556708606,
-          "dailySkyCharge": 278759.55
+          "dailySkyCharge": 280278.89
         },
         {
           "date": "2026-02-13",
           "cumDebt": 3291015503,
           "utilized": 2576250439,
-          "dailySkyCharge": 281019.91
+          "dailySkyCharge": 282032.89
         },
         {
           "date": "2026-02-14",
           "cumDebt": 3259420082,
           "utilized": 2536910610,
-          "dailySkyCharge": 276469.57
+          "dailySkyCharge": 277482.55
         },
         {
           "date": "2026-02-15",
           "cumDebt": 3227911600,
           "utilized": 2508270588,
-          "dailySkyCharge": 273156.84
+          "dailySkyCharge": 274169.83
         },
         {
           "date": "2026-02-16",
           "cumDebt": 3302094176,
           "utilized": 2588046393,
-          "dailySkyCharge": 282384.32
+          "dailySkyCharge": 283397.3
         },
         {
           "date": "2026-02-17",
           "cumDebt": 3304200729,
           "utilized": 2575648515,
-          "dailySkyCharge": 280950.29
+          "dailySkyCharge": 282216.46
         },
         {
           "date": "2026-02-18",
           "cumDebt": 3274922013,
           "utilized": 2546189949,
-          "dailySkyCharge": 277542.89
+          "dailySkyCharge": 279062.22
         },
         {
           "date": "2026-02-19",
           "cumDebt": 3277769691,
           "utilized": 2512116552,
-          "dailySkyCharge": 273601.7
+          "dailySkyCharge": 274867.87
         },
         {
           "date": "2026-02-20",
           "cumDebt": 3301747152,
           "utilized": 2535729079,
-          "dailySkyCharge": 276332.9
+          "dailySkyCharge": 277599.07
         },
         {
           "date": "2026-02-21",
           "cumDebt": 3304161887,
           "utilized": 2549059920,
-          "dailySkyCharge": 277874.85
+          "dailySkyCharge": 279141.02
         },
         {
           "date": "2026-02-22",
           "cumDebt": 3298183349,
           "utilized": 2544551387,
-          "dailySkyCharge": 277353.36
+          "dailySkyCharge": 278619.53
         },
         {
           "date": "2026-02-23",
           "cumDebt": 3285993117,
           "utilized": 2521640599,
-          "dailySkyCharge": 274703.32
+          "dailySkyCharge": 275969.49
         },
         {
           "date": "2026-02-24",
           "cumDebt": 3248053334,
           "utilized": 2503998397,
-          "dailySkyCharge": 272662.69
+          "dailySkyCharge": 273928.86
         },
         {
           "date": "2026-02-25",
           "cumDebt": 3231815084,
           "utilized": 2505350419,
-          "dailySkyCharge": 272819.08
+          "dailySkyCharge": 274085.25
         },
         {
           "date": "2026-02-26",
           "cumDebt": 3226591742,
           "utilized": 2503444840,
-          "dailySkyCharge": 272598.66
+          "dailySkyCharge": 273611.64
         },
         {
           "date": "2026-02-27",
           "cumDebt": 3204137038,
           "utilized": 2472024760,
-          "dailySkyCharge": 268964.38
+          "dailySkyCharge": 269724.15
         },
         {
           "date": "2026-02-28",
           "cumDebt": 3285160150,
           "utilized": 2580816162,
-          "dailySkyCharge": 281548.02
+          "dailySkyCharge": 282307.79
         }
       ],
       "excludedVenues": [
@@ -8106,13 +9285,13 @@
       "periodDays": 31,
       "headline": {
         "agentRate": 122911.67,
-        "distributionRewards": 1412270.82,
-        "demandSideRevenue": 1535182.49,
-        "primeSupplySideRevenue": 2545242.43,
-        "primeCostOfFunds": 7801904.96,
+        "distributionRewards": 1404826.44,
+        "demandSideRevenue": 1527738.11,
+        "primeSupplySideRevenue": 2486880.27,
+        "primeCostOfFunds": 7860267.12,
         "skyDirectExposure": 5979.89,
-        "skyRevenue": 7807884.85,
-        "primeAgentProfit": 4080424.92
+        "skyRevenue": 7866247.01,
+        "primeAgentProfit": 4014618.38
       },
       "venues": [
         {
@@ -8754,23 +9933,13 @@
       ],
       "refCodes": [
         {
-          "refCode": "2",
-          "dr": 0,
-          "notes": ""
-        },
-        {
-          "refCode": "100",
-          "dr": 0,
-          "notes": ""
-        },
-        {
           "refCode": "127",
           "dr": 5410.52,
           "notes": "Synthetic code: untagged sUSDC"
         },
         {
           "refCode": "128",
-          "dr": 1278806.71,
+          "dr": 1271361.94,
           "notes": ""
         },
         {
@@ -8781,22 +9950,17 @@
         {
           "refCode": "130",
           "dr": 6315.99,
-          "notes": "Synthetic code: Untagged spUSDT."
+          "notes": "Synthetic code: Untagged spUSDT — Spark's own product; Spark reports this code directly (payable to Spark)."
         },
         {
           "refCode": "131",
           "dr": 4314.49,
-          "notes": "Synthetic code: Untagged spUSDC. Combined into 128 by Spark on Dune."
+          "notes": "Synthetic code: Untagged spUSDC — folded into 128 by Spark on their side (payable to Spark)."
         },
         {
           "refCode": "132",
           "dr": 0.01,
-          "notes": "Synthetic code: Untagged spPYUSD. Combined into 128 by Spark on Dune."
-        },
-        {
-          "refCode": "170",
-          "dr": 0,
-          "notes": ""
+          "notes": "Synthetic code: Untagged spPYUSD — folded into 128 by Spark on their side (payable to Spark)."
         },
         {
           "refCode": "171",
@@ -8814,18 +9978,13 @@
           "notes": ""
         },
         {
-          "refCode": "184",
-          "dr": 0,
-          "notes": ""
-        },
-        {
           "refCode": "186",
           "dr": 2578.98,
           "notes": ""
         },
         {
           "refCode": "188",
-          "dr": 9419.73,
+          "dr": 9419.76,
           "notes": ""
         },
         {
@@ -8889,11 +10048,6 @@
           "notes": ""
         },
         {
-          "refCode": "206",
-          "dr": 0,
-          "notes": ""
-        },
-        {
           "refCode": "214",
           "dr": 0,
           "notes": ""
@@ -8904,12 +10058,12 @@
           "notes": ""
         },
         {
-          "refCode": "219",
+          "refCode": "217",
           "dr": 0,
           "notes": ""
         },
         {
-          "refCode": "223",
+          "refCode": "219",
           "dr": 0,
           "notes": ""
         },
@@ -8929,29 +10083,24 @@
           "notes": ""
         },
         {
-          "refCode": "999",
-          "dr": 0,
-          "notes": ""
-        },
-        {
           "refCode": "9001",
-          "dr": 19582.08,
-          "notes": "Synthetic code: USDS in Aave aEthUSDS (0x32a6268f9Ba3642Dda7892aDd74f1D34469A4259). No on-chain Referral event; entire contract balance attributed. XR rate."
+          "dr": 19582.45,
+          "notes": "Synthetic code: USDS in Aave aEthUSDS; entire contract balance. Intraday TWA (clean methodology) — the deployed Dune query used EOD snapshots, which under-count ~20% on heavy-flow months."
         }
       ],
       "rateBuild": {
         "timeWeightedUtilized": 2431274483.082148,
         "baseRate": 0.04124672351396398,
-        "referenceRate": 0.0364,
-        "referenceRateKind": "effr",
-        "subsidisedRate": 0.03680496665912168,
-        "effectiveRate": 0.03941450206741989,
-        "diffVsBaseBps": -18.32221446544094,
-        "subsidyBenefit": 364118.1373055246,
+        "referenceRate": 0.03717741935483871,
+        "referenceRateKind": "tbill_3m",
+        "subsidisedRate": 0.03751760106772383,
+        "effectiveRate": 0.03970761352544775,
+        "diffVsBaseBps": -15.39109988516229,
+        "subsidyBenefit": 305755.9770098804,
         "cofAtFullBase": 8346493.714124929,
-        "cofOnUtilized": 7801904.956334603,
+        "cofOnUtilized": 7860267.116630248,
         "skyDirectComponent": 5979.891007520028,
-        "skyRevenueMax": 10311501.09741878,
+        "skyRevenueMax": 10369863.25771442,
         "subsidyEnabled": true,
         "capUsd": 1000000000
       },
@@ -9010,187 +10159,187 @@
           "date": "2026-03-01",
           "cumDebt": 3273186628,
           "utilized": 2558007697,
-          "dailySkyCharge": 279649.77
+          "dailySkyCharge": 280376.32
         },
         {
           "date": "2026-03-02",
           "cumDebt": 3312905815,
           "utilized": 2585680869,
-          "dailySkyCharge": 282850.66
+          "dailySkyCharge": 284787.69
         },
         {
           "date": "2026-03-03",
           "cumDebt": 3288887996,
           "utilized": 2572621899,
-          "dailySkyCharge": 281340.16
+          "dailySkyCharge": 283035.14
         },
         {
           "date": "2026-03-04",
           "cumDebt": 3011872451,
           "utilized": 2345720288,
-          "dailySkyCharge": 255095
+          "dailySkyCharge": 256789.98
         },
         {
           "date": "2026-03-05",
           "cumDebt": 2934280135,
           "utilized": 2278641757,
-          "dailySkyCharge": 247336.19
+          "dailySkyCharge": 248789.09
         },
         {
           "date": "2026-03-06",
           "cumDebt": 2906827861,
           "utilized": 2241790255,
-          "dailySkyCharge": 243073.66
+          "dailySkyCharge": 244284.47
         },
         {
           "date": "2026-03-07",
           "cumDebt": 2914418248,
           "utilized": 2243931041,
-          "dailySkyCharge": 243321.28
+          "dailySkyCharge": 244532.09
         },
         {
           "date": "2026-03-08",
           "cumDebt": 2905906207,
           "utilized": 2236767860,
-          "dailySkyCharge": 242492.74
+          "dailySkyCharge": 243703.54
         },
         {
           "date": "2026-03-09",
           "cumDebt": 2919330609,
           "utilized": 2262397780,
-          "dailySkyCharge": 236580.15
+          "dailySkyCharge": 238275.47
         },
         {
           "date": "2026-03-10",
           "cumDebt": 2919474828,
           "utilized": 2264915660,
-          "dailySkyCharge": 236854.79
+          "dailySkyCharge": 238550.11
         },
         {
           "date": "2026-03-11",
           "cumDebt": 2916473180,
           "utilized": 2274516311,
-          "dailySkyCharge": 237901.96
+          "dailySkyCharge": 239597.28
         },
         {
           "date": "2026-03-12",
           "cumDebt": 2913930590,
           "utilized": 2256905901,
-          "dailySkyCharge": 235981.14
+          "dailySkyCharge": 237918.56
         },
         {
           "date": "2026-03-13",
           "cumDebt": 2917733578,
           "utilized": 2270514165,
-          "dailySkyCharge": 237465.43
+          "dailySkyCharge": 239402.85
         },
         {
           "date": "2026-03-14",
           "cumDebt": 2929909749,
           "utilized": 2279792869,
-          "dailySkyCharge": 238477.49
+          "dailySkyCharge": 240414.91
         },
         {
           "date": "2026-03-15",
           "cumDebt": 2936670767,
           "utilized": 2286918589,
-          "dailySkyCharge": 239254.71
+          "dailySkyCharge": 241192.13
         },
         {
           "date": "2026-03-16",
           "cumDebt": 2947615952,
           "utilized": 2297397830,
-          "dailySkyCharge": 240397.72
+          "dailySkyCharge": 242335.14
         },
         {
           "date": "2026-03-17",
           "cumDebt": 2948695927,
           "utilized": 2298512456,
-          "dailySkyCharge": 240519.29
+          "dailySkyCharge": 242456.71
         },
         {
           "date": "2026-03-18",
           "cumDebt": 3038847826,
           "utilized": 2390260628,
-          "dailySkyCharge": 250526.54
+          "dailySkyCharge": 252706.05
         },
         {
           "date": "2026-03-19",
           "cumDebt": 3037076208,
           "utilized": 2378709142,
-          "dailySkyCharge": 249266.59
+          "dailySkyCharge": 251446.09
         },
         {
           "date": "2026-03-20",
           "cumDebt": 3046238423,
           "utilized": 2354787249,
-          "dailySkyCharge": 246657.35
+          "dailySkyCharge": 249078.92
         },
         {
           "date": "2026-03-21",
           "cumDebt": 3216973841,
           "utilized": 2516933478,
-          "dailySkyCharge": 264343.14
+          "dailySkyCharge": 266764.7
         },
         {
           "date": "2026-03-22",
           "cumDebt": 3279778241,
           "utilized": 2592075148,
-          "dailySkyCharge": 272539.06
+          "dailySkyCharge": 274960.63
         },
         {
           "date": "2026-03-23",
           "cumDebt": 3274409364,
           "utilized": 2589995769,
-          "dailySkyCharge": 272312.26
+          "dailySkyCharge": 274733.82
         },
         {
           "date": "2026-03-24",
           "cumDebt": 3258286523,
           "utilized": 2567927777,
-          "dailySkyCharge": 269905.24
+          "dailySkyCharge": 272326.8
         },
         {
           "date": "2026-03-25",
           "cumDebt": 3240036014,
           "utilized": 2553432404,
-          "dailySkyCharge": 268324.18
+          "dailySkyCharge": 270503.69
         },
         {
           "date": "2026-03-26",
           "cumDebt": 3258786403,
           "utilized": 2566289736,
-          "dailySkyCharge": 269726.57
+          "dailySkyCharge": 271906.07
         },
         {
           "date": "2026-03-27",
           "cumDebt": 3254345729,
           "utilized": 2560684078,
-          "dailySkyCharge": 269115.15
+          "dailySkyCharge": 271294.65
         },
         {
           "date": "2026-03-28",
           "cumDebt": 3239162204,
           "utilized": 2544509849,
-          "dailySkyCharge": 267350.97
+          "dailySkyCharge": 269530.48
         },
         {
           "date": "2026-03-29",
           "cumDebt": 3389012173,
           "utilized": 2692943171,
-          "dailySkyCharge": 283541.05
+          "dailySkyCharge": 285720.55
         },
         {
           "date": "2026-03-30",
           "cumDebt": 3425594357,
           "utilized": 2706139706,
-          "dailySkyCharge": 284980.43
+          "dailySkyCharge": 286675.75
         },
         {
           "date": "2026-03-31",
           "cumDebt": 3535027761,
           "utilized": 2799787612,
-          "dailySkyCharge": 295194.89
+          "dailySkyCharge": 296648.09
         }
       ],
       "excludedVenues": [
@@ -9226,13 +10375,13 @@
       "periodDays": 30,
       "headline": {
         "agentRate": 115391.31,
-        "distributionRewards": 1506065.38,
-        "demandSideRevenue": 1621456.69,
-        "primeSupplySideRevenue": 1307115.98,
-        "primeCostOfFunds": 9251643.97,
+        "distributionRewards": 1504172.97,
+        "demandSideRevenue": 1619564.28,
+        "primeSupplySideRevenue": 1267818.55,
+        "primeCostOfFunds": 9290941.4,
         "skyDirectExposure": 12587.56,
-        "skyRevenue": 9264231.53,
-        "primeAgentProfit": 2928572.67
+        "skyRevenue": 9303528.97,
+        "primeAgentProfit": 2887382.83
       },
       "venues": [
         {
@@ -9874,23 +11023,13 @@
       ],
       "refCodes": [
         {
-          "refCode": "2",
-          "dr": 0,
-          "notes": ""
-        },
-        {
-          "refCode": "100",
-          "dr": 0,
-          "notes": ""
-        },
-        {
           "refCode": "127",
           "dr": 3613.36,
           "notes": "Synthetic code: untagged sUSDC"
         },
         {
           "refCode": "128",
-          "dr": 1378577.04,
+          "dr": 1376423.23,
           "notes": ""
         },
         {
@@ -9901,22 +11040,17 @@
         {
           "refCode": "130",
           "dr": 4736.49,
-          "notes": "Synthetic code: Untagged spUSDT."
+          "notes": "Synthetic code: Untagged spUSDT — Spark's own product; Spark reports this code directly (payable to Spark)."
         },
         {
           "refCode": "131",
           "dr": 4674.33,
-          "notes": "Synthetic code: Untagged spUSDC. Combined into 128 by Spark on Dune."
+          "notes": "Synthetic code: Untagged spUSDC — folded into 128 by Spark on their side (payable to Spark)."
         },
         {
           "refCode": "132",
           "dr": 0.01,
-          "notes": "Synthetic code: Untagged spPYUSD. Combined into 128 by Spark on Dune."
-        },
-        {
-          "refCode": "170",
-          "dr": 0,
-          "notes": ""
+          "notes": "Synthetic code: Untagged spPYUSD — folded into 128 by Spark on their side (payable to Spark)."
         },
         {
           "refCode": "171",
@@ -9934,18 +11068,13 @@
           "notes": ""
         },
         {
-          "refCode": "184",
-          "dr": 0,
-          "notes": ""
-        },
-        {
           "refCode": "186",
           "dr": 2215.1,
           "notes": ""
         },
         {
           "refCode": "188",
-          "dr": 18355.46,
+          "dr": 18355.48,
           "notes": ""
         },
         {
@@ -10009,11 +11138,6 @@
           "notes": ""
         },
         {
-          "refCode": "206",
-          "dr": 0,
-          "notes": ""
-        },
-        {
           "refCode": "214",
           "dr": 0,
           "notes": ""
@@ -10024,13 +11148,13 @@
           "notes": ""
         },
         {
-          "refCode": "219",
-          "dr": 14.26,
+          "refCode": "217",
+          "dr": 0,
           "notes": ""
         },
         {
-          "refCode": "223",
-          "dr": 0,
+          "refCode": "219",
+          "dr": 14.26,
           "notes": ""
         },
         {
@@ -10049,29 +11173,24 @@
           "notes": ""
         },
         {
-          "refCode": "999",
-          "dr": 0,
-          "notes": ""
-        },
-        {
           "refCode": "9001",
-          "dr": 15706.36,
-          "notes": "Synthetic code: USDS in Aave aEthUSDS (0x32a6268f9Ba3642Dda7892aDd74f1D34469A4259). No on-chain Referral event; entire contract balance attributed. XR rate."
+          "dr": 15967.76,
+          "notes": "Synthetic code: USDS in Aave aEthUSDS; entire contract balance. Intraday TWA (clean methodology) — the deployed Dune query used EOD snapshots, which under-count ~20% on heavy-flow months."
         }
       ],
       "rateBuild": {
         "timeWeightedUtilized": 2988366178.220075,
         "baseRate": 0.04028621393822291,
-        "referenceRate": 0.0364,
-        "referenceRateKind": "effr",
-        "subsidisedRate": 0.03688895040288687,
-        "effectiveRate": 0.03914088815949029,
-        "diffVsBaseBps": -11.45325778732615,
-        "subsidyBenefit": 270879.1830035028,
+        "referenceRate": 0.03696666666666667,
+        "referenceRateKind": "tbill_3m",
+        "subsidisedRate": 0.03738478373622021,
+        "effectiveRate": 0.03930680936986507,
+        "diffVsBaseBps": -9.79404568357833,
+        "subsidyBenefit": 231581.7482478888,
         "cofAtFullBase": 9701444.124867398,
-        "cofOnUtilized": 9251643.96880125,
+        "cofOnUtilized": 9290941.403556865,
         "skyDirectComponent": 12587.56221525919,
-        "skyRevenueMax": 11700495.65151448,
+        "skyRevenueMax": 11739793.0862701,
         "subsidyEnabled": true,
         "capUsd": 1000000000
       },
@@ -10130,181 +11249,181 @@
           "date": "2026-04-01",
           "cumDebt": 3523339474,
           "utilized": 2783852547,
-          "dailySkyCharge": 293920.65
+          "dailySkyCharge": 295307.57
         },
         {
           "date": "2026-04-02",
           "cumDebt": 3592034561,
           "utilized": 2867217514,
-          "dailySkyCharge": 303013.52
+          "dailySkyCharge": 304400.44
         },
         {
           "date": "2026-04-03",
           "cumDebt": 3594620732,
           "utilized": 2874855503,
-          "dailySkyCharge": 303846.62
+          "dailySkyCharge": 305464.62
         },
         {
           "date": "2026-04-04",
           "cumDebt": 3599360796,
           "utilized": 2872189208,
-          "dailySkyCharge": 303555.79
+          "dailySkyCharge": 305173.8
         },
         {
           "date": "2026-04-05",
           "cumDebt": 3608169214,
           "utilized": 2879224845,
-          "dailySkyCharge": 304323.19
+          "dailySkyCharge": 305941.2
         },
         {
           "date": "2026-04-06",
           "cumDebt": 3601926982,
           "utilized": 2914465341,
-          "dailySkyCharge": 308166.98
+          "dailySkyCharge": 310016.05
         },
         {
           "date": "2026-04-07",
           "cumDebt": 3614158391,
           "utilized": 2902246751,
-          "dailySkyCharge": 306834.26
+          "dailySkyCharge": 308452.27
         },
         {
           "date": "2026-04-08",
           "cumDebt": 3589322105,
           "utilized": 2907146310,
-          "dailySkyCharge": 307368.67
+          "dailySkyCharge": 308524.49
         },
         {
           "date": "2026-04-09",
           "cumDebt": 3588932378,
           "utilized": 2904952368,
-          "dailySkyCharge": 307129.37
+          "dailySkyCharge": 308054.06
         },
         {
           "date": "2026-04-10",
           "cumDebt": 3582212364,
           "utilized": 2904861379,
-          "dailySkyCharge": 307119.45
+          "dailySkyCharge": 308275.26
         },
         {
           "date": "2026-04-11",
           "cumDebt": 3573973229,
           "utilized": 2898145060,
-          "dailySkyCharge": 306386.88
+          "dailySkyCharge": 307542.69
         },
         {
           "date": "2026-04-12",
           "cumDebt": 3645135456,
           "utilized": 2970699956,
-          "dailySkyCharge": 314300.66
+          "dailySkyCharge": 315456.48
         },
         {
           "date": "2026-04-13",
           "cumDebt": 3459834185,
           "utilized": 2788851992,
-          "dailySkyCharge": 294465.95
+          "dailySkyCharge": 296083.96
         },
         {
           "date": "2026-04-14",
           "cumDebt": 3460915790,
           "utilized": 2792190524,
-          "dailySkyCharge": 294830.1
+          "dailySkyCharge": 296448.1
         },
         {
           "date": "2026-04-15",
           "cumDebt": 3472674145,
           "utilized": 2803537276,
-          "dailySkyCharge": 296067.72
+          "dailySkyCharge": 297685.73
         },
         {
           "date": "2026-04-16",
           "cumDebt": 3470267236,
           "utilized": 2799406208,
-          "dailySkyCharge": 295617.13
+          "dailySkyCharge": 297004.05
         },
         {
           "date": "2026-04-17",
           "cumDebt": 3466901125,
           "utilized": 2797748837,
-          "dailySkyCharge": 295436.36
+          "dailySkyCharge": 296823.28
         },
         {
           "date": "2026-04-18",
           "cumDebt": 3493187733,
           "utilized": 2823431277,
-          "dailySkyCharge": 298237.62
+          "dailySkyCharge": 299624.54
         },
         {
           "date": "2026-04-19",
           "cumDebt": 3541095952,
           "utilized": 2875710984,
-          "dailySkyCharge": 303939.93
+          "dailySkyCharge": 305326.85
         },
         {
           "date": "2026-04-20",
           "cumDebt": 3681926266,
           "utilized": 2990368976,
-          "dailySkyCharge": 316446.02
+          "dailySkyCharge": 318064.03
         },
         {
           "date": "2026-04-21",
           "cumDebt": 3859033303,
           "utilized": 3135223165,
-          "dailySkyCharge": 332245.71
+          "dailySkyCharge": 333401.52
         },
         {
           "date": "2026-04-22",
           "cumDebt": 3965038750,
           "utilized": 3211289928,
-          "dailySkyCharge": 334368.42
+          "dailySkyCharge": 335524.38
         },
         {
           "date": "2026-04-23",
           "cumDebt": 3988315738,
           "utilized": 3292099375,
-          "dailySkyCharge": 342969.03
+          "dailySkyCharge": 344124.99
         },
         {
           "date": "2026-04-24",
           "cumDebt": 3997485459,
           "utilized": 3296589904,
-          "dailySkyCharge": 343446.96
+          "dailySkyCharge": 344602.92
         },
         {
           "date": "2026-04-25",
           "cumDebt": 3970400950,
           "utilized": 3276366843,
-          "dailySkyCharge": 341294.61
+          "dailySkyCharge": 342450.56
         },
         {
           "date": "2026-04-26",
           "cumDebt": 4020838179,
           "utilized": 3312250632,
-          "dailySkyCharge": 345113.74
+          "dailySkyCharge": 346269.7
         },
         {
           "date": "2026-04-27",
           "cumDebt": 3951593612,
           "utilized": 3258122518,
-          "dailySkyCharge": 339352.85
+          "dailySkyCharge": 340277.65
         },
         {
           "date": "2026-04-28",
           "cumDebt": 4078988518,
           "utilized": 3362122392,
-          "dailySkyCharge": 350421.63
+          "dailySkyCharge": 351346.44
         },
         {
           "date": "2026-04-29",
           "cumDebt": 3518789604,
           "utilized": 2779193696,
-          "dailySkyCharge": 288380.08
+          "dailySkyCharge": 289304.89
         },
         {
           "date": "2026-04-30",
           "cumDebt": 4107490252,
           "utilized": 3376624035,
-          "dailySkyCharge": 351965.06
+          "dailySkyCharge": 352889.86
         }
       ],
       "excludedVenues": [
@@ -10340,13 +11459,13 @@
       "periodDays": 31,
       "headline": {
         "agentRate": 118578.18,
-        "distributionRewards": 1632540.8,
-        "demandSideRevenue": 1751118.98,
-        "primeSupplySideRevenue": 2962800.6,
-        "primeCostOfFunds": 10640588.59,
+        "distributionRewards": 1629543.84,
+        "demandSideRevenue": 1748122.02,
+        "primeSupplySideRevenue": 2924050.02,
+        "primeCostOfFunds": 10679339.17,
         "skyDirectExposure": 40533.96,
-        "skyRevenue": 10681122.55,
-        "primeAgentProfit": 4713919.58
+        "skyRevenue": 10719873.13,
+        "primeAgentProfit": 4672172.04
       },
       "venues": [
         {
@@ -10988,23 +12107,13 @@
       ],
       "refCodes": [
         {
-          "refCode": "2",
-          "dr": 0,
-          "notes": ""
-        },
-        {
-          "refCode": "100",
-          "dr": 0,
-          "notes": ""
-        },
-        {
           "refCode": "127",
           "dr": 1824.59,
           "notes": "Synthetic code: untagged sUSDC"
         },
         {
           "refCode": "128",
-          "dr": 1513777.28,
+          "dr": 1510879.53,
           "notes": ""
         },
         {
@@ -11015,22 +12124,17 @@
         {
           "refCode": "130",
           "dr": 4041.57,
-          "notes": "Synthetic code: Untagged spUSDT."
+          "notes": "Synthetic code: Untagged spUSDT — Spark's own product; Spark reports this code directly (payable to Spark)."
         },
         {
           "refCode": "131",
           "dr": 3911.67,
-          "notes": "Synthetic code: Untagged spUSDC. Combined into 128 by Spark on Dune."
+          "notes": "Synthetic code: Untagged spUSDC — folded into 128 by Spark on their side (payable to Spark)."
         },
         {
           "refCode": "132",
           "dr": 0,
-          "notes": "Synthetic code: Untagged spPYUSD. Combined into 128 by Spark on Dune."
-        },
-        {
-          "refCode": "170",
-          "dr": 0,
-          "notes": ""
+          "notes": "Synthetic code: Untagged spPYUSD — folded into 128 by Spark on their side (payable to Spark)."
         },
         {
           "refCode": "171",
@@ -11048,18 +12152,13 @@
           "notes": ""
         },
         {
-          "refCode": "184",
-          "dr": 0,
-          "notes": ""
-        },
-        {
           "refCode": "186",
           "dr": 1539.58,
           "notes": ""
         },
         {
           "refCode": "188",
-          "dr": 12248.54,
+          "dr": 12248.57,
           "notes": ""
         },
         {
@@ -11123,11 +12222,6 @@
           "notes": ""
         },
         {
-          "refCode": "206",
-          "dr": 0,
-          "notes": ""
-        },
-        {
           "refCode": "214",
           "dr": 0,
           "notes": ""
@@ -11138,12 +12232,12 @@
           "notes": ""
         },
         {
-          "refCode": "219",
+          "refCode": "217",
           "dr": 0,
           "notes": ""
         },
         {
-          "refCode": "223",
+          "refCode": "219",
           "dr": 0,
           "notes": ""
         },
@@ -11163,29 +12257,24 @@
           "notes": ""
         },
         {
-          "refCode": "999",
-          "dr": 0,
-          "notes": ""
-        },
-        {
           "refCode": "9001",
-          "dr": 9626.62,
-          "notes": "Synthetic code: USDS in Aave aEthUSDS (0x32a6268f9Ba3642Dda7892aDd74f1D34469A4259). No on-chain Referral event; entire contract balance attributed. XR rate."
+          "dr": 9527.39,
+          "notes": "Synthetic code: USDS in Aave aEthUSDS; entire contract balance. Intraday TWA (clean methodology) — the deployed Dune query used EOD snapshots, which under-count ~20% on heavy-flow months."
         }
       ],
       "rateBuild": {
         "timeWeightedUtilized": 3355589811.023948,
         "baseRate": 0.03951515566338391,
-        "referenceRate": 0.03628709677419355,
-        "referenceRateKind": "effr",
-        "subsidisedRate": 0.03682465368903005,
-        "effectiveRate": 0.03871416843742665,
-        "diffVsBaseBps": -8.009872259572633,
-        "subsidyBenefit": 219906.399780756,
+        "referenceRate": 0.03685483870967742,
+        "referenceRateKind": "tbill_3m",
+        "subsidisedRate": 0.03729777196859994,
+        "effectiveRate": 0.038855162511856,
+        "diffVsBaseBps": -6.599931515279089,
+        "subsidyBenefit": 181155.816974199,
         "cofAtFullBase": 11045405.4060441,
-        "cofOnUtilized": 10640588.58756836,
+        "cofOnUtilized": 10679339.17037492,
         "skyDirectComponent": 40533.95751528406,
-        "skyRevenueMax": 13391864.98596525,
+        "skyRevenueMax": 13430615.56877181,
         "subsidyEnabled": true,
         "capUsd": 1000000000
       },
@@ -11244,187 +12333,187 @@
           "date": "2026-05-01",
           "cumDebt": 3958458569,
           "utilized": 3235839214,
-          "dailySkyCharge": 337334.61
+          "dailySkyCharge": 338215.27
         },
         {
           "date": "2026-05-02",
           "cumDebt": 4299991855,
           "utilized": 3582901174,
-          "dailySkyCharge": 374272.68
+          "dailySkyCharge": 375153.34
         },
         {
           "date": "2026-05-03",
           "cumDebt": 4298834263,
           "utilized": 3576789606,
-          "dailySkyCharge": 373622.22
+          "dailySkyCharge": 374502.88
         },
         {
           "date": "2026-05-04",
           "cumDebt": 4196280374,
           "utilized": 3481671310,
-          "dailySkyCharge": 363498.71
+          "dailySkyCharge": 364819.59
         },
         {
           "date": "2026-05-05",
           "cumDebt": 4147309492,
           "utilized": 3437622927,
-          "dailySkyCharge": 358810.6
+          "dailySkyCharge": 359911.38
         },
         {
           "date": "2026-05-06",
           "cumDebt": 3944623107,
           "utilized": 3231582990,
-          "dailySkyCharge": 336881.61
+          "dailySkyCharge": 337982.39
         },
         {
           "date": "2026-05-07",
           "cumDebt": 4003164482,
           "utilized": 3296414362,
-          "dailySkyCharge": 343781.67
+          "dailySkyCharge": 344882.45
         },
         {
           "date": "2026-05-08",
           "cumDebt": 3253518029,
           "utilized": 2563727976,
-          "dailySkyCharge": 265801.29
+          "dailySkyCharge": 266902.07
         },
         {
           "date": "2026-05-09",
           "cumDebt": 4037137793,
           "utilized": 3332805767,
-          "dailySkyCharge": 347654.83
+          "dailySkyCharge": 348755.61
         },
         {
           "date": "2026-05-10",
           "cumDebt": 4189458831,
           "utilized": 3476896067,
-          "dailySkyCharge": 362990.47
+          "dailySkyCharge": 364091.25
         },
         {
           "date": "2026-05-11",
           "cumDebt": 4122737535,
           "utilized": 3378322874,
-          "dailySkyCharge": 352279.04
+          "dailySkyCharge": 353820.14
         },
         {
           "date": "2026-05-12",
           "cumDebt": 4044417082,
           "utilized": 3316189463,
-          "dailySkyCharge": 345666.14
+          "dailySkyCharge": 347207.23
         },
         {
           "date": "2026-05-13",
           "cumDebt": 4045316487,
           "utilized": 3307366015,
-          "dailySkyCharge": 344727.05
+          "dailySkyCharge": 346048.04
         },
         {
           "date": "2026-05-14",
           "cumDebt": 4083774000,
           "utilized": 3342281854,
-          "dailySkyCharge": 348443.17
+          "dailySkyCharge": 349764.16
         },
         {
           "date": "2026-05-15",
           "cumDebt": 4119878244,
           "utilized": 3374294736,
-          "dailySkyCharge": 351850.33
+          "dailySkyCharge": 353171.32
         },
         {
           "date": "2026-05-16",
           "cumDebt": 4128929378,
           "utilized": 3372249036,
-          "dailySkyCharge": 351632.6
+          "dailySkyCharge": 352953.59
         },
         {
           "date": "2026-05-17",
           "cumDebt": 4108070523,
           "utilized": 3351499631,
-          "dailySkyCharge": 349424.23
+          "dailySkyCharge": 350745.21
         },
         {
           "date": "2026-05-18",
           "cumDebt": 4315695725,
           "utilized": 3506580838,
-          "dailySkyCharge": 365709.41
+          "dailySkyCharge": 367030.51
         },
         {
           "date": "2026-05-19",
           "cumDebt": 4285090896,
           "utilized": 3463345934,
-          "dailySkyCharge": 361107.89
+          "dailySkyCharge": 362208.84
         },
         {
           "date": "2026-05-20",
           "cumDebt": 4023672828,
           "utilized": 3205501587,
-          "dailySkyCharge": 333665.31
+          "dailySkyCharge": 334325.94
         },
         {
           "date": "2026-05-21",
           "cumDebt": 3968099737,
           "utilized": 3123730836,
-          "dailySkyCharge": 324962.39
+          "dailySkyCharge": 326283.49
         },
         {
           "date": "2026-05-22",
           "cumDebt": 4470289889,
           "utilized": 3633202062,
-          "dailySkyCharge": 379185.81
+          "dailySkyCharge": 380506.9
         },
         {
           "date": "2026-05-23",
           "cumDebt": 4453588584,
           "utilized": 3612669735,
-          "dailySkyCharge": 377000.53
+          "dailySkyCharge": 378321.63
         },
         {
           "date": "2026-05-24",
           "cumDebt": 4472121918,
           "utilized": 3627777314,
-          "dailySkyCharge": 378608.45
+          "dailySkyCharge": 379929.54
         },
         {
           "date": "2026-05-25",
           "cumDebt": 4469681753,
           "utilized": 3622138855,
-          "dailySkyCharge": 378008.34
+          "dailySkyCharge": 379329.44
         },
         {
           "date": "2026-05-26",
           "cumDebt": 4201169449,
           "utilized": 3412989275,
-          "dailySkyCharge": 352337.33
+          "dailySkyCharge": 353658.53
         },
         {
           "date": "2026-05-27",
           "cumDebt": 4071079397,
           "utilized": 3251497946,
-          "dailySkyCharge": 335363.18
+          "dailySkyCharge": 336684.38
         },
         {
           "date": "2026-05-28",
           "cumDebt": 4081722021,
           "utilized": 3220007678,
-          "dailySkyCharge": 332053.28
+          "dailySkyCharge": 333594.62
         },
         {
           "date": "2026-05-29",
           "cumDebt": 4160793859,
           "utilized": 3245402773,
-          "dailySkyCharge": 334722.53
+          "dailySkyCharge": 336263.87
         },
         {
           "date": "2026-05-30",
           "cumDebt": 4128972374,
           "utilized": 3223039409,
-          "dailySkyCharge": 332371.94
+          "dailySkyCharge": 333913.28
         },
         {
           "date": "2026-05-31",
           "cumDebt": 4116892425,
           "utilized": 3216944898,
-          "dailySkyCharge": 331731.36
+          "dailySkyCharge": 333272.7
         }
       ],
       "excludedVenues": [
@@ -11460,13 +12549,13 @@
       "periodDays": 30,
       "headline": {
         "agentRate": 114862.81,
-        "distributionRewards": 1650764.59,
-        "demandSideRevenue": 1765627.4,
-        "primeSupplySideRevenue": 2341253.46,
-        "primeCostOfFunds": 8938388.09,
+        "distributionRewards": 1648334.12,
+        "demandSideRevenue": 1763196.93,
+        "primeSupplySideRevenue": 2225436.06,
+        "primeCostOfFunds": 9054205.49,
         "skyDirectExposure": 21041.5,
-        "skyRevenue": 8959429.59,
-        "primeAgentProfit": 4106880.86
+        "skyRevenue": 9075246.99,
+        "primeAgentProfit": 3988632.99
       },
       "venues": [
         {
@@ -12108,23 +13197,13 @@
       ],
       "refCodes": [
         {
-          "refCode": "2",
-          "dr": 0,
-          "notes": ""
-        },
-        {
-          "refCode": "100",
-          "dr": 0,
-          "notes": ""
-        },
-        {
           "refCode": "127",
           "dr": 5924.87,
           "notes": "Synthetic code: untagged sUSDC"
         },
         {
           "refCode": "128",
-          "dr": 1499156.69,
+          "dr": 1496631.06,
           "notes": ""
         },
         {
@@ -12135,22 +13214,17 @@
         {
           "refCode": "130",
           "dr": 3451.9,
-          "notes": "Synthetic code: Untagged spUSDT."
+          "notes": "Synthetic code: Untagged spUSDT — Spark's own product; Spark reports this code directly (payable to Spark)."
         },
         {
           "refCode": "131",
           "dr": 3547.8,
-          "notes": "Synthetic code: Untagged spUSDC. Combined into 128 by Spark on Dune."
+          "notes": "Synthetic code: Untagged spUSDC — folded into 128 by Spark on their side (payable to Spark)."
         },
         {
           "refCode": "132",
           "dr": 0.27,
-          "notes": "Synthetic code: Untagged spPYUSD. Combined into 128 by Spark on Dune."
-        },
-        {
-          "refCode": "170",
-          "dr": 0,
-          "notes": ""
+          "notes": "Synthetic code: Untagged spPYUSD — folded into 128 by Spark on their side (payable to Spark)."
         },
         {
           "refCode": "171",
@@ -12168,18 +13242,13 @@
           "notes": ""
         },
         {
-          "refCode": "184",
-          "dr": 0,
-          "notes": ""
-        },
-        {
           "refCode": "186",
           "dr": 2221.61,
           "notes": ""
         },
         {
           "refCode": "188",
-          "dr": 50842.36,
+          "dr": 50842.39,
           "notes": ""
         },
         {
@@ -12243,11 +13312,6 @@
           "notes": ""
         },
         {
-          "refCode": "206",
-          "dr": 0,
-          "notes": ""
-        },
-        {
           "refCode": "214",
           "dr": 0.15,
           "notes": ""
@@ -12258,12 +13322,12 @@
           "notes": ""
         },
         {
-          "refCode": "219",
+          "refCode": "217",
           "dr": 0,
           "notes": ""
         },
         {
-          "refCode": "223",
+          "refCode": "219",
           "dr": 0,
           "notes": ""
         },
@@ -12283,29 +13347,24 @@
           "notes": ""
         },
         {
-          "refCode": "999",
-          "dr": 0,
-          "notes": ""
-        },
-        {
           "refCode": "9001",
-          "dr": 5739.95,
-          "notes": "Synthetic code: USDS in Aave aEthUSDS (0x32a6268f9Ba3642Dda7892aDd74f1D34469A4259). No on-chain Referral event; entire contract balance attributed. XR rate."
+          "dr": 5835.14,
+          "notes": "Synthetic code: USDS in Aave aEthUSDS; entire contract balance. Intraday TWA (clean methodology) — the deployed Dune query used EOD snapshots, which under-count ~20% on heavy-flow months."
         }
       ],
       "rateBuild": {
         "timeWeightedUtilized": 2945662385.958665,
         "baseRate": 0.03910800426568259,
-        "referenceRate": 0.03625333333333333,
-        "referenceRateKind": "effr",
-        "subsidisedRate": 0.03684805644423943,
-        "effectiveRate": 0.03834079216689766,
-        "diffVsBaseBps": -7.67212098784927,
-        "subsidyBenefit": 178971.2647868314,
+        "referenceRate": 0.0381,
+        "referenceRateKind": "tbill_3m",
+        "subsidisedRate": 0.03831000088868387,
+        "effectiveRate": 0.03883709630935921,
+        "diffVsBaseBps": -2.709079563233819,
+        "subsidyBenefit": 63153.86653210641,
         "cofAtFullBase": 9288441.718268225,
-        "cofOnUtilized": 8938388.0890132,
+        "cofOnUtilized": 9054205.487267924,
         "skyDirectComponent": 21041.50083063317,
-        "skyRevenueMax": 11674533.78166207,
+        "skyRevenueMax": 11790351.17991679,
         "subsidyEnabled": true,
         "capUsd": 1000000000
       },
@@ -12364,181 +13423,181 @@
           "date": "2026-06-01",
           "cumDebt": 4073552929,
           "utilized": 3186690089,
-          "dailySkyCharge": 328871.54
+          "dailySkyCharge": 332216.96
         },
         {
           "date": "2026-06-02",
           "cumDebt": 4124577055,
           "utilized": 3220059167,
-          "dailySkyCharge": 332378.92
+          "dailySkyCharge": 335515.37
         },
         {
           "date": "2026-06-03",
           "cumDebt": 4115416406,
           "utilized": 3213790849,
-          "dailySkyCharge": 331720.07
+          "dailySkyCharge": 335065.49
         },
         {
           "date": "2026-06-04",
           "cumDebt": 4027651006,
           "utilized": 3159825719,
-          "dailySkyCharge": 326047.87
+          "dailySkyCharge": 329393.29
         },
         {
           "date": "2026-06-05",
           "cumDebt": 3860950105,
           "utilized": 3096635677,
-          "dailySkyCharge": 319406.04
+          "dailySkyCharge": 322751.46
         },
         {
           "date": "2026-06-06",
           "cumDebt": 3899646138,
           "utilized": 3102703456,
-          "dailySkyCharge": 320043.82
+          "dailySkyCharge": 323389.24
         },
         {
           "date": "2026-06-07",
           "cumDebt": 3943672078,
           "utilized": 3126037417,
-          "dailySkyCharge": 322496.42
+          "dailySkyCharge": 325841.84
         },
         {
           "date": "2026-06-08",
           "cumDebt": 3916118020,
           "utilized": 3066607217,
-          "dailySkyCharge": 316249.79
+          "dailySkyCharge": 320013.1
         },
         {
           "date": "2026-06-09",
           "cumDebt": 3890917363,
           "utilized": 3047864394,
-          "dailySkyCharge": 314279.76
+          "dailySkyCharge": 317834.13
         },
         {
           "date": "2026-06-10",
           "cumDebt": 3885166547,
           "utilized": 3037675013,
-          "dailySkyCharge": 313208.76
+          "dailySkyCharge": 316763.14
         },
         {
           "date": "2026-06-11",
           "cumDebt": 3874615481,
           "utilized": 3031525001,
-          "dailySkyCharge": 312562.34
+          "dailySkyCharge": 315907.76
         },
         {
           "date": "2026-06-12",
           "cumDebt": 3896669785,
           "utilized": 3066259975,
-          "dailySkyCharge": 316213.29
+          "dailySkyCharge": 319558.71
         },
         {
           "date": "2026-06-13",
           "cumDebt": 3836230717,
           "utilized": 3009354823,
-          "dailySkyCharge": 310232.07
+          "dailySkyCharge": 313577.49
         },
         {
           "date": "2026-06-14",
           "cumDebt": 3842045029,
           "utilized": 3019080322,
-          "dailySkyCharge": 311254.3
+          "dailySkyCharge": 314599.72
         },
         {
           "date": "2026-06-15",
           "cumDebt": 3863585732,
           "utilized": 3029710990,
-          "dailySkyCharge": 312580.88
+          "dailySkyCharge": 315926.05
         },
         {
           "date": "2026-06-16",
           "cumDebt": 3591311441,
           "utilized": 2757256123,
-          "dailySkyCharge": 283943.51
+          "dailySkyCharge": 287288.67
         },
         {
           "date": "2026-06-17",
           "cumDebt": 3599490658,
           "utilized": 2752828184,
-          "dailySkyCharge": 283478.09
+          "dailySkyCharge": 287658.92
         },
         {
           "date": "2026-06-18",
           "cumDebt": 3567218341,
           "utilized": 2728187823,
-          "dailySkyCharge": 280888.18
+          "dailySkyCharge": 285069
         },
         {
           "date": "2026-06-19",
           "cumDebt": 3563985824,
           "utilized": 2726883073,
-          "dailySkyCharge": 280751.04
+          "dailySkyCharge": 284931.86
         },
         {
           "date": "2026-06-20",
           "cumDebt": 3583209222,
           "utilized": 2845720509,
-          "dailySkyCharge": 293241.89
+          "dailySkyCharge": 297422.71
         },
         {
           "date": "2026-06-21",
           "cumDebt": 3579971152,
           "utilized": 2842953739,
-          "dailySkyCharge": 292951.07
+          "dailySkyCharge": 297131.89
         },
         {
           "date": "2026-06-22",
           "cumDebt": 3564348013,
           "utilized": 2842500981,
-          "dailySkyCharge": 292903.49
+          "dailySkyCharge": 297502.04
         },
         {
           "date": "2026-06-23",
           "cumDebt": 3554763751,
           "utilized": 2839043037,
-          "dailySkyCharge": 292540.03
+          "dailySkyCharge": 297138.58
         },
         {
           "date": "2026-06-24",
           "cumDebt": 3528723749,
           "utilized": 2807497509,
-          "dailySkyCharge": 289224.32
+          "dailySkyCharge": 293822.87
         },
         {
           "date": "2026-06-25",
           "cumDebt": 3597479050,
           "utilized": 2821583641,
-          "dailySkyCharge": 290704.89
+          "dailySkyCharge": 295094.59
         },
         {
           "date": "2026-06-26",
           "cumDebt": 3618341301,
           "utilized": 2833872027,
-          "dailySkyCharge": 291996.51
+          "dailySkyCharge": 296177.33
         },
         {
           "date": "2026-06-27",
           "cumDebt": 3602525497,
           "utilized": 2820355833,
-          "dailySkyCharge": 290575.84
+          "dailySkyCharge": 294756.66
         },
         {
           "date": "2026-06-28",
           "cumDebt": 3602248965,
           "utilized": 2820359253,
-          "dailySkyCharge": 290576.2
+          "dailySkyCharge": 294757.02
         },
         {
           "date": "2026-06-29",
           "cumDebt": 3581095095,
           "utilized": 2806042592,
-          "dailySkyCharge": 289071.39
+          "dailySkyCharge": 294087.61
         },
         {
           "date": "2026-06-30",
           "cumDebt": 3588257409,
           "utilized": 2710967144,
-          "dailySkyCharge": 279078.14
+          "dailySkyCharge": 284094.36
         }
       ],
       "excludedVenues": [
@@ -12565,6 +13624,1102 @@
           "label": "Spark Savings V2 — spUSDC vault (Avalanche-C, CREATE2 same address)",
           "valueSom": 25647247.42,
           "valueEom": 19103797.29
+        }
+      ]
+    },
+    {
+      "partner": "spark",
+      "month": "2026-07",
+      "periodDays": 31,
+      "headline": {
+        "agentRate": 131173.46,
+        "distributionRewards": 943409.92,
+        "demandSideRevenue": 1074583.38,
+        "primeSupplySideRevenue": 2846721.64,
+        "primeCostOfFunds": 5755899.02,
+        "skyDirectExposure": -5204.76,
+        "skyRevenue": 5750694.26,
+        "primeAgentProfit": 3921305.02
+      },
+      "venues": [
+        {
+          "id": "S1",
+          "label": "Spark USDS (SparkLend spToken)",
+          "valueSom": 488789298.21,
+          "valueEom": 753071837.68,
+          "periodInflow": 263386405.05,
+          "actualRev": 896134.42,
+          "revenue": 896134.42,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S2",
+          "label": "Spark USDC (SparkLend spToken)",
+          "valueSom": 6740456.35,
+          "valueEom": 11026528.09,
+          "periodInflow": 4265481.43,
+          "actualRev": 20590.31,
+          "revenue": 20590.31,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S3",
+          "label": "Spark USDT (SparkLend spToken)",
+          "valueSom": 527947034.44,
+          "valueEom": 368897452.96,
+          "periodInflow": -160698731.99,
+          "actualRev": 1649150.51,
+          "revenue": 1649150.51,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S4",
+          "label": "Spark DAI (SparkLend spToken)",
+          "valueSom": 270739844.03,
+          "valueEom": 290118376.53,
+          "periodInflow": 18850714.81,
+          "actualRev": 527817.69,
+          "revenue": 527817.69,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S5",
+          "label": "Spark PYUSD (SparkLend spToken)",
+          "valueSom": 100000825.45,
+          "valueEom": 100000226.06,
+          "periodInflow": -23962.33,
+          "actualRev": 23362.93,
+          "revenue": 23362.93,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S6",
+          "label": "Aave Ethereum Lido USDS (aToken)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S7",
+          "label": "Aave Ethereum USDS (aToken)",
+          "valueSom": 0.01,
+          "valueEom": 0.01,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S8",
+          "label": "Aave Ethereum USDC (aToken)",
+          "valueSom": 0.06,
+          "valueEom": 0.06,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S9",
+          "label": "Aave Ethereum USDT (aToken)",
+          "valueSom": 5.92,
+          "valueEom": 5.94,
+          "periodInflow": 0,
+          "actualRev": 0.01,
+          "revenue": 0.01,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S10",
+          "label": "Spark Blue Chip USDC Vault (Morpho)",
+          "valueSom": 640616.82,
+          "valueEom": 772030.68,
+          "periodInflow": 125120.51,
+          "actualRev": 6293.35,
+          "revenue": 6293.35,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S11",
+          "label": "Spark Blue Chip USDT Vault (Morpho V2)",
+          "valueSom": 1.75,
+          "valueEom": 1.76,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S12",
+          "label": "Spark DAI Vault (Morpho)",
+          "valueSom": 637.49,
+          "valueEom": 725.72,
+          "periodInflow": 0,
+          "actualRev": 88.24,
+          "revenue": 88.24,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S13",
+          "label": "Spark USDS Vault (Morpho)",
+          "valueSom": 21.91,
+          "valueEom": 21.94,
+          "periodInflow": 0,
+          "actualRev": 0.03,
+          "revenue": 0.03,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S14",
+          "label": "Maple syrupUSDC (ERC-4626)",
+          "valueSom": 105302337.33,
+          "valueEom": 0,
+          "periodInflow": -105525877.59,
+          "actualRev": 223540.27,
+          "revenue": 223540.27,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S15",
+          "label": "Maple syrupUSDT (ERC-4626)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S16",
+          "label": "Ethena Staked USDe (sUSDe)",
+          "valueSom": 100.12,
+          "valueEom": 100.45,
+          "periodInflow": 0,
+          "actualRev": 0.33,
+          "revenue": 0.33,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S17",
+          "label": "Fluid Savings USDS (fsUSDS)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S18",
+          "label": "Arkis Spark Prime USDC 1 (ERC-4626)",
+          "valueSom": 20117252.71,
+          "valueEom": 20219164.29,
+          "periodInflow": 0,
+          "actualRev": 101911.59,
+          "revenue": 101911.59,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S19",
+          "label": "BlackRock USD Institutional Digital Liquidity Fund (BUIDL-I)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S20",
+          "label": "Janus Henderson Anemoy Treasury Fund (JTRSY)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S21",
+          "label": "Superstate Short Duration US Government Securities Fund (USTB)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 1,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S22",
+          "label": "Superstate Crypto Carry Fund (USCC)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S23",
+          "label": "Anchorage tri-party loan escrow (USDC pass-through, ~$0 balance)",
+          "valueSom": 1.35,
+          "valueEom": 1.36,
+          "periodInflow": 0,
+          "actualRev": 0.01,
+          "revenue": 0.01,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S24",
+          "label": "Spark.fi USDT Reserve Curve (sUSDS/USDT)",
+          "valueSom": 0.82,
+          "valueEom": 0.82,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 1,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S25",
+          "label": "Spark.fi PYUSD Reserve Curve (PYUSD/USDS)",
+          "valueSom": 3.88,
+          "valueEom": 3.88,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S26",
+          "label": "USDC raw (ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": -1198969,
+          "actualRev": 1198969,
+          "revenue": 1198969,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S27",
+          "label": "USDT raw (ALM idle — $442M as of 2026-04)",
+          "valueSom": 206394227.3,
+          "valueEom": 6730.27,
+          "periodInflow": -206387497.03,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S28",
+          "label": "PYUSD raw (ALM idle — $677M as of 2026-04)",
+          "valueSom": 236220244.56,
+          "valueEom": 237808240.55,
+          "periodInflow": 24474.12,
+          "actualRev": 1563521.87,
+          "revenue": 1563521.87,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S29",
+          "label": "DAI raw (ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S30",
+          "label": "USDe raw (ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S31",
+          "label": "USDS raw / POL (ALM idle — already netted out of utilized)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S32",
+          "label": "sUSDS raw / POL (ALM — Cat B 4626, demand-side spread)",
+          "valueSom": 1177825995.29,
+          "valueEom": 574781075.86,
+          "periodInflow": -605176013.92,
+          "actualRev": 1296477.3,
+          "revenue": 1296477.3,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S34",
+          "label": "Spark USDC Vault (Morpho, Base)",
+          "valueSom": 394.31,
+          "valueEom": 193.37,
+          "periodInflow": -202.35,
+          "actualRev": 1.41,
+          "revenue": 1.41,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S35",
+          "label": "Aave Base USDC (aBasUSDC)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S36",
+          "label": "Fluid Savings USDS (fsUSDS, Base)",
+          "valueSom": 283.9,
+          "valueEom": 283.9,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S37",
+          "label": "Savings USDS / sUSDS proxy (Base — POL)",
+          "valueSom": 211445951.37,
+          "valueEom": 0,
+          "periodInflow": -211568917.07,
+          "actualRev": 122965.7,
+          "revenue": 122965.7,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 8676.59
+        },
+        {
+          "id": "S38",
+          "label": "USDS raw (Base — POL)",
+          "valueSom": 146550618.21,
+          "valueEom": 0,
+          "periodInflow": -146550618.21,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S39",
+          "label": "USDC raw (Base — ALM idle)",
+          "valueSom": 0,
+          "valueEom": 1326.98,
+          "periodInflow": 1326.98,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S41",
+          "label": "Aave Arbitrum USDCn (aArbUSDCn)",
+          "valueSom": 0.01,
+          "valueEom": 0.01,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S42",
+          "label": "Fluid Savings USDS (fsUSDS, Arbitrum)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S43",
+          "label": "Savings USDS / sUSDS proxy (Arbitrum — POL)",
+          "valueSom": 144183127.28,
+          "valueEom": 144614306.62,
+          "periodInflow": 0,
+          "actualRev": 431179.34,
+          "revenue": 431179.34,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 33135.87
+        },
+        {
+          "id": "S44",
+          "label": "USDS raw (Arbitrum — POL)",
+          "valueSom": 90000000,
+          "valueEom": 90000000,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S45",
+          "label": "USDC raw (Arbitrum — ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S47",
+          "label": "Savings USDS / sUSDS proxy (Optimism — POL)",
+          "valueSom": 201095497.43,
+          "valueEom": 0,
+          "periodInflow": -201212443.86,
+          "actualRev": 116946.43,
+          "revenue": 116946.43,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 8251.86
+        },
+        {
+          "id": "S48",
+          "label": "USDS raw (Optimism — POL)",
+          "valueSom": 100304256.59,
+          "valueEom": 0,
+          "periodInflow": -100304256.59,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S49",
+          "label": "USDC raw (Optimism — ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S51",
+          "label": "Savings USDS / sUSDS proxy (Unichain — POL)",
+          "valueSom": 104355616.02,
+          "valueEom": 0,
+          "periodInflow": -104667691.27,
+          "actualRev": 312075.25,
+          "revenue": 312075.25,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 23411.55
+        },
+        {
+          "id": "S52",
+          "label": "USDS raw (Unichain — POL)",
+          "valueSom": 99990828.81,
+          "valueEom": 0,
+          "periodInflow": -99990828.81,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S53",
+          "label": "USDC raw (Unichain — ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S54",
+          "label": "Aave Avalanche USDC (aAvaUSDC)",
+          "valueSom": 0.16,
+          "valueEom": 0.16,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S55",
+          "label": "USDC raw (Avalanche-C — ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S61",
+          "label": "Spark.fi PYUSD Reserve Uniswap V4 (PYUSD/USDS)",
+          "valueSom": 100119969.93,
+          "valueEom": 100118990.93,
+          "periodInflow": 187.93,
+          "actualRev": -1166.93,
+          "revenue": 0,
+          "sdRevenue": -1166.93,
+          "sdShare": 1,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S62",
+          "label": "Spark.fi USDT Reserve Uniswap V4 (USDT/USDS)",
+          "valueSom": 50000000.01,
+          "valueEom": 50000939.2,
+          "periodInflow": 4977.02,
+          "actualRev": -4037.83,
+          "revenue": 0,
+          "sdRevenue": -4037.83,
+          "sdShare": 1,
+          "spreadReimb": 0
+        }
+      ],
+      "refCodes": [
+        {
+          "refCode": "127",
+          "dr": 2653.18,
+          "notes": "Synthetic code: untagged sUSDC"
+        },
+        {
+          "refCode": "128",
+          "dr": 828854.02,
+          "notes": ""
+        },
+        {
+          "refCode": "129",
+          "dr": 44.01,
+          "notes": ""
+        },
+        {
+          "refCode": "130",
+          "dr": 3407.99,
+          "notes": "Synthetic code: Untagged spUSDT — Spark's own product; Spark reports this code directly (payable to Spark)."
+        },
+        {
+          "refCode": "131",
+          "dr": 4276.77,
+          "notes": "Synthetic code: Untagged spUSDC — folded into 128 by Spark on their side (payable to Spark)."
+        },
+        {
+          "refCode": "132",
+          "dr": 10.54,
+          "notes": "Synthetic code: Untagged spPYUSD — folded into 128 by Spark on their side (payable to Spark)."
+        },
+        {
+          "refCode": "171",
+          "dr": 0,
+          "notes": ""
+        },
+        {
+          "refCode": "182",
+          "dr": 0.01,
+          "notes": ""
+        },
+        {
+          "refCode": "183",
+          "dr": 4452.02,
+          "notes": ""
+        },
+        {
+          "refCode": "186",
+          "dr": 2572.15,
+          "notes": ""
+        },
+        {
+          "refCode": "188",
+          "dr": 29169.76,
+          "notes": ""
+        },
+        {
+          "refCode": "190",
+          "dr": 329.97,
+          "notes": ""
+        },
+        {
+          "refCode": "191",
+          "dr": 25422.78,
+          "notes": ""
+        },
+        {
+          "refCode": "192",
+          "dr": 18103.03,
+          "notes": ""
+        },
+        {
+          "refCode": "194",
+          "dr": 2.31,
+          "notes": ""
+        },
+        {
+          "refCode": "195",
+          "dr": 539.55,
+          "notes": ""
+        },
+        {
+          "refCode": "196",
+          "dr": 0.14,
+          "notes": ""
+        },
+        {
+          "refCode": "197",
+          "dr": 9664.01,
+          "notes": "stUSDS"
+        },
+        {
+          "refCode": "198",
+          "dr": 0,
+          "notes": ""
+        },
+        {
+          "refCode": "200",
+          "dr": 4390.29,
+          "notes": ""
+        },
+        {
+          "refCode": "202",
+          "dr": 37.53,
+          "notes": ""
+        },
+        {
+          "refCode": "204",
+          "dr": 2.21,
+          "notes": ""
+        },
+        {
+          "refCode": "205",
+          "dr": 0.21,
+          "notes": ""
+        },
+        {
+          "refCode": "214",
+          "dr": 3.82,
+          "notes": ""
+        },
+        {
+          "refCode": "216",
+          "dr": 279.56,
+          "notes": ""
+        },
+        {
+          "refCode": "217",
+          "dr": 0.5,
+          "notes": ""
+        },
+        {
+          "refCode": "219",
+          "dr": 0,
+          "notes": ""
+        },
+        {
+          "refCode": "224",
+          "dr": 6442.69,
+          "notes": ""
+        },
+        {
+          "refCode": "303",
+          "dr": 0,
+          "notes": ""
+        },
+        {
+          "refCode": "555",
+          "dr": 0,
+          "notes": ""
+        },
+        {
+          "refCode": "9001",
+          "dr": 2750.87,
+          "notes": "Synthetic code: USDS in Aave aEthUSDS; entire contract balance. Intraday TWA (clean methodology) — the deployed Dune query used EOD snapshots, which under-count ~20% on heavy-flow months."
+        }
+      ],
+      "rateBuild": {
+        "timeWeightedUtilized": 1824131757.947205,
+        "baseRate": 0.03867995992698061,
+        "referenceRate": 0.0379,
+        "referenceRateKind": "tbill_3m→sofr@2026-07-23",
+        "subsidisedRate": 0.03806862645474302,
+        "effectiveRate": 0.03840263381716146,
+        "diffVsBaseBps": -2.773261098191523,
+        "subsidyBenefit": 41388.94518157523,
+        "cofAtFullBase": 5879812.750622121,
+        "cofOnUtilized": 5755899.021376387,
+        "skyDirectComponent": -5204.758687003854,
+        "skyRevenueMax": 8799587.254957264,
+        "subsidyEnabled": true,
+        "capUsd": 1000000000
+      },
+      "skyDirect": [
+        {
+          "id": "S21",
+          "kind": "fixed",
+          "cap": null,
+          "start": "2025-10-30",
+          "end": "—",
+          "active": true,
+          "source": "Atlas A.2.2.9.1.1.1.1.1 — Treasury Bills",
+          "label": "USTB on Eth",
+          "actualRevenue": 0,
+          "sdRevenue": 0
+        },
+        {
+          "id": "S24",
+          "kind": "fixed",
+          "cap": null,
+          "start": "2025-11-13",
+          "end": "—",
+          "active": true,
+          "source": "Atlas A.2.2.9.1.1.1.1.3 — Curve Pools",
+          "label": "USDT in sUSDS/USDT Curve",
+          "actualRevenue": 0.00109174911014533,
+          "sdRevenue": 0.00109174911014533
+        },
+        {
+          "id": "S61",
+          "kind": "fixed",
+          "cap": null,
+          "start": "2026-02-01",
+          "end": "—",
+          "active": true,
+          "source": "",
+          "label": "PYUSD in PYUSD/USDS Uniswap V4",
+          "actualRevenue": -1166.931672093194,
+          "sdRevenue": -1166.931672093194
+        },
+        {
+          "id": "S62",
+          "kind": "fixed",
+          "cap": null,
+          "start": "2026-02-01",
+          "end": "—",
+          "active": true,
+          "source": "",
+          "label": "USDT in USDT/USDS Uniswap V4",
+          "actualRevenue": -4037.82810665977,
+          "sdRevenue": -4037.82810665977
+        }
+      ],
+      "debtDaily": [
+        {
+          "date": "2026-07-01",
+          "cumDebt": 3609641416,
+          "utilized": 2724159645,
+          "dailySkyCharge": 285130.17
+        },
+        {
+          "date": "2026-07-02",
+          "cumDebt": 3355116078,
+          "utilized": 2469239720,
+          "dailySkyCharge": 257742.24
+        },
+        {
+          "date": "2026-07-03",
+          "cumDebt": 3359902219,
+          "utilized": 2483311187,
+          "dailySkyCharge": 259221.28
+        },
+        {
+          "date": "2026-07-04",
+          "cumDebt": 3346403596,
+          "utilized": 2465427758,
+          "dailySkyCharge": 257341.57
+        },
+        {
+          "date": "2026-07-05",
+          "cumDebt": 3342227619,
+          "utilized": 2461736998,
+          "dailySkyCharge": 256953.64
+        },
+        {
+          "date": "2026-07-06",
+          "cumDebt": 3352525169,
+          "utilized": 2465153866,
+          "dailySkyCharge": 258302.09
+        },
+        {
+          "date": "2026-07-07",
+          "cumDebt": 3258423220,
+          "utilized": 2373197224,
+          "dailySkyCharge": 248438.81
+        },
+        {
+          "date": "2026-07-08",
+          "cumDebt": 3222126226,
+          "utilized": 2320366831,
+          "dailySkyCharge": 243083.71
+        },
+        {
+          "date": "2026-07-09",
+          "cumDebt": 3209238706,
+          "utilized": 2302579606,
+          "dailySkyCharge": 240422.7
+        },
+        {
+          "date": "2026-07-10",
+          "cumDebt": 3218654176,
+          "utilized": 2309335164,
+          "dailySkyCharge": 241528.51
+        },
+        {
+          "date": "2026-07-11",
+          "cumDebt": 3221302446,
+          "utilized": 2309754684,
+          "dailySkyCharge": 241572.6
+        },
+        {
+          "date": "2026-07-12",
+          "cumDebt": 3194344847,
+          "utilized": 2281418929,
+          "dailySkyCharge": 238594.27
+        },
+        {
+          "date": "2026-07-13",
+          "cumDebt": 2404131279,
+          "utilized": 1479989421,
+          "dailySkyCharge": 155148.36
+        },
+        {
+          "date": "2026-07-14",
+          "cumDebt": 2362285055,
+          "utilized": 1444533618,
+          "dailySkyCharge": 150432.49
+        },
+        {
+          "date": "2026-07-15",
+          "cumDebt": 2398446511,
+          "utilized": 1473899264,
+          "dailySkyCharge": 153321.2
+        },
+        {
+          "date": "2026-07-16",
+          "cumDebt": 2390231543,
+          "utilized": 1476500825,
+          "dailySkyCharge": 153792.52
+        },
+        {
+          "date": "2026-07-17",
+          "cumDebt": 2322852668,
+          "utilized": 1399931260,
+          "dailySkyCharge": 145942.25
+        },
+        {
+          "date": "2026-07-18",
+          "cumDebt": 2359674701,
+          "utilized": 1435225989,
+          "dailySkyCharge": 149652.03
+        },
+        {
+          "date": "2026-07-19",
+          "cumDebt": 2358383536,
+          "utilized": 1422544041,
+          "dailySkyCharge": 148319.05
+        },
+        {
+          "date": "2026-07-20",
+          "cumDebt": 2370675713,
+          "utilized": 1435128230,
+          "dailySkyCharge": 149839.61
+        },
+        {
+          "date": "2026-07-21",
+          "cumDebt": 2388381810,
+          "utilized": 1446019103,
+          "dailySkyCharge": 151182.16
+        },
+        {
+          "date": "2026-07-22",
+          "cumDebt": 2335404257,
+          "utilized": 1396552581,
+          "dailySkyCharge": 146378.42
+        },
+        {
+          "date": "2026-07-23",
+          "cumDebt": 2386355454,
+          "utilized": 1407767961,
+          "dailySkyCharge": 139416.26
+        },
+        {
+          "date": "2026-07-24",
+          "cumDebt": 2413091019,
+          "utilized": 1425669922,
+          "dailySkyCharge": 141211.09
+        },
+        {
+          "date": "2026-07-25",
+          "cumDebt": 2415516902,
+          "utilized": 1424974929,
+          "dailySkyCharge": 141141.41
+        },
+        {
+          "date": "2026-07-26",
+          "cumDebt": 2430564950,
+          "utilized": 1433747298,
+          "dailySkyCharge": 142020.91
+        },
+        {
+          "date": "2026-07-27",
+          "cumDebt": 2381941668,
+          "utilized": 1404385512,
+          "dailySkyCharge": 139077.14
+        },
+        {
+          "date": "2026-07-28",
+          "cumDebt": 2421568481,
+          "utilized": 1427778997,
+          "dailySkyCharge": 141620.77
+        },
+        {
+          "date": "2026-07-29",
+          "cumDebt": 2410329060,
+          "utilized": 1422711765,
+          "dailySkyCharge": 141112.74
+        },
+        {
+          "date": "2026-07-30",
+          "cumDebt": 2436458619,
+          "utilized": 1438805862,
+          "dailySkyCharge": 142726.31
+        },
+        {
+          "date": "2026-07-31",
+          "cumDebt": 2439392616,
+          "utilized": 1786236307,
+          "dailySkyCharge": 177757.51
+        }
+      ],
+      "excludedVenues": [
+        {
+          "id": "S56",
+          "label": "Spark Savings V2 — spUSDC vault",
+          "valueSom": 317193040.53,
+          "valueEom": 268629480.77
+        },
+        {
+          "id": "S57",
+          "label": "Spark Savings V2 — spUSDT vault",
+          "valueSom": 863439216.48,
+          "valueEom": 404579096.14
+        },
+        {
+          "id": "S59",
+          "label": "Spark Savings V2 — spPYUSD vault",
+          "valueSom": 797030.38,
+          "valueEom": 30570.49
+        },
+        {
+          "id": "S60",
+          "label": "Spark Savings V2 — spUSDC vault (Avalanche-C, CREATE2 same address)",
+          "valueSom": 19103797.29,
+          "valueEom": 12460370.15
+        },
+        {
+          "id": "S63",
+          "label": "Spark Savings V2 — spUSDG vault (Robinhood Chain)",
+          "valueSom": 440606.06,
+          "valueEom": 21723212.72
         }
       ]
     }

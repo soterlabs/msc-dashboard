@@ -1,10 +1,18 @@
 /**
  * Regenerates data/generated/{dr,ssr,sky-total,prime}.json from the sources of truth:
  *
- *   - github.com/soterlabs/settle-dr-dune      → dune-results/dr_comparison_latest.xlsx → dr.json
- *   - github.com/soterlabs/settlement-reports  → reports/<partner>/<month>/             → ssr.json
- *   - github.com/soterlabs/settlement-reports  → reports/sky_total/<month>/summary.md   → sky-total.json
- *   - data/prime/payments.csv (local, see its README)                                   → prime.json
+ *   - github.com/soterlabs/settle-dr-dune      → hypersync-results/dr_comparison_hypersync.xlsx
+ *                                              + py/drhs/revenue/rates.py                → dr.json
+ *   - github.com/soterlabs/settlement-cycle    → config/dr_ref_codes.yaml (attribution)  → dr.json
+ *   - data/dr/l2-addresses.csv (local, see its README)                                   → dr.json
+ *   - github.com/soterlabs/settlement-reports  → reports/<partner>/<month>/              → ssr.json
+ *   - github.com/soterlabs/settlement-reports  → reports/sky_total/<month>/summary.md    → sky-total.json
+ *   - data/prime/payments.csv (local, see its README)                                    → prime.json
+ *
+ * settlement-reports is settlement-cycle's publish target — reports/<partner>/
+ * <month>/ there is byte-identical to settlements/<partner>/<month>/ in the
+ * cycle repo, and it carries only the reports. The DR ref-code attribution has
+ * no published copy, so that one file is read from settlement-cycle itself.
  *
  * The app reads those files on the server (src/lib/load.ts); nothing here
  * writes TypeScript.
@@ -16,22 +24,26 @@
  *
  * Sources are freshly shallow-cloned into .data-sources/ on every run (any
  * previous checkout is deleted first), or point SETTLE_DR_DUNE_DIR /
- * SETTLEMENT_REPORTS_DIR at existing checkouts. The script FAILS (nonzero exit)
+ * SETTLEMENT_CYCLE_DIR / SETTLEMENT_REPORTS_DIR at existing checkouts (a
+ * settlement-cycle checkout needs no submodule). The script FAILS (nonzero exit)
  * if a source repo can't be cloned or if the source format changed in a way the
  * parsers don't recognize — writing stale or silently-wrong revenue numbers is
  * worse than a loud failure.
  *
  * Usage:
- *   pnpm refresh            all datasets (needs network + repo access)
- *   pnpm refresh:sky-total  sky-total.json only, from settlement-reports (needs network)
- *   pnpm refresh:prime      prime.json only, from the local CSVs (offline)
+ *   pnpm refresh                    all datasets (needs network + repo access)
+ *   pnpm refresh -- --only=dr,ssr   just those, cloning only the repos they need
+ *   pnpm refresh:sky-total          sky-total.json only, from settlement-reports
+ *   pnpm refresh:prime              prime.json only, from the local CSVs (offline)
  */
 import { execFileSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import * as XLSX from "xlsx";
+import * as YAML from "yaml";
 
+import { fromCsv } from "./lib/csv.mjs";
 import { readPrimePayments } from "./lib/prime-payments.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -51,7 +63,7 @@ const SSR_NON_PARTNER_DIRS = new Set([
   "sky_total", // consolidated Sky net revenue: the primes plus non-MSC
 ]);
 /** Known partners — a new one needs SSR_PARTNER_META (label/color) added by hand. */
-const SSR_KNOWN_PARTNERS = new Set(["grove", "keel", "obex", "spark"]);
+const SSR_KNOWN_PARTNERS = new Set(["grove", "keel", "obex", "osero", "spark"]);
 
 // ---------------------------------------------------------------- sources
 
@@ -113,6 +125,12 @@ function dateStr(v) {
 const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const monthLabel = (m) => MONTH_NAMES[Number(m.slice(5)) - 1];
 
+/** "2026-07" → "2026-07-31". */
+function monthEnd(m) {
+  const [y, mm] = m.split("-").map(Number);
+  return `${m}-${String(new Date(Date.UTC(y, mm, 0)).getUTCDate()).padStart(2, "0")}`;
+}
+
 /** "$-46,415.64" / "**-46,415.64**" / "TBD" → number|null (2dp). */
 function money(s) {
   const t = str(s).replaceAll("**", "").replaceAll("$", "").replaceAll(",", "").trim();
@@ -132,79 +150,213 @@ function json(v) {
 }
 
 // ---------------------------------------------------------------- DR (dr.json)
+//
+// The DR pipeline was rebuilt on HyperSync in July 2026. Three consequences
+// shape everything below, because the new workbook carries strictly less than
+// the retired Dune one (dune-results/dr_comparison_latest.xlsx):
+//
+//   - it has no Summary tab and no `group` column, so ref-code → prime
+//     attribution now comes from settlement-cycle's config/dr_ref_codes.yaml
+//     (the same file the settlement itself reads — one source, no second copy);
+//   - it has no Soter Rates tab: the reward schedule lives as constants in
+//     settle-dr-dune's py/drhs/revenue/rates.py, parsed here;
+//   - it has no L2 address sheet at all — those rows are now a hand-maintained
+//     input, data/dr/l2-addresses.csv (see its README).
 
-function generateDr(drDir) {
-  const wb = XLSX.read(fs.readFileSync(path.join(drDir, "dune-results", "dr_comparison_latest.xlsx")));
+const DR_WORKBOOK = ["hypersync-results", "dr_comparison_hypersync.xlsx"];
+const DR_RATES_PY = ["py", "drhs", "revenue", "rates.py"];
+const DR_REF_CODES_YAML = ["config", "dr_ref_codes.yaml"];
 
-  // Summary: group blocks of ref-code rows, each closed by a "Total" row.
-  const sum = rows(wb.Sheets["Summary"]);
-  const header = sum[0].map(str);
-  const totalIdx = header.indexOf("total");
-  const reportMonths = header.slice(2, totalIdx);
-  if (totalIdx === -1 || !reportMonths.length || !reportMonths.every((m) => /^\d{4}-\d{2}$/.test(m))) {
-    throw new Error(`dr_comparison Summary sheet format changed — header: ${header.join(", ")}`);
+/** "spark" → "Spark". Group keys must match GROUP_META in src/lib/dr/domain.ts. */
+const groupLabel = (key) => key.charAt(0).toUpperCase() + key.slice(1);
+
+/**
+ * ref code → group, from settlement-cycle's config/dr_ref_codes.yaml.
+ *
+ * `primes:` maps a code to the prime it is settled to; `unattributed:` buckets
+ * codes deliberately paid to nobody (the legacy Summary's "Other"). A code may
+ * appear once across the whole file — the settlement loader enforces that
+ * because a duplicate would double-pay, and this reads the same file, so it
+ * enforces it too rather than quietly taking the last one.
+ */
+function drRefCodeGroups(cycleDir) {
+  const rel = path.join(...DR_REF_CODES_YAML);
+  const cfg = YAML.parse(fs.readFileSync(path.join(cycleDir, rel), "utf8")) ?? {};
+  const group = new Map();
+  const seenAt = new Map();
+
+  for (const [section, key] of [["primes", "primes"], ["unattributed", "unattributed"]]) {
+    for (const [name, codes] of Object.entries(cfg[key] ?? {})) {
+      for (const code of codes ?? []) {
+        const c = String(code).trim();
+        const where = `${section}.${name}`;
+        if (seenAt.has(c)) {
+          throw new Error(
+            `${rel}: ref code "${c}" listed twice (${seenAt.get(c)} and ${where}) — ` +
+              `a duplicate would attribute the same DR to two groups`,
+          );
+        }
+        seenAt.set(c, where);
+        group.set(c, groupLabel(name));
+      }
+    }
   }
+  if (!group.size) throw new Error(`${rel}: no ref codes under primes:/unattributed:`);
+  return group;
+}
+
+/**
+ * The reward schedule, parsed out of settle-dr-dune's rates.py.
+ *
+ * Reading Python source is not lovely, but the alternative is a second copy of
+ * the rates in this repo, and a rate that drifts from the pipeline is exactly
+ * the failure this dashboard exists to avoid — the XR family was cut 0.5% →
+ * 0.2% on 2026-07-09 and a hand-kept copy would still be showing 0.5%. Both
+ * shapes are literal tables, and a format change fails the refresh loudly.
+ */
+function drRates(drDir, asOf) {
+  const rel = path.join(...DR_RATES_PY);
+  const src = fs.readFileSync(path.join(drDir, rel), "utf8");
+
+  const block = (name) => {
+    const m = src.match(new RegExp(`^${name}\\s*=\\s*[[{]([\\s\\S]*?)^[\\]}]`, "m"));
+    if (!m) throw new Error(`${rel}: ${name} table not found — the rates format changed`);
+    return m[1];
+  };
+
+  const schedule = [];
+  const entry = /\(\s*"([^"]+)"\s*,\s*"([^"]*)"\s*,\s*([\d.]+)\s*,\s*date\((\d+),\s*(\d+),\s*(\d+)\)\s*,\s*date\((\d+),\s*(\d+),\s*(\d+)\)\s*\)/g;
+  const iso = (y, m, d) => `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+  for (const m of block("REWARD_SCHEDULE").matchAll(entry)) {
+    const apy = Number(m[3]);
+    schedule.push({
+      rateType: m[1],
+      description: m[2],
+      apy,
+      // Spark's apyToAnnualizedDailyRate, as in rates.py's apy_to_daily().
+      rewardPer: round(365 * (Math.exp(Math.log(1 + apy) / 365) - 1), 6),
+      start: iso(m[4], m[5], m[6]),
+      end: iso(m[7], m[8], m[9]),
+    });
+  }
+  if (!schedule.length) throw new Error(`${rel}: REWARD_SCHEDULE parsed to no rows`);
+
+  const tokenRates = [];
+  for (const m of block("TOKEN_REWARD_CODE").matchAll(/"([^"]+)"\s*:\s*"([^"]+)"/g)) {
+    const [token, rateType] = [m[1], m[2]];
+    // The rate in force on `asOf` — the end of the reporting window, not the
+    // day of the refresh, so a rebuild of the same sources reproduces byte for
+    // byte and the figure matches the months on screen.
+    const active = schedule.find((r) => r.rateType === rateType && r.start <= asOf && asOf <= r.end);
+    if (!active) {
+      throw new Error(`${rel}: no ${rateType} rate window covers ${asOf} (token ${token})`);
+    }
+    tokenRates.push({
+      token,
+      rateType,
+      apy: active.apy,
+      rewardPer: active.rewardPer,
+      notes: "",
+    });
+  }
+  if (!tokenRates.length) throw new Error(`${rel}: TOKEN_REWARD_CODE parsed to no rows`);
+
+  tokenRates.sort((a, b) => a.token.localeCompare(b.token));
+  return { rateSchedule: schedule, tokenRates };
+}
+
+/** data/dr/l2-addresses.csv — hand-maintained since the sheet was retired. */
+function drL2Addresses() {
+  const file = path.join(ROOT, "data", "dr", "l2-addresses.csv");
+  const rel = path.relative(ROOT, file);
+  const { header, rows: csvRows } = fromCsv(fs.readFileSync(file, "utf8"), { file: rel });
+  const expected = ["chain", "label", "address", "ref_code"];
+  if (header.join("|") !== expected.join("|")) {
+    throw new Error(`${rel} header must be ${expected.join(",")} — got ${header.join(",")}`);
+  }
+  return csvRows.map((r) => ({
+    chain: r.chain,
+    label: r.label,
+    address: r.address,
+    refCode: r.ref_code,
+  }));
+}
+
+function generateDr(drDir, cycleDir) {
+  const wbRel = path.join(...DR_WORKBOOK);
+  const wb = XLSX.read(fs.readFileSync(path.join(drDir, wbRel)));
+
+  const sheet = (name) => {
+    if (!wb.Sheets[name]) {
+      throw new Error(`${wbRel} has no "${name}" sheet — tabs: ${wb.SheetNames.join(", ")}`);
+    }
+    return rows(wb.Sheets[name]);
+  };
   const monthlyOf = (row, from, months) =>
     Object.fromEntries(months.map((m, i) => [m, num(row[from + i])]));
 
-  const summaryGroups = [];
-  const groupByRefCode = new Map();
-  let group = null;
-  let bucket = [];
-  for (const row of sum.slice(1)) {
-    const ref = str(row[1]);
-    if (!ref) continue;
-    if (str(row[0])) group = str(row[0]);
-    if (ref === "Total") {
-      summaryGroups.push({
-        group,
-        monthly: monthlyOf(row, 2, reportMonths),
-        total: num(row[totalIdx]),
-        refCodes: bucket,
-      });
-      bucket = [];
-      continue;
-    }
-    groupByRefCode.set(ref, group);
-    bucket.push({
-      refCode: ref,
-      monthly: monthlyOf(row, 2, reportMonths),
-      total: num(row[totalIdx]),
-      notes: str(row[totalIdx + 1]),
-    });
+  // Soter by Ref Code: ref_code | month… | total | tokens | notes.
+  const byRef = sheet("Soter by Ref Code");
+  const header = byRef[0].map(str);
+  const totalIdx = header.indexOf("total");
+  const reportMonths = header.slice(1, totalIdx);
+  if (totalIdx === -1 || !reportMonths.length || !reportMonths.every((m) => /^\d{4}-\d{2}$/.test(m))) {
+    throw new Error(`${wbRel} "Soter by Ref Code" format changed — header: ${header.join(", ")}`);
   }
 
-  // Soter by Ref Code: flat rows + tokens; group looked up from Summary.
-  const byRef = rows(wb.Sheets["Soter by Ref Code"]);
-  const brTotalIdx = byRef[0].map(str).indexOf("total");
-  if (brTotalIdx === -1) {
-    throw new Error(`dr_comparison "Soter by Ref Code" sheet format changed — header: ${byRef[0].map(str).join(", ")}`);
-  }
+  const groupOf = drRefCodeGroups(cycleDir);
   const refCodeRows = byRef
     .slice(1)
     .filter((r) => str(r[0]) && str(r[0]) !== "Total")
     .map((r) => ({
       refCode: str(r[0]),
-      group: groupByRefCode.get(str(r[0])) ?? "Unassigned",
+      group: groupOf.get(str(r[0])) ?? null,
       monthly: monthlyOf(r, 1, reportMonths),
-      total: num(r[brTotalIdx]),
-      tokens: str(r[brTotalIdx + 1]) ? str(r[brTotalIdx + 1]).split(", ") : [],
-      notes: str(r[brTotalIdx + 2]),
+      total: num(r[totalIdx]),
+      tokens: str(r[totalIdx + 1]) ? str(r[totalIdx + 1]).split(", ") : [],
+      notes: str(r[totalIdx + 2]),
     }));
 
-  const tokenRates = rows(wb.Sheets["Soter Rates"])
-    .slice(1)
-    .filter((r) => str(r[0]))
-    .map((r) => ({
-      token: str(r[0]),
-      rateType: str(r[1]),
-      apy: num(r[2], null),
-      rewardPer: num(r[3], 6),
-      notes: str(r.at(-1)),
-    }));
+  // A code the config does not know is a settlement question, not a display
+  // one: it would either land in the wrong prime's revenue or vanish from the
+  // dashboard while still being paid. Report every one of them, with amounts.
+  const unknown = refCodeRows.filter((r) => r.group === null);
+  if (unknown.length) {
+    throw new Error(
+      `${wbRel} carries ref code${unknown.length > 1 ? "s" : ""} missing from ` +
+        `settlement-cycle's ${path.join(...DR_REF_CODES_YAML)}:\n` +
+        unknown
+          .map((r) => `  ${r.refCode} — $${(r.total ?? 0).toLocaleString("en-US")} total`)
+          .join("\n") +
+        `\n  Attribute each under primes:, or list it under unattributed:.`,
+    );
+  }
+
+  // Group rollups, in config order: the retired Summary tab's per-group Total
+  // rows, re-derived. Summing the codes is what settlement-cycle's own DR
+  // loader does (src/settle/load/dr_rewards.py), so the two agree by
+  // construction rather than by a reconciliation nobody runs.
+  const byGroup = new Map();
+  for (const r of refCodeRows) {
+    if (!byGroup.has(r.group)) byGroup.set(r.group, []);
+    byGroup.get(r.group).push(r);
+  }
+  const summaryGroups = [...byGroup].map(([group, codes]) => ({
+    group,
+    monthly: Object.fromEntries(
+      reportMonths.map((m) => [m, round(codes.reduce((a, c) => a + (c.monthly[m] ?? 0), 0), 2)]),
+    ),
+    total: round(codes.reduce((a, c) => a + (c.total ?? 0), 0), 2),
+    refCodes: codes.map((c) => ({
+      refCode: c.refCode,
+      monthly: c.monthly,
+      total: c.total,
+      notes: c.notes,
+    })),
+  }));
 
   // Soter by Ref Code Token: full history per ref code × token.
-  const byTok = rows(wb.Sheets["Soter by Ref Code Token"]);
+  const byTok = sheet("Soter by Ref Code Token");
   const tokHeader = byTok[0].map(str);
   const tokTotalIdx = tokHeader.findIndex((h) => h.startsWith("total"));
   const historyMonths = tokHeader.filter((h) => /^\d{4}-\d{2}$/.test(h));
@@ -220,10 +372,10 @@ function generateDr(drDir) {
       return { refCode: str(r[0]), token: str(r[1]), monthly, total };
     });
 
-  const l2Addresses = rows(wb.Sheets["L2 sUSDS Filtered Addresses"])
-    .slice(1)
-    .filter((r) => str(r[0]))
-    .map((r) => ({ chain: str(r[0]), label: str(r[1]), address: str(r[2]), refCode: str(r[3]) }));
+  // Rates as they stood at the end of the reporting window.
+  const lastMonth = reportMonths[reportMonths.length - 1];
+  const ratesAsOf = monthEnd(lastMonth);
+  const { rateSchedule, tokenRates } = drRates(drDir, ratesAsOf);
 
   const monthLabels = Object.fromEntries(reportMonths.map((m) => [m, monthLabel(m)]));
 
@@ -234,9 +386,11 @@ function generateDr(drDir) {
     monthLabels,
     summaryGroups,
     refCodeRows,
+    ratesAsOf,
+    rateSchedule,
     tokenRates,
     refCodeTokenSeries,
-    l2Addresses,
+    l2Addresses: drL2Addresses(),
   };
 }
 
@@ -711,32 +865,57 @@ function writeJson(name, value) {
   console.log(`[generate-data] wrote ${path.relative(ROOT, out(name))}`);
 }
 
+const DATASETS = ["dr", "ssr", "sky-total", "prime"];
+
+/**
+ * `--only=dr,ssr` restricts the run to those datasets; no flag builds all four.
+ *
+ * Datasets share source repos but not failure modes: an upstream report format
+ * change breaks one parser while the others are fine, and without this the
+ * whole refresh is stuck behind it (every dataset is built before any is
+ * written, so one throw leaves nothing regenerated). Selecting lets the
+ * unaffected ones move while the broken parser is fixed — the alternative,
+ * skipping the failure, is what silently ships stale numbers.
+ */
+function selected() {
+  const arg = process.argv.find((a) => a.startsWith("--only="));
+  if (!arg) return new Set(DATASETS);
+  const names = arg.slice("--only=".length).split(",").map((s) => s.trim()).filter(Boolean);
+  const unknown = names.filter((n) => !DATASETS.includes(n));
+  if (!names.length || unknown.length) {
+    throw new Error(
+      `--only takes a comma-separated subset of ${DATASETS.join(", ")}` +
+        (unknown.length ? ` — not ${unknown.map((n) => `"${n}"`).join(", ")}` : ""),
+    );
+  }
+  return new Set(names);
+}
+
 function main() {
-  // Prime payments come from a local CSV, so they can be rebuilt without the
-  // private DR/SSR repos (which need SSH).
-  if (process.argv.includes("--prime-only")) {
-    writeJson("prime", generatePrime());
-    return;
-  }
+  const only = selected();
+  const wants = (name) => only.has(name);
 
-  if (process.argv.includes("--sky-total-only")) {
-    writeJson("sky-total", generateSkyTotal(syncRepo("settlement-reports")));
-    return;
-  }
+  // Sources are cloned only if something selected needs them. Prime payments
+  // come from a local CSV, so `--only=prime` needs neither repo (nor SSH).
+  const drDir = wants("dr")
+    ? syncRepo("settle-dr-dune", [
+        DR_WORKBOOK.join("/"),
+        DR_RATES_PY.join("/"),
+      ])
+    : null;
+  // Only for config/dr_ref_codes.yaml: settlement-cycle also carries an indexer,
+  // a database and every source workbook, none of which this script reads.
+  const cycleDir = wants("dr") ? syncRepo("settlement-cycle", [DR_REF_CODES_YAML.join("/")]) : null;
+  const reportsDir = wants("ssr") || wants("sky-total") ? syncRepo("settlement-reports") : null;
 
-  const drDir = syncRepo("settle-dr-dune", ["dune-results/dr_comparison_latest.xlsx"]);
-  const reportsDir = syncRepo("settlement-reports");
-
-  // Build every dataset before writing any, so a parse failure never leaves
-  // one regenerated file paired with a stale one.
-  const dr = generateDr(drDir);
-  const ssr = generateSsr(reportsDir);
-  const skyTotal = generateSkyTotal(reportsDir);
-  const prime = generatePrime();
-  writeJson("dr", dr);
-  writeJson("ssr", ssr);
-  writeJson("sky-total", skyTotal);
-  writeJson("prime", prime);
+  // Build every selected dataset before writing any, so a parse failure never
+  // leaves one regenerated file paired with a stale one.
+  const built = [];
+  if (wants("dr")) built.push(["dr", generateDr(drDir, cycleDir)]);
+  if (wants("ssr")) built.push(["ssr", generateSsr(reportsDir)]);
+  if (wants("sky-total")) built.push(["sky-total", generateSkyTotal(reportsDir)]);
+  if (wants("prime")) built.push(["prime", generatePrime()]);
+  for (const [name, value] of built) writeJson(name, value);
 }
 
 // A validation failure is a data-entry problem, not a crash: print the report
