@@ -18,6 +18,7 @@
  * Covered by dataset-schema.test.ts — `pnpm test`.
  */
 import type { PrimeDataset, PrimeKind, PrimeSource, PrimeWallet } from "./prime/types";
+import type { SkyTotalDataset } from "./sky-total/types";
 import type { SsrDataset, SsrPartner } from "./ssr/types";
 import type { DrDataset } from "./dr/types";
 
@@ -302,6 +303,53 @@ export function validateSsr(data: unknown): SsrDataset {
   // Double cast: the isObj guard narrowed `data` to Record<string, unknown>,
   // which TypeScript will not widen directly to SsrDataset.
   return data as unknown as SsrDataset;
+}
+
+/* ------------------------------------------------------------ Sky total */
+
+/** Nullable-number scalars on each SkyTotalReport (mirror sky-total/types.ts). */
+const SKY_TOTAL_NUMBERS = [
+  "block",
+  "debtMintedSubtotal",
+  "subproxySubtotalRaw",
+  "demandSideBuffer",
+  "coreCouncilGross",
+  "coreCouncilStep1Capital",
+  "coreCouncilGenesisRepayment",
+  "groveTgePenalty",
+  "mscNet",
+  "nonMscIncome",
+  "nonMscExpense",
+  "nonMscNet",
+  "skyNetRevenue",
+];
+
+export function validateSkyTotal(data: unknown): SkyTotalDataset {
+  if (!isObj(data)) throw new Error("data/generated/sky-total.json should be an object");
+  const p: Problems = [];
+
+  stringList(p, data, "months");
+  monthLabels(p, data.monthLabels);
+
+  rowsOf(p, data, "reports").forEach((r, i) => {
+    const at = `reports[${i}]`;
+    str(p, `${at}.month`, r.month);
+
+    for (const field of ["debtMinted", "subproxy"] as const) {
+      rowsOf(p, r, field, at).forEach((line, j) => {
+        const lat = `${at}.${field}[${j}]`;
+        str(p, `${lat}.key`, line.key);
+        str(p, `${lat}.label`, line.label);
+        num(p, `${lat}.value`, line.value, true);
+      });
+    }
+
+    for (const f of SKY_TOTAL_NUMBERS) num(p, `${at}.${f}`, r[f], true);
+    stringList(p, r, "notes", at);
+  });
+
+  finish("sky-total", "sky-total/types", p);
+  return data as unknown as SkyTotalDataset;
 }
 
 /* ---------------------------------------------------------------- Prime */

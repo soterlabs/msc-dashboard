@@ -1,16 +1,17 @@
 "use client";
 
 import * as React from "react";
-import { Coins, ScrollText, TrendingUp } from "lucide-react";
+import { Coins, Landmark, ScrollText, TrendingUp } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { DataProvider, type Datasets } from "./data-context";
 import { DistributionRewards } from "./dr/distribution-rewards";
 import { PrimePayments } from "./prime/prime-payments";
+import { SkyTotalNetRevenue } from "./sky-total/sky-total-net-revenue";
 import { SoterLabsMark } from "./soter-labs";
 import { SupplySideRevenues } from "./ssr/supply-side-revenues";
 
-type Section = "dr" | "ssr" | "prime";
+type Section = "dr" | "ssr" | "sky-total" | "prime";
 
 const NAV: {
   key: Section;
@@ -31,6 +32,12 @@ const NAV: {
     source: "soter · settlement-reports",
   },
   {
+    key: "sky-total",
+    label: "Sky Total Net Revenue",
+    icon: Landmark,
+    source: "soter · settlement-reports · sky_total",
+  },
+  {
     key: "prime",
     label: "Prime Payments",
     icon: ScrollText,
@@ -38,11 +45,14 @@ const NAV: {
   },
 ];
 
-export function AppShell({ dr, ssr, prime }: Datasets) {
+export function AppShell({ dr, ssr, skyTotal, prime }: Datasets) {
   const [section, setSection] = React.useState<Section>("dr");
   // The datasets are inert once loaded, so the context value only needs to be
   // stable across re-renders caused by switching sections.
-  const datasets = React.useMemo(() => ({ dr, ssr, prime }), [dr, ssr, prime]);
+  const datasets = React.useMemo(
+    () => ({ dr, ssr, skyTotal, prime }),
+    [dr, ssr, skyTotal, prime],
+  );
 
   return (
     <DataProvider value={datasets}>
@@ -56,6 +66,7 @@ export function AppShell({ dr, ssr, prime }: Datasets) {
             <main className="px-5 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
               {section === "dr" && <DistributionRewards />}
               {section === "ssr" && <SupplySideRevenues />}
+              {section === "sky-total" && <SkyTotalNetRevenue />}
               {section === "prime" && <PrimePayments />}
             </main>
             <footer className="px-5 pb-10 sm:px-8 lg:hidden">

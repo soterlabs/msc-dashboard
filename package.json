@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "next dev",
     "refresh": "node scripts/generate-data.mjs",
+    "refresh:sky-total": "node scripts/generate-data.mjs --sky-total-only",
     "refresh:prime": "node scripts/generate-data.mjs --prime-only",
     "fetch-prime-payments": "node scripts/fetch-prime-payments.mjs",
     "fetch-core-spells": "node scripts/fetch-core-spells.mjs",

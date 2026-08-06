@@ -1,5 +1,5 @@
 import { AppShell } from "@/components/app-shell";
-import { loadDr, loadPrime, loadSsr } from "@/lib/load";
+import { loadDr, loadPrime, loadSkyTotal, loadSsr } from "@/lib/load";
 
 /**
  * Server component: reads the datasets from data/generated/ and hands them to
@@ -8,5 +8,12 @@ import { loadDr, loadPrime, loadSsr } from "@/lib/load";
  * the data was compiled into the bundle as .ts modules.
  */
 export default function Home() {
-  return <AppShell dr={loadDr()} ssr={loadSsr()} prime={loadPrime()} />;
+  return (
+    <AppShell
+      dr={loadDr()}
+      ssr={loadSsr()}
+      skyTotal={loadSkyTotal()}
+      prime={loadPrime()}
+    />
+  );
 }
