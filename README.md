@@ -51,6 +51,24 @@ days, silently, because both environments kept serving their last good build.
 set. Point `SETTLE_DR_DUNE_DIR` / `SETTLEMENT_REPORTS_DIR` at existing checkouts
 to skip cloning.
 
+## Which tabs are shown
+
+Two tabs sit behind feature flags and are **hidden unless switched on**
+(`src/lib/flags.ts`, see `.env.example`):
+
+| Variable | Tab |
+| --- | --- |
+| `NEXT_PUBLIC_SHOW_SKY_TOTAL_NET_REVENUE` | Sky Total Net Revenue |
+| `NEXT_PUBLIC_SHOW_PRIME_PAYMENTS` | Prime Payments |
+
+Set either to `true` (or `1`) to show its tab; anything else, unset included,
+hides it. Hidden means hidden, not merely unlinked: `src/app/page.tsx` skips
+`loadSkyTotal()` / `loadPrime()` for a flagged-off tab, so those numbers are not
+in the page payload either.
+
+The values are inlined at **build** time (they must be, to reach a client
+component), so flipping one on Railway takes a redeploy, not a restart.
+
 ## Where the data lives
 
 ```
