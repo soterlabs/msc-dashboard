@@ -161,6 +161,18 @@ export function validateDr(data: unknown): DrDataset {
     str(p, `${at}.notes`, r.notes);
   });
 
+  str(p, "ratesAsOf", data.ratesAsOf);
+
+  rowsOf(p, data, "rateSchedule").forEach((w, i) => {
+    const at = `rateSchedule[${i}]`;
+    str(p, `${at}.rateType`, w.rateType);
+    str(p, `${at}.description`, w.description);
+    num(p, `${at}.apy`, w.apy);
+    num(p, `${at}.rewardPer`, w.rewardPer);
+    str(p, `${at}.start`, w.start);
+    str(p, `${at}.end`, w.end);
+  });
+
   rowsOf(p, data, "tokenRates").forEach((t, i) => {
     const at = `tokenRates[${i}]`;
     str(p, `${at}.token`, t.token);
@@ -193,7 +205,7 @@ export function validateDr(data: unknown): DrDataset {
 /* ------------------------------------------------------------------ SSR */
 
 /** Mirrors SsrPartner. Kept in step with SSR_KNOWN_PARTNERS in generate-data.mjs. */
-const SSR_PARTNERS: readonly SsrPartner[] = ["grove", "keel", "obex", "spark"];
+const SSR_PARTNERS: readonly SsrPartner[] = ["grove", "keel", "obex", "osero", "spark"];
 
 const HEADLINE_FIELDS = [
   "agentRate",

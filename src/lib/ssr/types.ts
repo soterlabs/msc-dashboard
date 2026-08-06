@@ -1,7 +1,7 @@
 /** A `YYYY-MM` month with settlement reports (driven by `months` in SsrDataset). */
 export type SsrMonth = string;
 
-export type SsrPartner = "grove" | "keel" | "obex" | "spark";
+export type SsrPartner = "grove" | "keel" | "obex" | "osero" | "spark";
 
 /** Mirrors the summary.md headline: prime side (demand + supply) and sky side. */
 export interface SsrHeadline {

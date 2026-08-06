@@ -14,7 +14,7 @@ export interface SsrPartnerMeta {
   blurb: string;
 }
 
-export const SSR_PARTNER_ORDER: SsrPartner[] = ["spark", "grove", "obex", "keel"];
+export const SSR_PARTNER_ORDER: SsrPartner[] = ["spark", "grove", "obex", "osero", "keel"];
 
 export const SSR_PARTNER_META: Record<SsrPartner, SsrPartnerMeta> = {
   spark: {
@@ -31,6 +31,11 @@ export const SSR_PARTNER_META: Record<SsrPartner, SsrPartnerMeta> = {
     label: "Obex",
     colorVar: "--group-obex",
     blurb: "Maple syrupUSDC (Category B vault)",
+  },
+  osero: {
+    label: "Osero",
+    colorVar: "--group-osero",
+    blurb: "Diamond PAU prime on the PRYSM allocator — SparkLend USDS",
   },
   keel: {
     label: "Keel",

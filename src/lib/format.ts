@@ -124,6 +124,27 @@ export function monthLong(ym: string): string {
   return `${monthShort(ym)} ${ym.slice(0, 4)}`;
 }
 
+/**
+ * ["2026-01" … "2026-07"] → "Jan–Jul 2026"; a range spanning years keeps both
+ * ("Nov 2025 – Feb 2026"). Derived from the data rather than written into the
+ * views, which is how they went on claiming "Jan–May 2026" two months on.
+ */
+export function monthRangeLabel(months: string[]): string {
+  if (!months.length) return "—";
+  const [first, last] = [months[0], months[months.length - 1]];
+  if (first === last) return monthLong(first);
+  return first.slice(0, 4) === last.slice(0, 4)
+    ? `${monthShort(first)}–${monthShort(last)} ${last.slice(0, 4)}`
+    : `${monthLong(first)} – ${monthLong(last)}`;
+}
+
+/** "2026-07-09" → "9 Jul 2026". Parsed by hand: no timezone to shift it. */
+export function dayLong(ymd: string): string {
+  const [y, m, d] = ymd.split("-");
+  const name = MONTH_NAMES[Number(m) - 1];
+  return name ? `${Number(d)} ${name} ${y}` : ymd;
+}
+
 /** Shorten an EVM address: 0x1234…cdef. */
 export function shortAddress(addr: string): string {
   if (addr.length <= 12) return addr;

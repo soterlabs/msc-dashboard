@@ -9,8 +9,8 @@
   "scripts": {
     "dev": "next dev",
     "refresh": "node scripts/generate-data.mjs",
-    "refresh:sky-total": "node scripts/generate-data.mjs --sky-total-only",
-    "refresh:prime": "node scripts/generate-data.mjs --prime-only",
+    "refresh:sky-total": "node scripts/generate-data.mjs --only=sky-total",
+    "refresh:prime": "node scripts/generate-data.mjs --only=prime",
     "fetch-prime-payments": "node scripts/fetch-prime-payments.mjs",
     "fetch-core-spells": "node scripts/fetch-core-spells.mjs",
     "build": "next build",
@@ -35,6 +35,7 @@
     "eslint-config-next": "16.2.9",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
+    "yaml": "^2.9.0"
   }
 }

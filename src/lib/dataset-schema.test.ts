@@ -112,6 +112,21 @@ test("dr: null is rejected where the type is not nullable", () => {
   rejects(validateDr, dr, "refCodeRows[0].refCode");
 });
 
+// The reward schedule is parsed out of Python source in settle-dr-dune, so a
+// silently-empty regex match is the realistic failure — a window whose apy came
+// back as a string, or a missing ratesAsOf, must not reach the rate card.
+test("dr: a rate window with a non-numeric apy is rejected", () => {
+  const dr = fixture("dr");
+  dr.rateSchedule[0].apy = "0.002";
+  rejects(validateDr, dr, "rateSchedule[0].apy");
+});
+
+test("dr: a missing ratesAsOf is rejected", () => {
+  const dr = fixture("dr");
+  delete dr.ratesAsOf;
+  rejects(validateDr, dr, "ratesAsOf");
+});
+
 /* ------------------------------------------------------ missing structure */
 
 test("dr: a missing top-level array is rejected", () => {

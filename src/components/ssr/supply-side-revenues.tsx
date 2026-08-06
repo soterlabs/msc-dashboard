@@ -13,6 +13,7 @@ import {
   partnerPrimeProfit,
   partnerSkyRevenue,
   reportFor,
+  reportsFor,
   ssrKpis,
   venuesFor,
 } from "@/lib/ssr/domain";
@@ -28,6 +29,7 @@ import {
   formatRatePercent,
   formatUSD,
   monthLong,
+  monthRangeLabel,
 } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -70,7 +72,12 @@ export function SupplySideRevenues() {
             {openPartner ? (
               <>
                 <MetaItem label="partner" value={meta?.label} />
-                <MetaItem label="window" value="Jan–May 2026" />
+                <MetaItem
+                  label="window"
+                  value={monthRangeLabel(
+                    reportsFor(ssr, openPartner).map((r) => r.month)
+                  )}
+                />
                 <MetaItem
                   label="sky rev"
                   value={formatCompactUSD(partnerSkyRevenue(ssr, openPartner))}
@@ -79,7 +86,7 @@ export function SupplySideRevenues() {
             ) : (
               <>
                 <MetaItem label="primes" value={kpis.partnerCount} />
-                <MetaItem label="window" value="Jan–May 2026" />
+                <MetaItem label="window" value={monthRangeLabel(ssr.months)} />
                 <MetaItem label="venues" value={kpis.venueCount} />
                 <MetaItem label="sky rev" value={formatCompactUSD(kpis.grandSky)} />
               </>

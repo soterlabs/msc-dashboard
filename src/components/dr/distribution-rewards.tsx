@@ -10,7 +10,7 @@ import {
   visibleRefCodeRows,
   visibleSummaryGroups,
 } from "@/lib/dr/domain";
-import { formatCompactUSD } from "@/lib/format";
+import { dayLong, formatCompactUSD, monthRangeLabel } from "@/lib/format";
 
 import { useDr } from "../data-context";
 import { DisplayTitle, FilterButton, MetaItem } from "./primitives";
@@ -66,7 +66,7 @@ export function DistributionRewards() {
       meta: [
         { label: "groups", value: visibleSummaryGroups(dr).length },
         { label: "ref codes", value: visibleRefCodeRows(dr).length },
-        { label: "window", value: "Jan–May 2026" },
+        { label: "window", value: monthRangeLabel(dr.reportMonths) },
         { label: "total DR", value: formatCompactUSD(grand) },
       ],
     },
@@ -90,7 +90,7 @@ export function DistributionRewards() {
       meta: [
         { label: "tokens", value: dr.tokenRates.length },
         { label: "families", value: RATE_FAMILIES.length },
-        { label: "window", value: "Jan–May 2026" },
+        { label: "as of", value: dayLong(dr.ratesAsOf) },
       ],
     },
   ];

@@ -41,6 +41,7 @@ days, silently, because both environments kept serving their last good build.
 | `pnpm dev` | dev server |
 | `pnpm build` / `pnpm start` | production build / serve. Offline. |
 | `pnpm refresh` | rebuild all datasets from source. Needs network and access to the private repos. |
+| `pnpm refresh -- --only=dr,ssr` | rebuild just those, cloning only the repos they need. |
 | `pnpm refresh:sky-total` | rebuild `sky-total.json` from `settlement-reports` only. Needs network. |
 | `pnpm refresh:prime` | rebuild `prime.json` from the local CSVs only. Offline. |
 | `pnpm fetch-prime-payments` | pull new payments from Dune into `data/prime/payments.csv`. Needs `DUNE_API_KEY`. |
@@ -48,8 +49,13 @@ days, silently, because both environments kept serving their last good build.
 | `pnpm lint` | eslint |
 
 `pnpm refresh` clones over SSH by default, or over HTTPS if `GITHUB_TOKEN` is
-set. Point `SETTLE_DR_DUNE_DIR` / `SETTLEMENT_REPORTS_DIR` at existing checkouts
-to skip cloning.
+set. Point `SETTLE_DR_DUNE_DIR` / `SETTLEMENT_CYCLE_DIR` / `SETTLEMENT_REPORTS_DIR`
+at existing checkouts to skip cloning.
+
+Datasets fail independently: an upstream report format change breaks one parser
+while the others are fine, and `--only=` is how the unaffected ones keep moving
+until it is fixed. Nothing is ever half-written — every selected dataset is
+parsed before any file is replaced.
 
 ## Which tabs are shown
 
@@ -73,6 +79,8 @@ component), so flipping one on Railway takes a redeploy, not a restart.
 
 ```
 data/
+  dr/                     hand-maintained — see its README
+    l2-addresses.csv        L2 sUSDS addresses behind ref code 10001
   prime/                  hand-maintained — see its README
     payments.csv            one row per on-chain payment to a prime
     wallets.csv             address → name + category
@@ -84,10 +92,29 @@ Sources of truth:
 
 | Dataset | From |
 | --- | --- |
-| `dr.json` | `soterlabs/settle-dr-dune` → `dune-results/dr_comparison_latest.xlsx` |
+| `dr.json` | `soterlabs/settle-dr-dune` → `hypersync-results/dr_comparison_hypersync.xlsx` (amounts) + `py/drhs/revenue/rates.py` (reward schedule) |
+| | `soterlabs/settlement-cycle` → `config/dr_ref_codes.yaml` (ref code → prime) |
+| | `data/dr/l2-addresses.csv` in this repo |
 | `ssr.json` | `soterlabs/settlement-reports` → `reports/<partner>/<month>/` |
 | `sky-total.json` | `soterlabs/settlement-reports` → `reports/sky_total/<month>/summary.md` |
 | `prime.json` | `data/prime/*.csv` in this repo, fed by a Dune query |
+
+`settlement-reports` is `settlement-cycle`'s publish target: `reports/<partner>/
+<month>/` there is byte-identical to `settlements/<partner>/<month>/` in the
+cycle repo, and it carries only the reports. That is why the SSR datasets read
+the small published mirror while DR reads one config file from the cycle repo
+itself — the ref-code attribution has no published copy.
+
+### Why DR takes three sources
+
+Until July 2026 it took one: the Dune workbook's `Summary` tab carried the
+amounts, the `group` column that attributed each ref code to a prime, a rates
+tab and an L2 address list. The pipeline was then rebuilt on HyperSync and that
+workbook is flat — no `Summary`, no `group`, no rates, no addresses. So each
+piece now comes from wherever it actually lives: attribution from the config the
+settlement itself reads, rates from the pipeline's own schedule (which is how
+the dashboard picked up the 2026-07-09 cut of XR from 0.5% to 0.2%), and the
+address list from a frozen copy in this repo.
 
 ## How the app reads it
 
