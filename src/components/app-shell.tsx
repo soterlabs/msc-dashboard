@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Coins, Landmark, ScrollText, TrendingUp } from "lucide-react";
 
+import { FLAGS, type Flags } from "@/lib/flags";
 import { cn } from "@/lib/utils";
 import { DataProvider, type Datasets } from "./data-context";
 import { DistributionRewards } from "./dr/distribution-rewards";
@@ -18,6 +19,8 @@ const NAV: {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   source: string;
+  /** Tabs without a flag are always shown; see src/lib/flags.ts. */
+  flag?: keyof Flags;
 }[] = [
   {
     key: "dr",
@@ -36,14 +39,22 @@ const NAV: {
     label: "Sky Total Net Revenue",
     icon: Landmark,
     source: "soter · settlement-reports · sky_total",
+    flag: "skyTotalNetRevenue",
   },
   {
     key: "prime",
     label: "Prime Payments",
     icon: ScrollText,
     source: "prime/payments.csv",
+    flag: "primePayments",
   },
 ];
+
+/**
+ * The tabs this build shows. Flags are build-time constants, so this is settled
+ * once at module load rather than re-derived per render.
+ */
+const VISIBLE_NAV = NAV.filter((n) => !n.flag || FLAGS[n.flag]);
 
 export function AppShell({ dr, ssr, skyTotal, prime }: Datasets) {
   const [section, setSection] = React.useState<Section>("dr");
@@ -63,6 +74,8 @@ export function AppShell({ dr, ssr, skyTotal, prime }: Datasets) {
           <div className="min-w-0 flex-1">
             <MobileBar section={section} onSelect={setSection} />
 
+            {/* `section` only ever holds a visible tab: it starts at "dr",
+                which carries no flag, and every setter comes from VISIBLE_NAV. */}
             <main className="px-5 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
               {section === "dr" && <DistributionRewards />}
               {section === "ssr" && <SupplySideRevenues />}
@@ -96,7 +109,7 @@ function Sidebar({
         <p className="mb-1 px-3 font-sans text-[10px] font-medium tracking-[0.18em] text-faint uppercase">
           Reports
         </p>
-        {NAV.map((n) => (
+        {VISIBLE_NAV.map((n) => (
           <NavItem
             key={n.key}
             icon={n.icon}
@@ -184,7 +197,7 @@ function MobileBar({
       <Brand />
 
       <div className="flex items-center gap-2">
-        {NAV.map((n) => (
+        {VISIBLE_NAV.map((n) => (
           <button
             key={n.key}
             type="button"
