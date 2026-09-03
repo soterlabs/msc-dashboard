@@ -34,6 +34,8 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
+import { Dropdown } from "./dr/dropdown";
+
 /**
  * The console's shared vocabulary.
  *
@@ -101,18 +103,25 @@ export function PageHeader({
       </div>
 
       {meta?.length || actions ? (
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 lg:justify-end">
-          {meta?.map((m, i) => (
-            <React.Fragment key={m.label}>
-              {i > 0 ? (
-                <Separator
-                  orientation="vertical"
-                  className="hidden data-[orientation=vertical]:h-4 sm:block"
-                />
-              ) : null}
-              <MetaStat label={m.label} value={m.value} />
-            </React.Fragment>
-          ))}
+        <div
+          className={cn(
+            "flex flex-wrap items-center gap-x-3 gap-y-2 lg:justify-end",
+            !actions && "max-sm:hidden",
+          )}
+        >
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 max-sm:hidden">
+            {meta?.map((m, i) => (
+              <React.Fragment key={m.label}>
+                {i > 0 ? (
+                  <Separator
+                    orientation="vertical"
+                    className="hidden data-[orientation=vertical]:h-4 sm:block"
+                  />
+                ) : null}
+                <MetaStat label={m.label} value={m.value} />
+              </React.Fragment>
+            ))}
+          </div>
           {actions ? <div className="ml-1 flex gap-2">{actions}</div> : null}
         </div>
       ) : null}
@@ -162,7 +171,9 @@ export function StatCard({
         </CardTitle>
       </CardHeader>
       {note ? (
-        <CardFooter className="text-sm text-muted-foreground">{note}</CardFooter>
+        <CardFooter className="text-sm text-muted-foreground">
+          {note}
+        </CardFooter>
       ) : null}
     </Card>
   );
@@ -197,15 +208,26 @@ export function Panel({
   return (
     <Card className={className}>
       {title || description || action ? (
-        <CardHeader className={cn(flush && "border-b pb-6")}>
+        <CardHeader
+          className={cn(
+            "grid-cols-1! sm:grid-cols-[1fr_auto]!",
+            flush && "border-b pb-6",
+          )}
+        >
           {title ? (
             <CardTitle className="flex items-center gap-1.5">
               {title}
               {hint ? <Hint label={hint} /> : null}
             </CardTitle>
           ) : null}
-          {description ? <CardDescription>{description}</CardDescription> : null}
-          {action ? <CardAction>{action}</CardAction> : null}
+          {description ? (
+            <CardDescription>{description}</CardDescription>
+          ) : null}
+          {action ? (
+            <CardAction className="col-start-1 row-start-3 justify-self-start sm:col-start-2 sm:row-span-2 sm:row-start-1 sm:justify-self-end">
+              {action}
+            </CardAction>
+          ) : null}
         </CardHeader>
       ) : null}
       {/* flex-1 keeps a footer on the card's floor, so a row of panels lines
@@ -259,7 +281,10 @@ export function Swatch({
     <span
       aria-hidden
       data-swatch=""
-      className={cn("size-2.5 shrink-0 rounded-[2px] transition-opacity", className)}
+      className={cn(
+        "size-2.5 shrink-0 rounded-[2px] transition-opacity",
+        className,
+      )}
       style={{ background: color }}
     />
   );
@@ -359,7 +384,9 @@ export function Prose({
   className?: string;
 }) {
   return (
-    <p className={cn("text-sm leading-relaxed text-muted-foreground", className)}>
+    <p
+      className={cn("text-sm leading-relaxed text-muted-foreground", className)}
+    >
       {children}
     </p>
   );
@@ -419,11 +446,7 @@ export function FilterToggle({
   ...props
 }: React.ComponentProps<typeof Toggle>) {
   return (
-    <Toggle
-      size="sm"
-      className={cn(FILTER_STATE, className)}
-      {...props}
-    />
+    <Toggle size="sm" className={cn(FILTER_STATE, className)} {...props} />
   );
 }
 
@@ -442,6 +465,47 @@ export function ActionButton({
   );
 }
 
+export function MonthPicker({
+  value,
+  onChange,
+  months,
+  render,
+  label = "Month",
+  "aria-label": ariaLabel,
+}: {
+  value: string;
+  onChange: (m: string) => void;
+  months: string[];
+  render: (m: string) => string;
+  label?: string;
+  "aria-label"?: string;
+}) {
+  return (
+    <>
+      <Dropdown
+        label={label}
+        value={value}
+        onChange={onChange}
+        options={months}
+        render={render}
+        className="h-8 sm:hidden"
+      />
+      <FilterGroup
+        value={[value]}
+        onValueChange={(v) => v[0] && onChange(v[0])}
+        aria-label={ariaLabel ?? label}
+        className="max-sm:hidden"
+      >
+        {months.map((m) => (
+          <FilterItem key={m} value={m}>
+            {render(m)}
+          </FilterItem>
+        ))}
+      </FilterGroup>
+    </>
+  );
+}
+
 export function FilterGroup({
   className,
   ...props
@@ -455,12 +519,7 @@ export function FilterItem({
   className,
   ...props
 }: React.ComponentProps<typeof ToggleGroupItem>) {
-  return (
-    <ToggleGroupItem
-      className={cn(FILTER_STATE, className)}
-      {...props}
-    />
-  );
+  return <ToggleGroupItem className={cn(FILTER_STATE, className)} {...props} />;
 }
 
 /** A filter whose chip carries a series colour — a legend you can click. */

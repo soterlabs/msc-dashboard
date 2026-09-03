@@ -55,8 +55,7 @@ import {
   ActionButton,
   DataTable,
   Dash,
-  FilterGroup,
-  FilterItem,
+  MonthPicker,
   FilterToggle,
   LegendItem,
   PageHeader,
@@ -90,9 +89,9 @@ export function SupplySideRevenues() {
         <PageHeader
           title="Prime breakdown"
           description={`${meta.label} · ${formatCompactUSD(
-            partnerSkyRevenue(ssr, openPartner)
+            partnerSkyRevenue(ssr, openPartner),
           )} Sky revenue over ${monthRangeLabel(
-            reportsFor(ssr, openPartner).map((r) => r.month)
+            reportsFor(ssr, openPartner).map((r) => r.month),
           )}`}
         />
       ) : (
@@ -309,14 +308,18 @@ function Summary({
               content={
                 <ChartTooltipContent
                   hideIndicator
-                  formatter={moneyTooltip(
-                    { total: "Sky revenue" },
-                    (n) => formatUSD(n),
+                  formatter={moneyTooltip({ total: "Sky revenue" }, (n) =>
+                    formatUSD(n),
                   )}
                 />
               }
             />
-            <RBar dataKey="total" fill="var(--color-total)" radius={8} maxBarSize={72}>
+            <RBar
+              dataKey="total"
+              fill="var(--color-total)"
+              radius={8}
+              maxBarSize={72}
+            >
               <LabelList
                 position="top"
                 offset={10}
@@ -375,17 +378,13 @@ function PartnerBreakdown({
           All primes
         </ActionButton>
         <span className="text-sm text-muted-foreground">Month</span>
-        <FilterGroup
-          value={[month]}
-          onValueChange={(v) => v[0] && setMonth(v[0])}
-          aria-label="Settlement month"
-        >
-          {months.map((m) => (
-            <FilterItem key={m} value={m}>
-              {monthLabels[m]}
-            </FilterItem>
-          ))}
-        </FilterGroup>
+        <MonthPicker
+          value={month}
+          onChange={setMonth}
+          months={months}
+          render={(m) => monthLabels[m] ?? m}
+          label="Settlement month"
+        />
       </div>
 
       <div className="grid grid-cols-1 gap-4 @4xl/main:grid-cols-2">
@@ -479,8 +478,8 @@ function PartnerBreakdown({
       {venues.length === 0 ? (
         <Panel title="Per-venue breakdown" description={monthLong(month)}>
           <Prose className="max-w-3xl">
-            {partnerMeta(partner).label} is a bridge / aggregator — it reports no
-            venue-level deployments. Its contribution is distribution-rewards
+            {partnerMeta(partner).label} is a bridge / aggregator — it reports
+            no venue-level deployments. Its contribution is distribution-rewards
             attribution only (see the Distribution Rewards section).
           </Prose>
         </Panel>
@@ -579,7 +578,10 @@ function RateBuildSection({ rb }: { rb: SsrRateBuild }) {
         hint="How Sky's take is built: base rate, the subsidy applied to it, and the cost-of-funds composition."
       >
         <dl className="grid gap-2.5 text-sm">
-          <Line label="SR (subsidized rate)" value={formatRatePercent(rb.subsidisedRate)} />
+          <Line
+            label="SR (subsidized rate)"
+            value={formatRatePercent(rb.subsidisedRate)}
+          />
           <Line
             label={`TR (target rate${rb.referenceRateKind ? `: ${rb.referenceRateKind}` : ": EFFR or T-Bills"})`}
             value={formatRatePercent(rb.referenceRate)}
@@ -592,7 +594,11 @@ function RateBuildSection({ rb }: { rb: SsrRateBuild }) {
           />
           <Line
             label="ER − BR"
-            value={rb.diffVsBaseBps != null ? `${rb.diffVsBaseBps.toFixed(1)} bps` : "—"}
+            value={
+              rb.diffVsBaseBps != null
+                ? `${rb.diffVsBaseBps.toFixed(1)} bps`
+                : "—"
+            }
           />
           <Line
             label="Time-weighted utilized"
@@ -638,7 +644,12 @@ function Line({
   return (
     <div className="flex items-baseline justify-between gap-4 border-b border-border/60 pb-2.5 last:border-0 last:pb-0">
       <dt className="text-muted-foreground">{label}</dt>
-      <dd className={cn("tabular-nums", emphasis ? "font-semibold" : "font-medium")}>
+      <dd
+        className={cn(
+          "tabular-nums",
+          emphasis ? "font-semibold" : "font-medium",
+        )}
+      >
         {value}
       </dd>
     </div>
@@ -737,7 +748,9 @@ function ExcludedSection({ rows }: { rows: SsrExcludedVenue[] }) {
 function RefCodesSection({ rows }: { rows: SsrRefCode[] }) {
   const [onlyEarning, setOnlyEarning] = React.useState(true);
   const sorted = [...rows].sort((a, b) => (b.dr ?? 0) - (a.dr ?? 0));
-  const shown = onlyEarning ? sorted.filter((rc) => (rc.dr ?? 0) !== 0) : sorted;
+  const shown = onlyEarning
+    ? sorted.filter((rc) => (rc.dr ?? 0) !== 0)
+    : sorted;
   return (
     <Panel
       title="DR per ref code"
@@ -829,9 +842,7 @@ function HeadlinePanel({
             >
               {label}
             </dt>
-            <dd
-              className={cn("tabular-nums", kind === "sum" && "font-medium")}
-            >
+            <dd className={cn("tabular-nums", kind === "sum" && "font-medium")}>
               {headline(value)}
             </dd>
           </div>

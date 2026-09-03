@@ -72,7 +72,7 @@ export function RefCodesView({
   const refCodeRows = React.useMemo(() => visibleRefCodeRows(dr), [dr]);
   const groupNames = React.useMemo(
     () => Array.from(new Set(refCodeRows.map((r) => r.group))),
-    [refCodeRows]
+    [refCodeRows],
   );
   const allSelected = groupNames.every((g) => selectedGroups.has(g));
   const [query, setQuery] = React.useState("");
@@ -90,7 +90,8 @@ export function RefCodesView({
       if (token !== "All" && !r.tokens.includes(token)) return false;
       if (onlyNotes && !r.notes.trim()) return false;
       if (q) {
-        const hay = `${r.refCode} ${r.group} ${r.tokens.join(" ")} ${r.notes}`.toLowerCase();
+        const hay =
+          `${r.refCode} ${r.group} ${r.tokens.join(" ")} ${r.notes}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
@@ -104,7 +105,15 @@ export function RefCodesView({
       return (b.total ?? 0) - (a.total ?? 0);
     });
     return out;
-  }, [query, selectedGroups, token, onlyNotes, sort, refCodeRows, reportMonths]);
+  }, [
+    query,
+    selectedGroups,
+    token,
+    onlyNotes,
+    sort,
+    refCodeRows,
+    reportMonths,
+  ]);
 
   const filteredTotal = rows.reduce((acc, r) => acc + (r.total ?? 0), 0);
 
@@ -261,7 +270,9 @@ export function RefCodesView({
                       )}
                     </span>
                   </Td>
-                  <Td numeric>{r.notes ? <NoteBadge note={r.notes} /> : null}</Td>
+                  <Td numeric>
+                    {r.notes ? <NoteBadge note={r.notes} /> : null}
+                  </Td>
                 </TableRow>
 
                 {isOpen ? (
@@ -310,7 +321,7 @@ function RefCodeDetail({ refCode, group }: { refCode: string; group: string }) {
   const activeMonths = history.filter((h) => h.value > 0).length;
   const peak = history.reduce(
     (best, h) => (h.value > best.value ? h : best),
-    history[0] ?? { m: "", label: "", value: 0 }
+    history[0] ?? { m: "", label: "", value: 0 },
   );
 
   // Month filter for the token breakdown. "all" = full-history totals; any
@@ -321,7 +332,7 @@ function RefCodeDetail({ refCode, group }: { refCode: string; group: string }) {
   const monthOptions = ["all", ...[...activeMonthKeys].reverse()];
 
   const tokenValue = (s: (typeof series)[number]) =>
-    month === "all" ? s.total ?? 0 : s.monthly[month] ?? 0;
+    month === "all" ? (s.total ?? 0) : (s.monthly[month] ?? 0);
 
   const shownTokens = [...series]
     .map((s) => ({ token: s.token, value: tokenValue(s) }))
@@ -330,7 +341,7 @@ function RefCodeDetail({ refCode, group }: { refCode: string; group: string }) {
   const monthTotal =
     month === "all"
       ? series.reduce((acc, s) => acc + (s.total ?? 0), 0)
-      : history.find((h) => h.m === month)?.value ?? 0;
+      : (history.find((h) => h.m === month)?.value ?? 0);
   const compositionLabel = month === "all" ? "full history" : monthLong(month);
 
   const historyConfig = {
@@ -338,125 +349,134 @@ function RefCodeDetail({ refCode, group }: { refCode: string; group: string }) {
   } satisfies ChartConfig;
 
   return (
-    <div className="grid gap-8 px-6 py-6 lg:grid-cols-[1fr_24rem]">
-      {/* left: token composition */}
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-sm font-medium">
-            Token composition{" "}
-            <span className="font-normal text-muted-foreground">
-              · {compositionLabel}
-            </span>
-          </h3>
-          <Dropdown
-            label="Month"
-            value={month}
-            onChange={setMonth}
-            options={monthOptions}
-            render={(v) => (v === "all" ? "All history" : monthLong(v))}
-            className="h-8"
-          />
-        </div>
-
-        <div className="flex flex-col gap-2.5">
-          {shownTokens.map((s) => (
-            <div
-              key={s.token}
-              className="grid grid-cols-[7rem_1fr_auto] items-center gap-3 text-sm"
-            >
-              <span className="flex items-center gap-2">
-                <Swatch color={tokenColor(dr, s.token)} />
-                {/* sans, to match the token badges in the ledger above:
-                    the same symbol was being set in two different faces */}
-                <span className="truncate">{s.token}</span>
+    <div className="sticky left-0 w-[min(100%,calc(100vw-2rem))]">
+      <div className="grid gap-6 px-4 py-5 sm:px-6 sm:py-6 lg:grid-cols-[1fr_24rem] lg:gap-8">
+        {/* left: token composition */}
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-sm font-medium">
+              Token composition{" "}
+              <span className="font-normal text-muted-foreground">
+                · {compositionLabel}
               </span>
-              <Bar
-                value={s.value}
-                max={maxToken}
-                color={tokenColor(dr, s.token)}
-                label={`${s.token} share`}
-              />
-              <span className="tabular-nums">{formatUSD2(s.value)}</span>
+            </h3>
+            <Dropdown
+              label="Month"
+              value={month}
+              onChange={setMonth}
+              options={monthOptions}
+              render={(v) => (v === "all" ? "All history" : monthLong(v))}
+              className="h-8"
+            />
+          </div>
+
+          <div className="flex flex-col gap-2.5">
+            {shownTokens.map((s) => (
+              <div
+                key={s.token}
+                className="grid grid-cols-[6rem_1fr_auto] items-center gap-2 text-xs sm:grid-cols-[7rem_1fr_auto] sm:gap-3 sm:text-sm"
+              >
+                <span className="flex items-center gap-2">
+                  <Swatch color={tokenColor(dr, s.token)} />
+                  {/* sans, to match the token badges in the ledger above:
+                    the same symbol was being set in two different faces */}
+                  <span className="truncate">{s.token}</span>
+                </span>
+                <Bar
+                  value={s.value}
+                  max={maxToken}
+                  color={tokenColor(dr, s.token)}
+                  label={`${s.token} share`}
+                />
+                <span className="tabular-nums">{formatUSD2(s.value)}</span>
+              </div>
+            ))}
+            {series.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                No token-level history recorded.
+              </p>
+            ) : null}
+          </div>
+
+          {series.length > 0 ? (
+            <div className="flex items-center justify-between border-t pt-3 text-sm">
+              <span className="text-muted-foreground">
+                Total · {compositionLabel}
+              </span>
+              <span className="font-medium tabular-nums">
+                {formatUSD2(monthTotal)}
+              </span>
             </div>
-          ))}
-          {series.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No token-level history recorded.
-            </p>
           ) : null}
         </div>
 
-        {series.length > 0 ? (
-          <div className="flex items-center justify-between border-t pt-3 text-sm">
-            <span className="text-muted-foreground">
-              Total · {compositionLabel}
+        {/* right: history + stats */}
+        <div className="flex flex-col gap-4">
+          <h3 className="text-sm font-medium">
+            DR history{" "}
+            <span className="font-normal text-muted-foreground">
+              · monthly, select a bar to filter
             </span>
-            <span className="font-medium tabular-nums">
-              {formatUSD2(monthTotal)}
-            </span>
-          </div>
-        ) : null}
-      </div>
+          </h3>
 
-      {/* right: history + stats */}
-      <div className="flex flex-col gap-4">
-        <h3 className="text-sm font-medium">
-          DR history{" "}
-          <span className="font-normal text-muted-foreground">
-            · monthly, select a bar to filter
-          </span>
-        </h3>
+          <ChartContainer
+            config={historyConfig}
+            className="aspect-auto h-32 w-full"
+          >
+            <BarChart data={history} margin={{ top: 4, left: 0, right: 0 }}>
+              <XAxis
+                dataKey="m"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                minTickGap={28}
+                tickFormatter={(m: string) => monthLong(m)}
+              />
+              <ChartTooltip
+                cursor={false}
+                content={
+                  <ChartTooltipContent
+                    hideIndicator
+                    labelFormatter={(_, p) =>
+                      monthLong(String(p?.[0]?.payload?.m))
+                    }
+                    formatter={moneyTooltip({ value: "DR" }, (n) =>
+                      formatUSD2(n),
+                    )}
+                  />
+                }
+              />
+              <RBar
+                dataKey="value"
+                radius={3}
+                onClick={(d: { payload?: { m?: string; value?: number } }) => {
+                  const m = d?.payload?.m;
+                  if (!m || !d.payload?.value) return;
+                  setMonth((cur) => (cur === m ? "all" : m));
+                }}
+              >
+                {history.map((h) => (
+                  <Cell
+                    key={h.m}
+                    fill="var(--color-value)"
+                    // Selection is carried by opacity against the same hue, so
+                    // the bar never changes colour or height as it is picked.
+                    fillOpacity={month === h.m ? 1 : h.value > 0 ? 0.55 : 0.15}
+                    cursor={h.value > 0 ? "pointer" : "default"}
+                  />
+                ))}
+              </RBar>
+            </BarChart>
+          </ChartContainer>
 
-        <ChartContainer config={historyConfig} className="aspect-auto h-32 w-full">
-          <BarChart data={history} margin={{ top: 4, left: 0, right: 0 }}>
-            <XAxis
-              dataKey="m"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              minTickGap={28}
-              tickFormatter={(m: string) => monthLong(m)}
+          <dl className="grid grid-cols-2 gap-3">
+            <MiniStat label="Months active" value={activeMonths} />
+            <MiniStat
+              label="Peak month"
+              value={peak.value > 0 ? monthLong(peak.m) : "—"}
             />
-            <ChartTooltip
-              cursor={false}
-              content={
-                <ChartTooltipContent
-                  hideIndicator
-                  labelFormatter={(_, p) => monthLong(String(p?.[0]?.payload?.m))}
-                  formatter={moneyTooltip({ value: "DR" }, (n) => formatUSD2(n))}
-                />
-              }
-            />
-            <RBar
-              dataKey="value"
-              radius={3}
-              onClick={(d: { payload?: { m?: string; value?: number } }) => {
-                const m = d?.payload?.m;
-                if (!m || !d.payload?.value) return;
-                setMonth((cur) => (cur === m ? "all" : m));
-              }}
-            >
-              {history.map((h) => (
-                <Cell
-                  key={h.m}
-                  fill="var(--color-value)"
-                  // Selection is carried by opacity against the same hue, so
-                  // the bar never changes colour or height as it is picked.
-                  fillOpacity={month === h.m ? 1 : h.value > 0 ? 0.55 : 0.15}
-                  cursor={h.value > 0 ? "pointer" : "default"}
-                />
-              ))}
-            </RBar>
-          </BarChart>
-        </ChartContainer>
-
-        <dl className="grid grid-cols-2 gap-3">
-          <MiniStat label="Months active" value={activeMonths} />
-          <MiniStat
-            label="Peak month"
-            value={peak.value > 0 ? monthLong(peak.m) : "—"}
-          />
-        </dl>
+          </dl>
+        </div>
       </div>
     </div>
   );
@@ -474,7 +494,14 @@ function cell(v: number | null | undefined) {
 function exportCsv(rows: RefCodeRow[], reportMonths: string[]) {
   // Was hand-rolled here, quoting only `notes` — a comma anywhere else shifted
   // every column after it. Now goes through the shared RFC 4180 builder.
-  const header = ["ref_code", "group", ...reportMonths, "total", "tokens", "notes"];
+  const header = [
+    "ref_code",
+    "group",
+    ...reportMonths,
+    "total",
+    "tokens",
+    "notes",
+  ];
   const body = rows.map((r) => [
     r.refCode,
     r.group,

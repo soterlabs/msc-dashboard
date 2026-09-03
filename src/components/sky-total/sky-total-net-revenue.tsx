@@ -25,8 +25,7 @@ import { useSkyTotal } from "../data-context";
 import {
   DataTable,
   Dash,
-  FilterGroup,
-  FilterItem,
+  MonthPicker,
   LegendItem,
   PageHeader,
   Panel,
@@ -87,7 +86,7 @@ export function SkyTotalNetRevenue() {
         />
       </div>
 
-      <Waterfall reports={ordered} monthLabels={monthLabels} />
+      <Waterfall reports={ordered} />
 
       <ReconciliationTable reports={ordered} monthLabels={monthLabels} />
 
@@ -111,14 +110,49 @@ type Step = {
 
 function stepsFor(r: SkyTotalReport): Step[] {
   return [
-    { key: "debt", label: "Debt minted", kind: "flow", value: num(r.debtMintedSubtotal) },
-    { key: "subproxy", label: "Prime subproxy", kind: "flow", value: num(r.subproxySubtotalRaw) },
-    { key: "demand", label: "Demand-side buffer", kind: "flow", value: num(r.demandSideBuffer) },
-    { key: "cc", label: "Core Council", kind: "flow", value: num(r.coreCouncilGenesisRepayment) },
-    { key: "tge", label: "Grove TGE penalty", kind: "flow", value: num(r.groveTgePenalty) },
+    {
+      key: "debt",
+      label: "Debt minted",
+      kind: "flow",
+      value: num(r.debtMintedSubtotal),
+    },
+    {
+      key: "subproxy",
+      label: "Prime subproxy",
+      kind: "flow",
+      value: num(r.subproxySubtotalRaw),
+    },
+    {
+      key: "demand",
+      label: "Demand-side buffer",
+      kind: "flow",
+      value: num(r.demandSideBuffer),
+    },
+    {
+      key: "cc",
+      label: "Core Council",
+      kind: "flow",
+      value: num(r.coreCouncilGenesisRepayment),
+    },
+    {
+      key: "tge",
+      label: "Grove TGE penalty",
+      kind: "flow",
+      value: num(r.groveTgePenalty),
+    },
     { key: "msc", label: "MSC net", kind: "total", value: num(r.mscNet) },
-    { key: "nonmsc", label: "Non-MSC net", kind: "flow", value: num(r.nonMscNet) },
-    { key: "sky", label: "Sky Net Revenue", kind: "total", value: num(r.skyNetRevenue) },
+    {
+      key: "nonmsc",
+      label: "Non-MSC net",
+      kind: "flow",
+      value: num(r.nonMscNet),
+    },
+    {
+      key: "sky",
+      label: "Sky Net Revenue",
+      kind: "total",
+      value: num(r.skyNetRevenue),
+    },
   ];
 }
 
@@ -156,13 +190,39 @@ const waterfallConfig = {
   subtotal: { label: "Subtotal", color: "var(--foreground)" },
 } satisfies ChartConfig;
 
-function Waterfall({
-  reports,
-  monthLabels,
+function WrappedTick({
+  x,
+  y,
+  payload,
 }: {
-  reports: SkyTotalReport[];
-  monthLabels: Record<string, string>;
+  x?: number;
+  y?: number;
+  payload?: { value?: string | number };
 }) {
+  const words = String(payload?.value ?? "").split(" ");
+  const mid = Math.ceil(words.length / 2);
+  const lines =
+    words.length > 1
+      ? [words.slice(0, mid).join(" "), words.slice(mid).join(" ")]
+      : words;
+  return (
+    <text
+      x={x}
+      y={y}
+      textAnchor="middle"
+      className="fill-muted-foreground"
+      fontSize={12}
+    >
+      {lines.map((line, i) => (
+        <tspan key={i} x={x} dy={i === 0 ? 12 : 14}>
+          {line}
+        </tspan>
+      ))}
+    </text>
+  );
+}
+
+function Waterfall({ reports }: { reports: SkyTotalReport[] }) {
   const [month, setMonth] = React.useState(reports[reports.length - 1].month);
   const report =
     reports.find((r) => r.month === month) ?? reports[reports.length - 1];
@@ -172,19 +232,16 @@ function Waterfall({
     <Panel
       title="How the month reconciles"
       hint="Debt minted to the buffer, less what flows back out to primes, the Demand-side Buffer, the Core Council (genesis portion) and the Grove TGE penalty, gives MSC net; adding non-MSC net gives Sky Net Revenue."
-      description={`${monthLabels[report.month] ?? report.month} · every figure in USDS`}
+      description="Every figure in USDS"
       action={
-        <FilterGroup
-          value={[month]}
-          onValueChange={(v) => v[0] && setMonth(v[0])}
+        <MonthPicker
+          value={month}
+          onChange={setMonth}
+          months={reports.map((r) => r.month)}
+          render={monthShort}
+          label="Month"
           aria-label="Settlement month"
-        >
-          {reports.map((r) => (
-            <FilterItem key={r.month} value={r.month}>
-              {monthShort(r.month)}
-            </FilterItem>
-          ))}
-        </FilterGroup>
+        />
       }
       footer={
         report.notes.length > 0 ? (
@@ -205,78 +262,88 @@ function Waterfall({
           <LegendItem color="var(--foreground)">Subtotal</LegendItem>
         </div>
 
-        <ChartContainer
-          config={waterfallConfig}
-          className="aspect-auto h-80 w-full @3xl/main:h-96"
-        >
-          <BarChart data={bars} margin={{ top: 24, left: 4, right: 4 }}>
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="label"
-              interval={0}
-              tickLine={false}
-              axisLine={false}
-              tickMargin={10}
-              height={44}
-              fontSize={12}
-            />
-            <YAxis
-              tickLine={false}
-              axisLine={false}
-              width={52}
-              fontSize={12}
-              tickFormatter={(v: number) => formatCompactTokens(v)}
-            />
-            <ChartTooltip
-              cursor={false}
-              content={
-                <ChartTooltipContent
-                  hideIndicator
-                  formatter={(_v, _n, item) => (
-                    <span className="flex flex-1 items-center justify-between gap-4 leading-none">
-                      <span className="text-muted-foreground">
-                        {(item as { payload?: Step })?.payload?.kind === "total"
-                          ? "Subtotal"
-                          : ((item as { payload?: Step })?.payload?.value ?? 0) < 0
-                            ? "Out of the buffer"
-                            : "Into the buffer"}
-                      </span>
-                      <span className="font-medium text-foreground tabular-nums">
-                        {formatTokens(
-                          (item as { payload?: Step })?.payload?.value ?? 0,
-                        )}
-                      </span>
-                    </span>
-                  )}
-                />
-              }
-            />
-            {/* the invisible pedestal each floating bar sits on */}
-            <RBar dataKey="base" stackId="w" fill="transparent" maxBarSize={72} />
-            <RBar dataKey="delta" stackId="w" radius={4} maxBarSize={72}>
-              {bars.map((b) => (
-                <Cell
-                  key={b.key}
-                  fill={
-                    b.kind === "total"
-                      ? "var(--color-subtotal)"
-                      : b.value < 0
-                        ? "var(--color-outflow)"
-                        : "var(--color-inflow)"
-                  }
-                />
-              ))}
-              <LabelList
-                dataKey="value"
-                position="top"
-                offset={8}
-                className="fill-foreground"
-                fontSize={12}
-                formatter={(v: unknown) => signedCompact(Number(v))}
+        <div className="scroll-thin -mx-1 overflow-x-auto px-1">
+          <ChartContainer
+            config={waterfallConfig}
+            className="aspect-auto h-80 w-full min-w-[40rem] @3xl/main:h-96"
+          >
+            <BarChart data={bars} margin={{ top: 24, left: 4, right: 4 }}>
+              <CartesianGrid vertical={false} />
+              <XAxis
+                dataKey="label"
+                interval={0}
+                tickLine={false}
+                axisLine={false}
+                tickMargin={10}
+                height={52}
+                tick={<WrappedTick />}
               />
-            </RBar>
-          </BarChart>
-        </ChartContainer>
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                width={52}
+                fontSize={12}
+                tickFormatter={(v: number) => formatCompactTokens(v)}
+              />
+              <ChartTooltip
+                cursor={false}
+                content={
+                  <ChartTooltipContent
+                    hideIndicator
+                    formatter={(_v, _n, item) => (
+                      <span className="flex flex-1 items-center justify-between gap-4 leading-none">
+                        <span className="text-muted-foreground">
+                          {(item as { payload?: Step })?.payload?.kind ===
+                          "total"
+                            ? "Subtotal"
+                            : ((item as { payload?: Step })?.payload?.value ??
+                                  0) < 0
+                              ? "Out of the buffer"
+                              : "Into the buffer"}
+                        </span>
+                        <span className="font-medium text-foreground tabular-nums">
+                          {formatTokens(
+                            (item as { payload?: Step })?.payload?.value ?? 0,
+                          )}
+                        </span>
+                      </span>
+                    )}
+                  />
+                }
+              />
+              {/* the invisible pedestal each floating bar sits on */}
+              <RBar
+                dataKey="base"
+                stackId="w"
+                fill="transparent"
+                maxBarSize={72}
+                tooltipType="none"
+              />
+              <RBar dataKey="delta" stackId="w" radius={4} maxBarSize={72}>
+                {bars.map((b) => (
+                  <Cell
+                    key={b.key}
+                    fill={
+                      b.kind === "total"
+                        ? "var(--color-subtotal)"
+                        : b.value < 0
+                          ? "var(--color-outflow)"
+                          : "var(--color-inflow)"
+                    }
+                  />
+                ))}
+                <LabelList
+                  dataKey="value"
+                  position="top"
+                  offset={8}
+                  className="fill-foreground"
+                  fontSize={12}
+                  formatter={(v: unknown) => signedCompact(Number(v))}
+                />
+              </RBar>
+            </BarChart>
+          </ChartContainer>
+        </div>
       </div>
     </Panel>
   );
@@ -299,7 +366,8 @@ function unionKeys(
 ) {
   const seen = new Map<string, string>();
   for (const r of reports)
-    for (const line of pick(r)) if (!seen.has(line.key)) seen.set(line.key, line.label);
+    for (const line of pick(r))
+      if (!seen.has(line.key)) seen.set(line.key, line.label);
   return [...seen].map(([key, label]) => ({ key, label }));
 }
 
@@ -322,33 +390,65 @@ function ReconciliationTable({
 
   const rows: Row[] = [
     { kind: "group", label: "MSC leg (buffer basis)" },
-    ...debtPrimes.map(
-      (p): Row => ({
-        kind: "prime",
-        label: `Debt minted — ${p.label}`,
-        value: lineVal((r) => r.debtMinted, p.key),
-      }),
-    ),
-    { kind: "subtotal", label: "Debt minted — subtotal", value: (r) => r.debtMintedSubtotal },
-    ...subproxyPrimes.map(
-      (p): Row => ({
-        kind: "prime",
-        label: `Subproxy — ${p.label}`,
-        value: lineVal((r) => r.subproxy, p.key),
-      }),
-    ),
-    { kind: "subtotal", label: "Sent to prime subproxy — subtotal (raw)", value: (r) => r.subproxySubtotalRaw },
-    { kind: "less", label: "Sent to Demand-side Buffer", value: (r) => r.demandSideBuffer },
-    { kind: "detail", label: "Core Council — on-chain gross", value: (r) => r.coreCouncilGross },
-    { kind: "detail", label: "Core Council — Step 1 Capital (add-back)", value: (r) => r.coreCouncilStep1Capital },
-    { kind: "less", label: "Core Council — net cost", value: (r) => r.coreCouncilGenesisRepayment },
-    { kind: "less", label: "Grove TGE penalty", value: (r) => r.groveTgePenalty },
-    { kind: "subtotal", label: "MSC net (buffer basis)", value: (r) => r.mscNet },
+    ...debtPrimes.map((p): Row => ({
+      kind: "prime",
+      label: `Debt minted — ${p.label}`,
+      value: lineVal((r) => r.debtMinted, p.key),
+    })),
+    {
+      kind: "subtotal",
+      label: "Debt minted — subtotal",
+      value: (r) => r.debtMintedSubtotal,
+    },
+    ...subproxyPrimes.map((p): Row => ({
+      kind: "prime",
+      label: `Subproxy — ${p.label}`,
+      value: lineVal((r) => r.subproxy, p.key),
+    })),
+    {
+      kind: "subtotal",
+      label: "Sent to prime subproxy — subtotal (raw)",
+      value: (r) => r.subproxySubtotalRaw,
+    },
+    {
+      kind: "less",
+      label: "Sent to Demand-side Buffer",
+      value: (r) => r.demandSideBuffer,
+    },
+    {
+      kind: "detail",
+      label: "Core Council — on-chain gross",
+      value: (r) => r.coreCouncilGross,
+    },
+    {
+      kind: "detail",
+      label: "Core Council — Step 1 Capital (add-back)",
+      value: (r) => r.coreCouncilStep1Capital,
+    },
+    {
+      kind: "less",
+      label: "Core Council — net cost",
+      value: (r) => r.coreCouncilGenesisRepayment,
+    },
+    {
+      kind: "less",
+      label: "Grove TGE penalty",
+      value: (r) => r.groveTgePenalty,
+    },
+    {
+      kind: "subtotal",
+      label: "MSC net (buffer basis)",
+      value: (r) => r.mscNet,
+    },
     { kind: "group", label: "Non-MSC leg" },
     { kind: "detail", label: "non-MSC income", value: (r) => r.nonMscIncome },
     { kind: "detail", label: "non-MSC expense", value: (r) => r.nonMscExpense },
     { kind: "subtotal", label: "non-MSC net", value: (r) => r.nonMscNet },
-    { kind: "headline", label: "Sky Net Revenue", value: (r) => r.skyNetRevenue },
+    {
+      kind: "headline",
+      label: "Sky Net Revenue",
+      value: (r) => r.skyNetRevenue,
+    },
   ];
 
   const cols = reports.length + 1;
@@ -373,7 +473,10 @@ function ReconciliationTable({
         <TableBody>
           {rows.map((row) =>
             row.kind === "group" ? (
-              <TableRow key={row.label} className="bg-muted/40 hover:bg-muted/40">
+              <TableRow
+                key={row.label}
+                className="bg-muted/40 hover:bg-muted/40"
+              >
                 <Td colSpan={cols} className="font-medium">
                   {row.label}
                 </Td>
