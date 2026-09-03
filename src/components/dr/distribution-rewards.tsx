@@ -3,17 +3,20 @@
 import * as React from "react";
 
 import {
-  RATE_FAMILIES,
-  allTokens,
-  grandTotal,
-  refCodeKpis,
+  Tabs,
+  TabsIndicator,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import {
   visibleRefCodeRows,
   visibleSummaryGroups,
 } from "@/lib/dr/domain";
-import { dayLong, formatCompactUSD, monthRangeLabel } from "@/lib/format";
+import { dayLong, monthRangeLabel } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
 import { useDr } from "../data-context";
-import { DisplayTitle, FilterButton, MetaItem } from "./primitives";
+import { PageHeader, type Meta } from "../kit";
 import { RatesView } from "./rates-view";
 import { RefCodesView } from "./ref-codes-view";
 import { SummaryView } from "./summary-view";
@@ -25,7 +28,11 @@ interface TabDef {
   label: string;
   title: string;
   accent: string;
-  meta: { label: string; value: React.ReactNode }[];
+  /**
+   * The run's working context — counts and the period. Never a figure a card or
+   * a table below already carries.
+   */
+  meta?: Meta[];
 }
 
 export function DistributionRewards() {
@@ -54,44 +61,37 @@ export function DistributionRewards() {
     setSelectedGroups(new Set(allGroups));
   }
 
-  const refKpis = refCodeKpis(dr);
-  const grand = grandTotal(dr);
-
   const tabs: TabDef[] = [
     {
       key: "summary",
       label: "Summary",
       title: "Distribution rewards",
-      accent: "summary by group",
+      accent: "Summary by group",
+      // the shape of the run rather than its headline figures: how many moving
+      // parts and over what period. The totals are the cards' job.
       meta: [
         { label: "groups", value: visibleSummaryGroups(dr).length },
         { label: "ref codes", value: visibleRefCodeRows(dr).length },
         { label: "window", value: monthRangeLabel(dr.reportMonths) },
-        { label: "total DR", value: formatCompactUSD(grand) },
       ],
     },
     {
       key: "refcodes",
       label: "By ref code",
       title: "DR ledger",
-      accent: "every ref code",
-      meta: [
-        { label: "codes", value: visibleRefCodeRows(dr).length },
-        { label: "with notes", value: refKpis.withNotesCount },
-        { label: "tokens", value: allTokens(dr).length },
-        { label: "total DR", value: formatCompactUSD(refKpis.total) },
-      ],
+      accent: "Every ref code",
+      // No meta row: the ledger panel's own header already counts the codes on
+      // screen and totals them, the token filter lists the tokens, and the
+      // notes filter counts the annotated rows.
     },
     {
       key: "rates",
       label: "Sky rates",
       title: "Rate card",
-      accent: "the methodology",
-      meta: [
-        { label: "tokens", value: dr.tokenRates.length },
-        { label: "families", value: RATE_FAMILIES.length },
-        { label: "as of", value: dayLong(dr.ratesAsOf) },
-      ],
+      accent: "The methodology",
+      // the families are the three cards below, and the token count was a
+      // number nothing on this tab is broken down by
+      meta: [{ label: "as of", value: dayLong(dr.ratesAsOf) }],
     },
   ];
 
@@ -102,57 +102,65 @@ export function DistributionRewards() {
     setTab("refcodes");
   };
 
-  const toggleGroup = (group: string) =>
-    setSelectedGroups((prev) => {
-      const next = new Set(prev);
-      if (next.has(group)) next.delete(group);
-      else next.add(group);
-      return next;
-    });
+  const setGroups = (groups: string[]) => setSelectedGroups(new Set(groups));
 
   const selectAllGroups = () => setSelectedGroups(new Set(allGroups));
   const clearGroups = () => setSelectedGroups(new Set());
 
   return (
-    <div className="space-y-7">
-      {/* page header */}
-      <header>
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-          <DisplayTitle accent={current.accent}>{current.title}</DisplayTitle>
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 lg:justify-end">
-            {current.meta.map((m) => (
-              <MetaItem key={m.label} label={m.label} value={m.value} />
-            ))}
-          </div>
-        </div>
-      </header>
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        title={current.title}
+        description={current.accent}
+        meta={current.meta}
+      />
 
-      {/* section tabs */}
-      <nav className="flex flex-wrap gap-2 border-b border-line pb-4">
-        {tabs.map((t) => (
-          <FilterButton
-            key={t.key}
-            active={tab === t.key}
-            onClick={() => setTab(t.key)}
-          >
-            {t.label}
-          </FilterButton>
-        ))}
-      </nav>
+      {/* The panels below are rendered outside TabsContent because each view
+          owns its own data reads and layout; the bar is here for the switch. */}
+      <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)}>
+        {/* The vocabulary the rest of the console's controls use: a pill on a
+            tint of --input, solid --primary when it is the one that is on.
 
-      {/* active view */}
-      <div>
-        {tab === "summary" && <SummaryView onViewGroup={viewGroupInLedger} />}
-        {tab === "refcodes" && (
-          <RefCodesView
-            selectedGroups={selectedGroups}
-            onToggleGroup={toggleGroup}
-            onSelectAll={selectAllGroups}
-            onClearGroups={clearGroups}
-          />
-        )}
-        {tab === "rates" && <RatesView />}
-      </div>
+            The track is --input, not the --muted shadcn reaches for: --muted is
+            lighter than --card in this preset, so a full-strength track sat
+            above the cards it belongs to.
+
+            The fill is the Base UI indicator so it travels between the chips
+            rather than blinking. That is also why the triggers stay transparent
+            in every state, idle included — a trigger is a later positioned
+            sibling, so its own fill would cover the indicator rather than layer
+            under it. */}
+        <TabsList className="relative gap-1 bg-input/50 p-1">
+          <TabsIndicator className="bg-primary shadow-sm" />
+          {tabs.map((t) => (
+            <TabsTrigger
+              key={t.key}
+              value={t.key}
+              className={cn(
+                "px-4 text-muted-foreground transition-colors duration-150",
+                "hover:bg-input/50 hover:text-foreground",
+                "data-active:bg-transparent data-active:text-primary-foreground",
+                "data-active:hover:bg-transparent data-active:hover:text-primary-foreground",
+                "dark:data-active:bg-transparent dark:data-active:text-primary-foreground",
+                "dark:data-active:hover:bg-transparent dark:data-active:hover:text-primary-foreground",
+              )}
+            >
+              {t.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+
+      {tab === "summary" && <SummaryView onViewGroup={viewGroupInLedger} />}
+      {tab === "refcodes" && (
+        <RefCodesView
+          selectedGroups={selectedGroups}
+          onSetGroups={setGroups}
+          onSelectAll={selectAllGroups}
+          onClearGroups={clearGroups}
+        />
+      )}
+      {tab === "rates" && <RatesView />}
     </div>
   );
 }

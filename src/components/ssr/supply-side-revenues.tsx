@@ -1,8 +1,25 @@
 "use client";
 
 import * as React from "react";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeftIcon, ArrowRightIcon } from "@phosphor-icons/react";
+import {
+  Bar as RBar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  LabelList,
+  ReferenceLine,
+  XAxis,
+  YAxis,
+} from "recharts";
 
+import { Badge } from "@/components/ui/badge";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
 import {
   grandSkyRevenue,
   monthSkyRevenues,
@@ -35,19 +52,25 @@ import { cn } from "@/lib/utils";
 
 import { useSsr } from "../data-context";
 import {
-  Bar,
-  Card,
-  DarkBar,
-  DisplayTitle,
-  FilterButton,
-  LeaderRow,
-  MetaItem,
-  NoteText,
-  Pill,
-  SectionTitle,
-  StatRow,
+  ActionButton,
+  DataTable,
+  Dash,
+  FilterGroup,
+  FilterItem,
+  FilterToggle,
+  LegendItem,
+  PageHeader,
+  Panel,
+  Prose,
   Swatch,
-} from "../dr/primitives";
+  TableBody,
+  TableHeader,
+  TableRow,
+  Td,
+  Th,
+  TotalRow,
+  moneyTooltip,
+} from "../kit";
 
 export function SupplySideRevenues() {
   const [openPartner, setOpenPartner] = React.useState<SsrPartner | null>(null);
@@ -58,42 +81,32 @@ export function SupplySideRevenues() {
   const meta = openPartner ? partnerMeta(openPartner) : null;
 
   return (
-    <div className="space-y-7">
-      <header>
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-          {openPartner && meta ? (
-            <DisplayTitle accent={meta.label}>Prime breakdown</DisplayTitle>
-          ) : (
-            <DisplayTitle accent="settlement reports">
-              Supply side revenues
-            </DisplayTitle>
-          )}
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 lg:justify-end">
-            {openPartner ? (
-              <>
-                <MetaItem label="partner" value={meta?.label} />
-                <MetaItem
-                  label="window"
-                  value={monthRangeLabel(
-                    reportsFor(ssr, openPartner).map((r) => r.month)
-                  )}
-                />
-                <MetaItem
-                  label="sky rev"
-                  value={formatCompactUSD(partnerSkyRevenue(ssr, openPartner))}
-                />
-              </>
-            ) : (
-              <>
-                <MetaItem label="primes" value={kpis.partnerCount} />
-                <MetaItem label="window" value={monthRangeLabel(ssr.months)} />
-                <MetaItem label="venues" value={kpis.venueCount} />
-                <MetaItem label="sky rev" value={formatCompactUSD(kpis.grandSky)} />
-              </>
-            )}
-          </div>
-        </div>
-      </header>
+    <div className="flex flex-col gap-6">
+      {openPartner && meta ? (
+        /* No meta row: "partner" repeated the subtitle and "window" is the row
+           of month chips below. The whole-window Sky revenue was the one figure
+           unique to it — the Sky side panel totals the selected month, not the
+           range — so it moves into the subtitle. */
+        <PageHeader
+          title="Prime breakdown"
+          description={`${meta.label} · ${formatCompactUSD(
+            partnerSkyRevenue(ssr, openPartner)
+          )} Sky revenue over ${monthRangeLabel(
+            reportsFor(ssr, openPartner).map((r) => r.month)
+          )}`}
+        />
+      ) : (
+        <PageHeader
+          title="Supply side revenues"
+          description="Settlement reports"
+          /* "primes" is the ranked bar below and "sky rev" is the table's own
+             aggregate row; only these two are not already on the page */
+          meta={[
+            { label: "window", value: monthRangeLabel(ssr.months) },
+            { label: "venues", value: kpis.venueCount },
+          ]}
+        />
+      )}
 
       {openPartner ? (
         <PartnerBreakdown
@@ -107,6 +120,17 @@ export function SupplySideRevenues() {
   );
 }
 
+/* ------------------------------------------------------------- summary */
+
+const monthlyConfig = {
+  total: { label: "Sky revenue", color: "var(--sky-revenue)" },
+} satisfies ChartConfig;
+
+/* the ranked bar paints itself per prime, so the config only names the series */
+const rankedConfig = {
+  sky: { label: "Sky revenue" },
+} satisfies ChartConfig;
+
 function Summary({
   partners,
   onOpenPartner,
@@ -116,156 +140,199 @@ function Summary({
 }) {
   const ssr = useSsr();
   const { months, monthLabels } = ssr;
-  const kpis = ssrKpis(ssr);
   const grand = grandSkyRevenue(ssr);
   const totals = monthSkyRevenues(ssr);
-  const maxPartner = Math.max(1, ...partners.map((p) => partnerSkyRevenue(ssr, p)));
+  const monthly = months.map((m) => ({
+    month: monthLabels[m],
+    total: totals[m] ?? 0,
+  }));
+
+  // sorted by size rather than by the canonical partner order the table keeps:
+  // a ranked bar that is not ranked is just a list with extra ink
+  const ranked = partners
+    .map((p) => ({
+      label: partnerMeta(p).label,
+      sky: partnerSkyRevenue(ssr, p),
+      color: partnerColor(p),
+    }))
+    .sort((a, b) => b.sky - a.sky);
 
   return (
-    <div className="space-y-10">
-      <section>
-        <SectionTitle
-          title="Sky revenue by prime"
-        />
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {partners.map((p) => {
-            const meta = partnerMeta(p);
-            const sky = partnerSkyRevenue(ssr, p);
-            const share = grand > 0 ? (sky / grand) * 100 : 0;
-            const latest = reportFor(ssr, p, kpis.latestMonth)?.headline.skyRevenue ?? 0;
-            return (
-              <Card
-                key={p}
-                className="neu-raised-interactive group relative flex flex-col p-6"
-              >
-                <div className="flex items-center gap-2">
-                  <Swatch color={partnerColor(p)} />
-                  <span className="font-sans text-[10.5px] font-medium tracking-[0.14em] text-muted uppercase">
-                    {meta.label}
-                  </span>
-                </div>
+    <div className="flex flex-col gap-6">
+      {/* A ranked bar rather than a card each: it fills the row at any prime
+          count and makes the lopsidedness visible at a glance. Everything the
+          cards held now lives in the table below. */}
+      <Panel
+        title="Sky revenue by prime"
+        description="Sky's take over the whole window, ranked. Select a prime in the table below for its settlement detail."
+      >
+        <ChartContainer
+          config={rankedConfig}
+          className="aspect-auto w-full"
+          style={{ height: partners.length * 44 + 16 }}
+        >
+          <BarChart
+            data={ranked}
+            layout="vertical"
+            margin={{ left: 0, right: 72, top: 4, bottom: 4 }}
+          >
+            <XAxis type="number" dataKey="sky" hide />
+            <YAxis
+              type="category"
+              dataKey="label"
+              tickLine={false}
+              axisLine={false}
+              width={92}
+              fontSize={12}
+            />
+            <ChartTooltip
+              cursor={false}
+              content={
+                <ChartTooltipContent
+                  hideIndicator
+                  formatter={moneyTooltip({ sky: "Sky revenue" }, (n) =>
+                    formatUSD(n),
+                  )}
+                />
+              }
+            />
+            {/* minPointSize keeps a sliver for a prime whose share rounds to
+                nothing, so its row never reads as missing data */}
+            <RBar dataKey="sky" radius={6} maxBarSize={26} minPointSize={3}>
+              {ranked.map((r) => (
+                <Cell key={r.label} fill={r.color} />
+              ))}
+              <LabelList
+                dataKey="sky"
+                position="right"
+                offset={10}
+                className="fill-foreground"
+                fontSize={12}
+                formatter={(v: unknown) => formatCompactUSD(Number(v))}
+              />
+            </RBar>
+          </BarChart>
+        </ChartContainer>
+      </Panel>
 
-                <p className="mt-5 font-mono text-[1.75rem] leading-none font-semibold text-ink tabular-nums">
-                  {formatCompactUSD(sky)}
-                </p>
-
-                <div className="mt-6 space-y-2.5">
-                  <StatRow
-                    label={`latest · ${monthLabels[kpis.latestMonth]}`}
-                    value={formatCompactUSD(latest)}
-                  />
-                  <StatRow label="share of total" value={`${share.toFixed(1)}%`} />
-                  <StatRow
-                    label="prime profit"
-                    value={formatCompactUSD(partnerPrimeProfit(ssr, p))}
-                  />
-                </div>
-
-                {/* clamped so a long blurb can't shift the layout of its row */}
-                <p className="mt-5 line-clamp-2 text-[13px] leading-snug text-muted">
-                  {meta.blurb}
-                </p>
-
-                {/* mt-auto pins the CTA to the card floor, so it lines up across
-                    the row whatever the blurb's length. ::after stretches the
-                    hit area over the whole card. */}
-                <button
-                  type="button"
+      <Panel
+        title="Monthly breakdown"
+        description="Sky's take per prime, month by month. Select a row to open that prime's settlement detail."
+        flush
+      >
+        <DataTable>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <Th className="w-[280px]">Prime</Th>
+              {months.map((m) => (
+                <Th key={m} numeric>
+                  {monthLabels[m]}
+                </Th>
+              ))}
+              <Th numeric>Total</Th>
+              <Th numeric>Share</Th>
+              <Th numeric>Prime profit</Th>
+              <Th className="w-0" />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {partners.map((p) => {
+              const sky = partnerSkyRevenue(ssr, p);
+              const share = grand > 0 ? (sky / grand) * 100 : 0;
+              return (
+                <TableRow
+                  key={p}
                   onClick={() => onOpenPartner(p)}
-                  className="neu-focus mt-auto inline-flex items-center gap-1.5 self-start rounded-full pt-6 font-sans text-[10.5px] font-semibold tracking-widest text-gold uppercase after:absolute after:inset-0 after:rounded-2xl after:content-['']"
+                  className="group cursor-pointer"
                 >
-                  View breakdown
-                  <ArrowRight className="size-3 transition-transform duration-200 group-hover:translate-x-1" />
-                </button>
-              </Card>
-            );
-          })}
-        </div>
-      </section>
-
-      <section>
-        <SectionTitle title="Monthly breakdown" />
-        <Card className="overflow-hidden">
-          <div className="dr-scroll overflow-x-auto">
-            <table className="w-full min-w-[760px] border-collapse text-left">
-              <thead>
-                <tr className="bg-thead">
-                  <Th className="w-[200px]">Prime</Th>
-                  <Th className="w-[150px]">Distribution</Th>
+                  <Td className="whitespace-normal">
+                    <span className="flex items-center gap-2 font-medium">
+                      <Swatch color={partnerColor(p)} />
+                      {partnerMeta(p).label}
+                    </span>
+                    {/* what each prime actually deploys into — it used to be
+                        the body copy of that prime's card */}
+                    <span className="mt-0.5 block pl-4 text-muted-foreground">
+                      {partnerMeta(p).blurb}
+                    </span>
+                  </Td>
                   {months.map((m) => (
-                    <Th key={m} className="text-right">
-                      {monthLabels[m]}
-                    </Th>
+                    <Td key={m} numeric className="text-muted-foreground">
+                      {cell(reportFor(ssr, p, m)?.headline.skyRevenue)}
+                    </Td>
                   ))}
-                  <Th className="text-right">Total</Th>
-                  <Th className="text-right">Share</Th>
-                </tr>
-              </thead>
-              <tbody>
-                {partners.map((p) => {
-                  const sky = partnerSkyRevenue(ssr, p);
-                  const share = grand > 0 ? (sky / grand) * 100 : 0;
-                  return (
-                    <tr
-                      key={p}
-                      onClick={() => onOpenPartner(p)}
-                      className="group cursor-pointer border-b border-line transition-colors hover:bg-paper/60"
-                    >
-                      <Td>
-                        <div className="flex items-center gap-2">
-                          <Swatch color={partnerColor(p)} />
-                          <span className="font-sans text-[13px] font-semibold text-ink">
-                            {partnerMeta(p).label}
-                          </span>
-                          <ArrowRight className="size-3 text-muted opacity-0 transition-opacity group-hover:opacity-100" />
-                        </div>
-                      </Td>
-                      <Td>
-                        <Bar value={sky} max={maxPartner} color={partnerColor(p)} />
-                      </Td>
-                      {months.map((m) => (
-                        <Td key={m} className="text-right text-muted">
-                          {fmtCell(reportFor(ssr, p, m)?.headline.skyRevenue)}
-                        </Td>
-                      ))}
-                      <Td className="text-right font-semibold text-gold">
-                        {formatCompactUSD(sky)}
-                      </Td>
-                      <Td className="text-right text-ink">{share.toFixed(1)}%</Td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-        <div className="mt-3">
-          <DarkBar
-            left="Aggregate · all primes"
-            right={`${formatUSD(grand)} sky revenue`}
-          />
-        </div>
-      </section>
+                  <Td numeric className="font-medium">
+                    {formatCompactUSD(sky)}
+                  </Td>
+                  <Td numeric className="text-muted-foreground">
+                    {share.toFixed(1)}%
+                  </Td>
+                  <Td numeric className="text-muted-foreground">
+                    {formatCompactUSD(partnerPrimeProfit(ssr, p))}
+                  </Td>
+                  <Td className="text-muted-foreground">
+                    <ArrowRightIcon
+                      aria-hidden
+                      className="size-4 opacity-0 transition-opacity group-hover:opacity-100"
+                    />
+                  </Td>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </DataTable>
+        <TotalRow
+          className="border-t pt-4"
+          label="Aggregate · all primes"
+          value={`${formatUSD(grand)} sky revenue`}
+        />
+      </Panel>
 
-      <section>
-        <SectionTitle title="Monthly totals" />
-        {/* auto-fit so the row stays full whatever the month count */}
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3">
-          {months.map((m) => (
-            <Card key={m} className="px-4 py-3">
-              <p className="font-sans text-[10.5px] tracking-[0.12em] text-muted uppercase">
-                {monthLong(m)}
-              </p>
-              <p className="mt-1.5 font-mono text-base font-semibold text-ink tabular-nums">
-                {formatCompactUSD(totals[m])}
-              </p>
-            </Card>
-          ))}
-        </div>
-      </section>
+      <Panel
+        title="Monthly totals"
+        description={`Sky revenue across every prime, ${monthLabels[months[0]]} – ${monthLabels[months[months.length - 1]]}.`}
+      >
+        <ChartContainer
+          config={monthlyConfig}
+          className="aspect-auto h-56 w-full @3xl/main:h-64"
+        >
+          <BarChart data={monthly} margin={{ top: 28, left: 4, right: 4 }}>
+            <CartesianGrid vertical={false} />
+            <XAxis
+              dataKey="month"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={10}
+            />
+            <ChartTooltip
+              cursor={false}
+              content={
+                <ChartTooltipContent
+                  hideIndicator
+                  formatter={moneyTooltip(
+                    { total: "Sky revenue" },
+                    (n) => formatUSD(n),
+                  )}
+                />
+              }
+            />
+            <RBar dataKey="total" fill="var(--color-total)" radius={8} maxBarSize={72}>
+              <LabelList
+                position="top"
+                offset={10}
+                className="fill-foreground"
+                fontSize={12}
+                formatter={(v: unknown) => formatCompactUSD(Number(v))}
+              />
+            </RBar>
+          </BarChart>
+        </ChartContainer>
+      </Panel>
     </div>
   );
 }
+
+/* --------------------------------------------------------- breakdown */
 
 function PartnerBreakdown({
   partner,
@@ -276,239 +343,209 @@ function PartnerBreakdown({
 }) {
   const ssr = useSsr();
   const { months, monthLabels } = ssr;
-  const [month, setMonth] = React.useState<string>(
-    months[months.length - 1]
-  );
+  const [month, setMonth] = React.useState<string>(months[months.length - 1]);
   const [onlyEarning, setOnlyEarning] = React.useState(true);
 
   const report = reportFor(ssr, partner, month);
   const h = report?.headline;
   const monthly = partnerMonthlyRevenues(ssr, partner);
-  // Negative prime months contribute no stacked segment, only tooltip detail.
-  const maxMonthly = Math.max(1, ...monthly.map((x) => x.sky + Math.max(0, x.prime)));
 
   const venues = venuesFor(ssr, partner, month);
   const shownVenues = onlyEarning
     ? venues.filter((v) => v.revenue !== 0)
     : venues;
 
+  const revenueConfig = {
+    sky: { label: "Sky revenue", color: "var(--sky-revenue)" },
+    prime: { label: "Prime revenue", color: partnerColor(partner) },
+  } satisfies ChartConfig;
+
+  const revenueData = monthly.map((x) => ({
+    month: monthLabels[x.month],
+    key: x.month,
+    sky: x.sky,
+    prime: x.prime,
+  }));
+
   return (
-    <div className="space-y-8">
-      <div className="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          onClick={onBack}
-          className="neu-btn neu-focus inline-flex h-10 items-center gap-1.5 rounded-full px-4 font-sans text-[11px] font-medium tracking-wide text-muted hover:text-ink"
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-wrap items-center gap-3">
+        <ActionButton onClick={onBack}>
+          <ArrowLeftIcon data-icon="inline-start" aria-hidden />
+          All primes
+        </ActionButton>
+        <span className="text-sm text-muted-foreground">Month</span>
+        <FilterGroup
+          value={[month]}
+          onValueChange={(v) => v[0] && setMonth(v[0])}
+          aria-label="Settlement month"
         >
-          <ArrowLeft className="size-3.5" /> All primes
-        </button>
-        <span className="mx-1 font-sans text-[10.5px] tracking-[0.14em] text-muted uppercase">
-          Month
-        </span>
-        {months.map((m) => (
-          <FilterButton key={m} active={month === m} onClick={() => setMonth(m)}>
-            {monthLabels[m]}
-          </FilterButton>
-        ))}
+          {months.map((m) => (
+            <FilterItem key={m} value={m}>
+              {monthLabels[m]}
+            </FilterItem>
+          ))}
+        </FilterGroup>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-        <HeadlineCard
+      <div className="grid grid-cols-1 gap-4 @4xl/main:grid-cols-2">
+        <HeadlinePanel
           title="Prime side"
+          swatch={partnerColor(partner)}
           rows={[
-            ["demand-side revenue", h?.demandSideRevenue, "sum"],
-            ["agent rate", h?.agentRate, "sub"],
-            ["distribution rewards", h?.distributionRewards, "sub"],
-            ["+ supply-side revenue", h?.primeSupplySideRevenue, "sum"],
+            ["Demand-side revenue", h?.demandSideRevenue, "sum"],
+            ["Agent rate", h?.agentRate, "sub"],
+            ["Distribution rewards", h?.distributionRewards, "sub"],
+            ["+ Supply-side revenue", h?.primeSupplySideRevenue, "sum"],
           ]}
-          total={["prime agent profit", h?.primeAgentProfit]}
-          color={partnerColor(partner)}
+          total={["Prime agent profit", h?.primeAgentProfit]}
         />
-        <HeadlineCard
+        <HeadlinePanel
           title="Sky side"
           rows={[
-            ["prime cost of funds", h?.primeCostOfFunds, "sum"],
-            ["sky direct exposure", h?.skyDirectExposure, "sum"],
+            ["Prime cost of funds", h?.primeCostOfFunds, "sum"],
+            ["Sky direct exposure", h?.skyDirectExposure, "sum"],
           ]}
-          total={["sky revenue", h?.skyRevenue]}
-          accentTotal
+          total={["Sky revenue", h?.skyRevenue]}
         />
       </div>
 
-      <section>
-        <SectionTitle
-          title="Prime & Sky revenue"
-        />
-        <Card className="px-5 py-4">
-          <div className="mb-3 flex items-center gap-4 font-sans text-[10px] text-muted">
-            <span className="flex items-center gap-1.5">
-              <Swatch color="var(--sky-revenue)" /> sky revenue
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Swatch color={partnerColor(partner)} /> prime revenue
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Swatch color="var(--loss)" /> negative prime revenue
-            </span>
+      <Panel
+        title="Prime & Sky revenue"
+        description="Stacked per settlement month. A negative prime revenue is drawn below the axis. Select a bar to change the month above."
+        action={
+          <div className="flex flex-wrap gap-4">
+            <LegendItem color="var(--sky-revenue)">Sky revenue</LegendItem>
+            <LegendItem color={partnerColor(partner)}>Prime revenue</LegendItem>
           </div>
-          <div className="flex items-end gap-2">
-            {monthly.map((x) => {
-              const selected = month === x.month;
-              /* Selection is never signalled by tinting the fill — darkening a
-                 pastel turns it to mud. The hue stays exactly as the legend
-                 shows it; the unselected columns simply recede. */
-              const seg = (v: number, c: string) => ({
-                height: `${Math.max(v > 0 ? 3 : 0, (Math.max(0, v) / maxMonthly) * 100)}%`,
-                background: c,
-              });
-              return (
-                <button
-                  key={x.month}
-                  type="button"
-                  onClick={() => setMonth(x.month)}
-                  aria-pressed={selected}
-                  title={`${monthLong(x.month)} · sky ${formatUSD(x.sky)} · prime ${formatUSD(x.prime)}`}
-                  className="group/bar neu-focus flex flex-1 flex-col items-center gap-2 rounded-lg"
-                >
-                  {/* 0.85, not 0.5: heavier fading washes the fills out against
-                      the cream (lavender/terracotta separation drops from 1.75
-                      to 1.33). Selection is carried by the label pill instead. */}
-                  <div
-                    className={cn(
-                      "flex h-24 w-full flex-col justify-end gap-px transition-opacity duration-200",
-                      selected
-                        ? "opacity-100"
-                        : "opacity-85 group-hover/bar:opacity-95"
-                    )}
-                  >
-                    <div
-                      className="w-full rounded-t-[2px]"
-                      style={seg(x.prime, partnerColor(partner))}
-                    />
-                    {/* Negative prime months: the loss shows as a burgundy zone
-                        eating into the top of the sky segment. */}
-                    <div
-                      className="relative w-full overflow-hidden rounded-b-[2px]"
-                      style={seg(x.sky, "var(--sky-revenue)")}
-                    >
-                      {x.prime < 0 && (
-                        <div
-                          className="absolute inset-x-0 top-0"
-                          style={{
-                            height: `${Math.min(100, (-x.prime / Math.max(x.sky, 1)) * 100)}%`,
-                            background: "var(--loss)",
-                          }}
-                        />
-                      )}
-                    </div>
-                  </div>
-
-                  {/* The month label itself carves in when selected — the same
-                      pressed-pill idiom the filters use elsewhere. */}
-                  <span
-                    className={cn(
-                      "rounded-full px-2.5 py-1 font-sans text-[10px] transition-colors",
-                      selected
-                        ? "neu-btn-pressed font-semibold text-ink"
-                        : "text-muted group-hover/bar:text-ink"
-                    )}
-                  >
-                    {monthLabels[x.month]}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </Card>
-      </section>
-
-      <section>
-        <SectionTitle
-          title={
-            <>
-              Per-venue breakdown{" "}
-              <span className="font-sans text-xs font-normal text-muted">
-                {monthLong(month)} · {shownVenues.length} venues
-              </span>
-            </>
-          }
-        />
-
-        {venues.length === 0 ? (
-          <Card className="px-5 py-6">
-            <NoteText
-              className="max-w-2xl text-ink/80"
-              note={`${partnerMeta(partner).label} is a bridge / aggregator — it reports no venue-level deployments. Its contribution is distribution-rewards attribution only (see the Distribution Rewards section).`}
+        }
+      >
+        <ChartContainer
+          config={revenueConfig}
+          className="aspect-auto h-60 w-full @3xl/main:h-72"
+        >
+          <BarChart data={revenueData} margin={{ top: 8, left: 4, right: 4 }}>
+            <CartesianGrid vertical={false} />
+            <XAxis
+              dataKey="month"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={10}
             />
-          </Card>
-        ) : (
-          <>
-            <div className="mb-3 flex flex-wrap items-center gap-2">
-              <FilterButton
-                active={onlyEarning}
-                onClick={() => setOnlyEarning((v) => !v)}
-              >
-                Hide $0 revenue
-              </FilterButton>
-              <span className="font-sans text-[10.5px] text-muted">
-                {onlyEarning
-                  ? `hiding ${venues.length - shownVenues.length} idle venues · negative = loss`
-                  : `showing all ${venues.length} venues`}
-              </span>
-            </div>
-            <Card className="overflow-hidden">
-              <div className="dr-scroll max-h-[560px] overflow-auto">
-                <table className="w-full min-w-[820px] border-collapse text-left">
-                  <thead className="sticky top-0 z-10">
-                    <tr className="bg-thead">
-                      <Th className="w-[60px]">Venue</Th>
-                      <Th className="min-w-[260px]">Deployment</Th>
-                      <Th className="text-right">NAV · eom</Th>
-                      <Th className="text-right">Inflow</Th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {shownVenues.map((v) => (
-                      <tr
-                        key={v.id}
-                        className="border-b border-line transition-colors hover:bg-paper/60"
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              width={56}
+              fontSize={12}
+              tickFormatter={(v: number) => formatCompactUSD(v)}
+            />
+            <ReferenceLine y={0} stroke="var(--border)" />
+            <ChartTooltip
+              content={
+                <ChartTooltipContent
+                  formatter={moneyTooltip(
+                    { sky: "Sky revenue", prime: "Prime revenue" },
+                    (n) => formatUSD(n),
+                  )}
+                />
+              }
+            />
+            <RBar
+              dataKey="sky"
+              stackId="rev"
+              fill="var(--color-sky)"
+              radius={[0, 0, 4, 4]}
+              maxBarSize={64}
+              onClick={(d: { payload?: { key?: string } }) =>
+                d?.payload?.key && setMonth(d.payload.key)
+              }
+              cursor="pointer"
+            />
+            <RBar
+              dataKey="prime"
+              stackId="rev"
+              fill="var(--color-prime)"
+              radius={[4, 4, 0, 0]}
+              maxBarSize={64}
+              onClick={(d: { payload?: { key?: string } }) =>
+                d?.payload?.key && setMonth(d.payload.key)
+              }
+              cursor="pointer"
+            />
+          </BarChart>
+        </ChartContainer>
+      </Panel>
+
+      {venues.length === 0 ? (
+        <Panel title="Per-venue breakdown" description={monthLong(month)}>
+          <Prose className="max-w-3xl">
+            {partnerMeta(partner).label} is a bridge / aggregator — it reports no
+            venue-level deployments. Its contribution is distribution-rewards
+            attribution only (see the Distribution Rewards section).
+          </Prose>
+        </Panel>
+      ) : (
+        <Panel
+          title="Per-venue breakdown"
+          description={`${monthLong(month)} · ${shownVenues.length} venues · negative inflow is an outflow`}
+          action={
+            <FilterToggle
+              pressed={onlyEarning}
+              onPressedChange={setOnlyEarning}
+            >
+              Hide $0 revenue
+            </FilterToggle>
+          }
+          flush
+        >
+          <DataTable containerClassName="max-h-[34rem]">
+            <TableHeader className="sticky top-0 z-10 bg-card">
+              <TableRow className="hover:bg-transparent">
+                <Th className="w-[80px]">Venue</Th>
+                <Th className="min-w-[260px]">Deployment</Th>
+                <Th numeric>NAV · eom</Th>
+                <Th numeric>Inflow</Th>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {shownVenues.map((v) => (
+                <TableRow key={v.id}>
+                  <Td className="font-mono font-medium">{v.id}</Td>
+                  <Td
+                    className="max-w-[380px] truncate text-muted-foreground"
+                    title={v.label}
+                  >
+                    {v.label}
+                  </Td>
+                  <Td numeric className="text-muted-foreground">
+                    {formatCompactUSD(v.valueEom)}
+                  </Td>
+                  <Td numeric>
+                    {v.periodInflow === 0 ? (
+                      <Dash />
+                    ) : (
+                      /* Money arriving is the ordinary case and stays in the
+                         text colour; only money leaving is marked, and it is
+                         marked in the theme's one negative colour. */
+                      <span
+                        className={cn(v.periodInflow < 0 && "text-destructive")}
                       >
-                        <Td className="font-semibold text-ink">{v.id}</Td>
-                        <Td className="max-w-[360px] truncate text-muted" title={v.label}>
-                          {v.label}
-                        </Td>
-                        <Td className="text-right text-muted">
-                          {formatCompactUSD(v.valueEom)}
-                        </Td>
-                        <Td className="text-right text-muted">
-                          {v.periodInflow === 0 ? (
-                            <span className="text-faint">—</span>
-                          ) : (
-                            <span
-                              className={
-                                v.periodInflow > 0 ? "text-success" : "text-gold"
-                              }
-                            >
-                              {v.periodInflow > 0 ? "+" : ""}
-                              {formatCompactUSD(v.periodInflow)}
-                            </span>
-                          )}
-                        </Td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </Card>
-            <div className="mt-3">
-              <DarkBar
-                left={`total NAV · ${formatUSD(shownVenues.reduce((a, v) => a + v.valueEom, 0))}`}
-                right={`total inflows · ${formatUSD(shownVenues.reduce((a, v) => a + v.periodInflow, 0))}`}
-              />
-            </div>
-          </>
-        )}
-      </section>
+                        {v.periodInflow > 0 ? "+" : ""}
+                        {formatCompactUSD(v.periodInflow)}
+                      </span>
+                    )}
+                  </Td>
+                </TableRow>
+              ))}
+            </TableBody>
+          </DataTable>
+          <TotalRow
+            className="border-t pt-4"
+            label={`Total NAV · ${formatUSD(shownVenues.reduce((a, v) => a + v.valueEom, 0))}`}
+            value={`Total inflows · ${formatUSD(shownVenues.reduce((a, v) => a + v.periodInflow, 0))}`}
+          />
+        </Panel>
+      )}
 
       {/* Subsidized borrowing only applies to the debt-drawing primes. */}
       {(partner === "spark" || partner === "grove") && report?.rateBuild ? (
@@ -530,179 +567,170 @@ function PartnerBreakdown({
   );
 }
 
+/* ------------------------------------------------------------- sections */
+
 function RateBuildSection({ rb }: { rb: SsrRateBuild }) {
   const hasRates = rb.baseRate != null;
   if (!hasRates) return null;
   return (
-    <section>
-      <SectionTitle
-        title="Subsidized borrowing"
-        info="How Sky's take is built: base rate, the subsidy applied to it, and the cost-of-funds composition."
-      />
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-        <Card className="px-5 py-4">
-          <p className="mb-3 font-sans text-[11px] font-medium tracking-[0.14em] text-muted uppercase">
-            Rates &amp; subsidy
-          </p>
-          <div className="space-y-2.5">
-            <LeaderRow
-              label="SR (subsidized rate)"
-              value={formatRatePercent(rb.subsidisedRate)}
-            />
-            <LeaderRow
-              label={`TR (target rate${rb.referenceRateKind ? `: ${rb.referenceRateKind}` : ": EFFR or T-Bills"})`}
-              value={formatRatePercent(rb.referenceRate)}
-            />
-            <LeaderRow label="BR (base rate)" value={formatRatePercent(rb.baseRate)} />
-            <LeaderRow
-              label="ER (effective rate)"
-              value={formatRatePercent(rb.effectiveRate)}
-              valueClassName="text-gold"
-            />
-            <LeaderRow
-              label="ER − BR"
-              value={
-                rb.diffVsBaseBps != null
-                  ? `${rb.diffVsBaseBps.toFixed(1)} bps`
-                  : "—"
-              }
-            />
-            <LeaderRow
-              label="time-weighted utilized"
-              value={formatCompactUSD(rb.timeWeightedUtilized)}
-            />
-            <LeaderRow
-              label="subsidy benefit to prime"
-              value={formatCompactUSD(rb.subsidyBenefit)}
-            />
-          </div>
-        </Card>
+    <div className="grid grid-cols-1 gap-4 @4xl/main:grid-cols-2">
+      <Panel
+        title="Rates & subsidy"
+        hint="How Sky's take is built: base rate, the subsidy applied to it, and the cost-of-funds composition."
+      >
+        <dl className="grid gap-2.5 text-sm">
+          <Line label="SR (subsidized rate)" value={formatRatePercent(rb.subsidisedRate)} />
+          <Line
+            label={`TR (target rate${rb.referenceRateKind ? `: ${rb.referenceRateKind}` : ": EFFR or T-Bills"})`}
+            value={formatRatePercent(rb.referenceRate)}
+          />
+          <Line label="BR (base rate)" value={formatRatePercent(rb.baseRate)} />
+          <Line
+            label="ER (effective rate)"
+            value={formatRatePercent(rb.effectiveRate)}
+            emphasis
+          />
+          <Line
+            label="ER − BR"
+            value={rb.diffVsBaseBps != null ? `${rb.diffVsBaseBps.toFixed(1)} bps` : "—"}
+          />
+          <Line
+            label="Time-weighted utilized"
+            value={formatCompactUSD(rb.timeWeightedUtilized)}
+          />
+          <Line
+            label="Subsidy benefit to prime"
+            value={formatCompactUSD(rb.subsidyBenefit)}
+          />
+        </dl>
+      </Panel>
 
-        <Card className="px-5 py-4">
-          <p className="mb-3 font-sans text-[11px] font-medium tracking-[0.14em] text-muted uppercase">
-            Formulas
-          </p>
-          <div className="space-y-4">
-            <Formula
-              label="subsidized rate (24-month ramp)"
-              expr="SR = TR + ((BR − TR) × T / 24)"
-            />
-            <Formula
-              label="cost of funds — subsidy only applies to the first $1B utilized"
-              expr="CoF = SR × min(U, $1B) + BR × max(U − $1B, 0)"
-            />
-            <Formula label="effective rate" expr="ER = CoF / U" />
-          </div>
-          <p className="mt-4 border-t border-line pt-3 font-sans text-[10.5px] text-faint">
-            U = time-weighted utilized debt · T = months since program start
-          </p>
-        </Card>
-      </div>
-    </section>
+      <Panel
+        title="Formulas"
+        footer="U = time-weighted utilized debt · T = months since program start"
+      >
+        <div className="flex flex-col gap-4">
+          <Formula
+            label="Subsidized rate (24-month ramp)"
+            expr="SR = TR + ((BR − TR) × T / 24)"
+          />
+          <Formula
+            label="Cost of funds — subsidy only applies to the first $1B utilized"
+            expr="CoF = SR × min(U, $1B) + BR × max(U − $1B, 0)"
+          />
+          <Formula label="Effective rate" expr="ER = CoF / U" />
+        </div>
+      </Panel>
+    </div>
+  );
+}
+
+function Line({
+  label,
+  value,
+  emphasis,
+}: {
+  label: React.ReactNode;
+  value: React.ReactNode;
+  /** The derived figure of the block — carried by weight, not by colour. */
+  emphasis?: boolean;
+}) {
+  return (
+    <div className="flex items-baseline justify-between gap-4 border-b border-border/60 pb-2.5 last:border-0 last:pb-0">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className={cn("tabular-nums", emphasis ? "font-semibold" : "font-medium")}>
+        {value}
+      </dd>
+    </div>
   );
 }
 
 function Formula({ label, expr }: { label: string; expr: string }) {
   return (
-    <div>
-      <p className="font-sans text-[10.5px] tracking-[0.08em] text-muted uppercase">
-        {label}
-      </p>
-      <p className="mt-1 font-mono text-xs font-medium text-ink">{expr}</p>
+    <div className="space-y-1.5">
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <code className="block rounded-lg bg-muted px-3 py-2 font-mono text-xs">
+        {expr}
+      </code>
     </div>
   );
 }
 
 function SkyDirectSection({ rows }: { rows: SsrSkyDirectExposure[] }) {
   return (
-    <section>
-      <SectionTitle
-        title="Sky-Direct exposures"
-        info="Fixed or capped venues whose yield accrues directly to Sky."
-      />
-      <Card className="overflow-hidden">
-        <div className="dr-scroll overflow-x-auto">
-          <table className="w-full min-w-[640px] border-collapse text-left">
-            <thead>
-              <tr className="bg-thead">
-                <Th>Venue</Th>
-                <Th className="min-w-[220px]">Label</Th>
-                <Th>Kind</Th>
-                <Th className="text-right">Actual rev</Th>
-                <Th className="text-right">To Sky</Th>
-                <Th className="text-right">Active</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((s) => (
-                <tr
-                  key={s.id}
-                  title={s.source}
-                  className="border-b border-line transition-colors hover:bg-paper/60"
-                >
-                  <Td className="font-semibold text-ink">{s.id}</Td>
-                  <Td className="text-muted">{s.label}</Td>
-                  <Td className="text-muted">{s.kind}</Td>
-                  <Td className="text-right text-muted">
-                    {formatUSD(s.actualRevenue)}
-                  </Td>
-                  <Td className="text-right text-ink">{formatUSD(s.sdRevenue)}</Td>
-                  <Td className="text-right">
-                    {s.active ? (
-                      <Pill color="var(--success)">yes</Pill>
-                    ) : (
-                      <span className="text-faint">no</span>
-                    )}
-                  </Td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
-    </section>
+    <Panel
+      title="Sky-Direct exposures"
+      hint="Fixed or capped venues whose yield accrues directly to Sky."
+      flush
+    >
+      <DataTable>
+        <TableHeader>
+          <TableRow className="hover:bg-transparent">
+            <Th>Venue</Th>
+            <Th className="min-w-[220px]">Label</Th>
+            <Th>Kind</Th>
+            <Th numeric>Actual rev</Th>
+            <Th numeric>To Sky</Th>
+            <Th numeric>Active</Th>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((s) => (
+            <TableRow key={s.id} title={s.source}>
+              <Td className="font-mono font-medium">{s.id}</Td>
+              <Td className="text-muted-foreground">{s.label}</Td>
+              <Td className="text-muted-foreground">{s.kind}</Td>
+              <Td numeric className="text-muted-foreground">
+                {formatUSD(s.actualRevenue)}
+              </Td>
+              <Td numeric>{formatUSD(s.sdRevenue)}</Td>
+              <Td numeric>
+                {s.active ? (
+                  <Badge variant="secondary">Yes</Badge>
+                ) : (
+                  <span className="text-muted-foreground">No</span>
+                )}
+              </Td>
+            </TableRow>
+          ))}
+        </TableBody>
+      </DataTable>
+    </Panel>
   );
 }
 
 function ExcludedSection({ rows }: { rows: SsrExcludedVenue[] }) {
   return (
-    <section>
-      <SectionTitle
-        title="Excluded holdings"
-        info="Tracked for NAV only — not counted in prime or sky revenue."
-      />
-      <Card className="overflow-hidden">
-        <div className="dr-scroll overflow-x-auto">
-          <table className="w-full min-w-[560px] border-collapse text-left">
-            <thead>
-              <tr className="bg-thead">
-                <Th>Venue</Th>
-                <Th className="min-w-[260px]">Label</Th>
-                <Th className="text-right">AUM · som</Th>
-                <Th className="text-right">AUM · eom</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((v) => (
-                <tr
-                  key={v.id}
-                  className="border-b border-line transition-colors hover:bg-paper/60"
-                >
-                  <Td className="font-semibold text-ink">{v.id}</Td>
-                  <Td className="text-muted">{v.label}</Td>
-                  <Td className="text-right text-muted">
-                    {formatCompactUSD(v.valueSom)}
-                  </Td>
-                  <Td className="text-right text-muted">
-                    {formatCompactUSD(v.valueEom)}
-                  </Td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
-    </section>
+    <Panel
+      title="Excluded holdings"
+      hint="Tracked for NAV only — not counted in prime or sky revenue."
+      flush
+    >
+      <DataTable>
+        <TableHeader>
+          <TableRow className="hover:bg-transparent">
+            <Th>Venue</Th>
+            <Th className="min-w-[260px]">Label</Th>
+            <Th numeric>AUM · som</Th>
+            <Th numeric>AUM · eom</Th>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((v) => (
+            <TableRow key={v.id}>
+              <Td className="font-mono font-medium">{v.id}</Td>
+              <Td className="text-muted-foreground">{v.label}</Td>
+              <Td numeric className="text-muted-foreground">
+                {formatCompactUSD(v.valueSom)}
+              </Td>
+              <Td numeric className="text-muted-foreground">
+                {formatCompactUSD(v.valueEom)}
+              </Td>
+            </TableRow>
+          ))}
+        </TableBody>
+      </DataTable>
+    </Panel>
   );
 }
 
@@ -711,174 +739,116 @@ function RefCodesSection({ rows }: { rows: SsrRefCode[] }) {
   const sorted = [...rows].sort((a, b) => (b.dr ?? 0) - (a.dr ?? 0));
   const shown = onlyEarning ? sorted.filter((rc) => (rc.dr ?? 0) !== 0) : sorted;
   return (
-    <section>
-      <SectionTitle
-        title="DR per ref code"
-        info="Distribution rewards attributed in this report — also shown in full on the Distribution Rewards tab."
-      />
-      <div className="mb-3 flex flex-wrap items-center gap-2">
-        <FilterButton
-          active={onlyEarning}
-          onClick={() => setOnlyEarning((v) => !v)}
-        >
+    <Panel
+      title="DR per ref code"
+      hint="Distribution rewards attributed in this report — also shown in full on the Distribution Rewards tab."
+      description={
+        onlyEarning
+          ? `Hiding ${sorted.length - shown.length} zero-DR codes`
+          : `Showing all ${sorted.length} codes`
+      }
+      action={
+        <FilterToggle pressed={onlyEarning} onPressedChange={setOnlyEarning}>
           Hide $0 revenue
-        </FilterButton>
-        <span className="font-sans text-[10.5px] text-muted">
-          {onlyEarning
-            ? `hiding ${sorted.length - shown.length} zero-DR codes`
-            : `showing all ${sorted.length} codes`}
-        </span>
-      </div>
-      <Card className="overflow-hidden">
-        <div className="dr-scroll max-h-[420px] overflow-auto">
-          <table className="w-full min-w-[520px] border-collapse text-left">
-            <thead className="sticky top-0 z-10">
-              <tr className="bg-thead">
-                <Th>Ref code</Th>
-                <Th className="text-right">DR</Th>
-                <Th className="min-w-[240px]">Notes</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {shown.map((rc) => (
-                <tr
-                  key={rc.refCode}
-                  className="border-b border-line transition-colors hover:bg-paper/60"
-                >
-                  <Td className="font-semibold text-ink">{rc.refCode}</Td>
-                  <Td className="text-right text-gold">
-                    {rc.dr == null ? "—" : formatUSD(rc.dr)}
-                  </Td>
-                  <Td className="max-w-[360px] truncate text-muted" title={rc.notes}>
-                    {rc.notes || <span className="text-faint">—</span>}
-                  </Td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
-    </section>
+        </FilterToggle>
+      }
+      flush
+    >
+      <DataTable containerClassName="max-h-[26rem]">
+        <TableHeader className="sticky top-0 z-10 bg-card">
+          <TableRow className="hover:bg-transparent">
+            <Th>Ref code</Th>
+            <Th numeric>DR</Th>
+            <Th className="min-w-[260px]">Notes</Th>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {shown.map((rc) => (
+            <TableRow key={rc.refCode}>
+              <Td className="font-mono font-medium">{rc.refCode}</Td>
+              <Td numeric>{rc.dr == null ? <Dash /> : formatUSD(rc.dr)}</Td>
+              <Td
+                className="max-w-[420px] truncate text-muted-foreground"
+                title={rc.notes}
+              >
+                {rc.notes || <Dash />}
+              </Td>
+            </TableRow>
+          ))}
+        </TableBody>
+      </DataTable>
+    </Panel>
   );
 }
 
 /**
- * Accounting-statement card: "sub" rows are indented components of the
- * following "sum" row; bold "sum" rows are the operands of the ruled total.
+ * Accounting statement: "sub" rows are indented components of the "sum" row
+ * that follows, and the bold "sum" rows are the operands of the ruled total.
  */
-function HeadlineCard({
+function HeadlinePanel({
   title,
+  swatch,
   rows,
   total,
-  color,
-  accentTotal,
 }: {
   title: string;
+  swatch?: string;
   rows: [string, number | null | undefined, ("sub" | "sum")?][];
   total: [string, number | null | undefined];
-  color?: string;
-  accentTotal?: boolean;
 }) {
   return (
-    <Card className="flex flex-col px-5 py-4">
-      <div className="flex items-center gap-2">
-        {color ? <Swatch color={color} /> : null}
-        <span className="font-sans text-[11px] font-medium tracking-[0.14em] text-muted uppercase">
+    <Panel
+      title={
+        <span className="flex items-center gap-2">
+          {swatch ? <Swatch color={swatch} /> : null}
           {title}
         </span>
-      </div>
-      <div className="mt-4 space-y-2.5">
+      }
+      footer={
+        <span className="flex w-full items-baseline justify-between gap-4">
+          <span className="text-muted-foreground">{total[0]}</span>
+          {/* the footer sets a muted colour for its label; the figure is the
+              point of the card, so it takes the text colour back */}
+          <span className="text-lg font-semibold text-foreground tabular-nums">
+            {headline(total[1])}
+          </span>
+        </span>
+      }
+    >
+      <dl className="grid gap-2.5 text-sm">
         {rows.map(([label, value, kind]) => (
-          <LeaderRow
+          <div
             key={label}
-            label={
-              kind === "sub" ? (
-                <span className="pl-4">{label}</span>
-              ) : kind === "sum" ? (
-                // A leading "+ " hangs in the card padding so sum labels align.
-                <span className="relative font-semibold text-ink">
-                  {label.startsWith("+ ") ? (
-                    <>
-                      <span className="absolute -left-3 font-normal text-muted">+</span>
-                      {label.slice(2)}
-                    </>
-                  ) : (
-                    label
-                  )}
-                </span>
-              ) : (
-                label
-              )
-            }
-            value={fmtHeadline(value)}
-            valueClassName={
-              kind === "sum" ? "font-semibold" : kind === "sub" ? "font-normal" : undefined
-            }
-          />
+            className="flex items-baseline justify-between gap-4 border-b border-border/60 pb-2.5 last:border-0 last:pb-0"
+          >
+            <dt
+              className={cn(
+                kind === "sub" && "pl-4 text-muted-foreground",
+                kind === "sum" && "font-medium",
+              )}
+            >
+              {label}
+            </dt>
+            <dd
+              className={cn("tabular-nums", kind === "sum" && "font-medium")}
+            >
+              {headline(value)}
+            </dd>
+          </div>
         ))}
-      </div>
-      <div className="mt-4 flex items-baseline justify-between border-t border-line-strong pt-3">
-        <span className="font-sans text-[11px] font-medium tracking-[0.1em] text-muted uppercase">
-          {total[0]}
-        </span>
-        <span
-          className={cn(
-            "font-mono text-lg font-semibold tabular-nums",
-            accentTotal ? "text-gold" : "text-ink"
-          )}
-        >
-          {fmtHeadline(total[1])}
-        </span>
-      </div>
-    </Card>
+      </dl>
+    </Panel>
   );
 }
 
-function fmtHeadline(v: number | null | undefined) {
+function headline(v: number | null | undefined) {
   if (v == null) return "TBD";
   return formatUSD(v);
 }
 
-function fmtCell(v: number | null | undefined) {
-  if (v == null) return <span className="text-faint">—</span>;
-  if (v === 0) return <span className="text-faint">0</span>;
+function cell(v: number | null | undefined) {
+  if (v == null) return <Dash />;
+  // A real zero is a reported figure, not a gap, so it keeps its digit.
+  if (v === 0) return <span className="text-muted-foreground">0</span>;
   return formatCompactUSD(v);
-}
-
-function Th({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <th
-      className={cn(
-        "bg-thead px-3 py-2.5 font-sans text-[10.5px] font-medium tracking-[0.1em] text-muted uppercase",
-        className
-      )}
-    >
-      {children}
-    </th>
-  );
-}
-
-function Td({
-  children,
-  className,
-  title,
-}: {
-  children: React.ReactNode;
-  className?: string;
-  title?: string;
-}) {
-  return (
-    <td
-      title={title}
-      className={cn("px-3 py-2.5 font-mono text-xs whitespace-nowrap", className)}
-    >
-      {children}
-    </td>
-  );
 }

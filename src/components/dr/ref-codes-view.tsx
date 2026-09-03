@@ -1,8 +1,22 @@
 "use client";
 
 import * as React from "react";
-import { ChevronRight, Download, Search } from "lucide-react";
+import {
+  CaretRightIcon,
+  DownloadSimpleIcon,
+  MagnifyingGlassIcon,
+} from "@phosphor-icons/react";
+import { Bar as RBar, BarChart, Cell, XAxis } from "recharts";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
+import { Input } from "@/components/ui/input";
 import {
   allTokens,
   groupColor,
@@ -11,34 +25,45 @@ import {
   visibleRefCodeRows,
 } from "@/lib/dr/domain";
 import { downloadCsv, toCsv } from "@/lib/csv";
-import { formatUSD, formatUSD2, monthLong, monthShort } from "@/lib/format";
+import { formatUSD, formatUSD2, monthLong } from "@/lib/format";
 import type { RefCodeRow } from "@/lib/dr/types";
 import { cn } from "@/lib/utils";
 
 import { useDr } from "../data-context";
 import { Dropdown } from "./dropdown";
 import {
+  ActionButton,
   Bar,
-  Card,
-  DarkBar,
-  FilterButton,
-  NoteTag,
-  Pill,
-  SectionTitle,
+  DataTable,
+  Dash,
+  EmptyRow,
+  FilterGroup,
+  FilterToggle,
+  MiniStat,
+  NoteBadge,
+  Panel,
+  SeriesFilterItem,
   Swatch,
-} from "./primitives";
+  TableBody,
+  TableHeader,
+  TableRow,
+  Td,
+  Th,
+  TotalRow,
+  moneyTooltip,
+} from "../kit";
 
 type SortKey = "total" | "refCode" | "latest";
 
 export function RefCodesView({
   selectedGroups,
-  onToggleGroup,
+  onSetGroups,
   onSelectAll,
   onClearGroups,
 }: {
-  /** Groups currently shown. "All" selects every group; empty shows none. */
+  /** Groups currently shown. Empty shows none. */
   selectedGroups: Set<string>;
-  onToggleGroup: (g: string) => void;
+  onSetGroups: (groups: string[]) => void;
   onSelectAll: () => void;
   onClearGroups: () => void;
 }) {
@@ -84,198 +109,188 @@ export function RefCodesView({
   const filteredTotal = rows.reduce((acc, r) => acc + (r.total ?? 0), 0);
 
   return (
-    <div className="space-y-5">
-      {/* group filter chips — multi-select; "All" clears the selection */}
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="mr-1 font-sans text-[10.5px] tracking-[0.14em] text-muted uppercase">
-          Group
-        </span>
-        <FilterButton
-          active={allSelected}
-          onClick={allSelected ? onClearGroups : onSelectAll}
-        >
-          All
-        </FilterButton>
-        {groupNames.map((g) => (
-          <FilterButton
-            key={g}
-            active={selectedGroups.has(g)}
-            onClick={() => onToggleGroup(g)}
-          >
-            {g}
-          </FilterButton>
-        ))}
-        {!allSelected ? (
-          <span className="ml-1 font-sans text-[10.5px] text-muted">
-            {selectedGroups.size === 0
-              ? "none selected"
-              : `${selectedGroups.size} selected`}
-          </span>
-        ) : null}
-      </div>
-
+    <Panel
+      title="Ledger"
+      description={`${rows.length} of ${refCodeRows.length} ref codes · select a row for its token composition and history`}
+      action={
+        <ActionButton onClick={() => exportCsv(rows, reportMonths)}>
+          <DownloadSimpleIcon data-icon="inline-start" aria-hidden />
+          Export CSV
+        </ActionButton>
+      }
+      flush
+    >
       {/* toolbar */}
-      <div className="flex flex-wrap items-center gap-2">
-        <label className="neu-inset-sm flex h-10 min-w-[230px] flex-1 items-center gap-2 rounded-full px-4">
-          <Search className="size-3.5 text-muted" />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="search ref code, token or note…"
-            className="w-full bg-transparent font-mono text-xs text-ink outline-none placeholder:text-faint"
-          />
-        </label>
+      <div className="flex flex-col gap-3 px-6 pt-6 pb-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative w-full sm:max-w-xs">
+            <MagnifyingGlassIcon
+              aria-hidden
+              className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+            />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search ref code, token or note…"
+              aria-label="Search ref codes"
+              className="pl-9"
+            />
+          </div>
 
-        <Dropdown
-          label="token"
-          value={token}
-          onChange={setToken}
-          options={tokens}
-        />
-        <Dropdown
-          label="sort"
-          value={sort}
-          onChange={(v) => setSort(v as SortKey)}
-          options={["total", "latest", "refCode"]}
-          render={(v) =>
-            v === "total"
-              ? "total ↓"
-              : v === "latest"
-                ? "latest month ↓"
-                : "ref code ↑"
-          }
-        />
-        <FilterButton active={onlyNotes} onClick={() => setOnlyNotes((v) => !v)}>
-          Only with notes
-        </FilterButton>
-        <button
-          type="button"
-          onClick={() => exportCsv(rows, reportMonths)}
-          className="neu-btn neu-focus inline-flex h-10 items-center gap-1.5 rounded-full px-4 font-sans text-[11px] font-medium tracking-wide text-muted hover:text-ink"
-        >
-          <Download className="size-3.5" /> Export CSV
-        </button>
+          <Dropdown
+            label="Token"
+            value={token}
+            onChange={setToken}
+            options={tokens}
+          />
+          <Dropdown
+            label="Sort"
+            value={sort}
+            onChange={(v) => setSort(v as SortKey)}
+            options={["total", "latest", "refCode"]}
+            render={(v) =>
+              v === "total"
+                ? "Total"
+                : v === "latest"
+                  ? "Latest month"
+                  : "Ref code"
+            }
+          />
+          <FilterToggle pressed={onlyNotes} onPressedChange={setOnlyNotes}>
+            Only with notes
+          </FilterToggle>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm text-muted-foreground">Groups</span>
+          <FilterGroup
+            multiple
+            value={groupNames.filter((g) => selectedGroups.has(g))}
+            onValueChange={onSetGroups}
+            aria-label="Filter by partner group"
+          >
+            {groupNames.map((g) => (
+              <SeriesFilterItem key={g} value={g} className="gap-2">
+                <Swatch color={groupColor(g)} />
+                {g}
+              </SeriesFilterItem>
+            ))}
+          </FilterGroup>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground hover:text-foreground"
+            onClick={allSelected ? onClearGroups : onSelectAll}
+          >
+            {allSelected ? "Clear" : "Select all"}
+          </Button>
+        </div>
       </div>
 
-      <SectionTitle
-        title={
-          <>
-            Ledger{" "}
-            <span className="font-sans text-xs font-normal text-muted">
-              {rows.length} codes
-            </span>
-          </>
-        }
-      />
-
-      <Card className="overflow-hidden">
-        <div className="dr-scroll max-h-[600px] overflow-auto">
-          <table className="w-full min-w-[940px] border-collapse text-left">
-            <thead className="sticky top-0 z-10">
-              <tr className="bg-thead">
-                <Th className="w-[120px]">Ref code</Th>
-                <Th className="w-[130px]">Group</Th>
-                {reportMonths.map((m) => (
-                  <Th key={m} className="text-right">
-                    {monthLabels[m]}
-                  </Th>
-                ))}
-                <Th className="text-right">Total</Th>
-                <Th className="min-w-[180px]">Tokens</Th>
-                <Th className="text-right">Note</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => {
-                const isOpen = openRef === r.refCode;
-                return (
-                  <React.Fragment key={r.refCode}>
-                    <tr
-                      onClick={() =>
-                        setOpenRef((o) => (o === r.refCode ? null : r.refCode))
-                      }
-                      className={cn(
-                        "cursor-pointer border-b border-line transition-colors hover:bg-paper/60",
-                        isOpen && "bg-paper/70"
+      <DataTable containerClassName="max-h-[36rem]">
+        <TableHeader className="sticky top-0 z-10 bg-card">
+          <TableRow className="hover:bg-transparent">
+            <Th className="w-[130px]">Ref code</Th>
+            <Th className="w-[140px]">Group</Th>
+            {reportMonths.map((m) => (
+              <Th key={m} numeric>
+                {monthLabels[m]}
+              </Th>
+            ))}
+            <Th numeric>Total</Th>
+            <Th className="w-[19rem] min-w-[19rem]">Tokens</Th>
+            <Th numeric>Note</Th>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((r) => {
+            const isOpen = openRef === r.refCode;
+            return (
+              <React.Fragment key={r.refCode}>
+                <TableRow
+                  onClick={() =>
+                    setOpenRef((o) => (o === r.refCode ? null : r.refCode))
+                  }
+                  aria-expanded={isOpen}
+                  className="cursor-pointer"
+                >
+                  <Td className="font-mono font-medium">
+                    <span className="flex items-center gap-2">
+                      <CaretRightIcon
+                        aria-hidden
+                        className={cn(
+                          "size-3.5 shrink-0 text-muted-foreground transition-transform",
+                          isOpen && "rotate-90",
+                        )}
+                      />
+                      {r.refCode}
+                    </span>
+                  </Td>
+                  <Td>
+                    <span className="flex items-center gap-2 text-muted-foreground">
+                      <Swatch color={groupColor(r.group)} />
+                      {r.group}
+                    </span>
+                  </Td>
+                  {reportMonths.map((m) => (
+                    <Td key={m} numeric className="text-muted-foreground">
+                      {cell(r.monthly[m])}
+                    </Td>
+                  ))}
+                  <Td numeric className="font-medium">
+                    {cell(r.total)}
+                  </Td>
+                  <Td>
+                    <span className="flex flex-wrap gap-1">
+                      {r.tokens.length === 0 ? (
+                        <Dash />
+                      ) : (
+                        r.tokens.map((t) => (
+                          <Badge
+                            key={t}
+                            variant="secondary"
+                            className="gap-1.5 font-normal"
+                          >
+                            <Swatch
+                              color={tokenColor(dr, t)}
+                              className="size-1.5 rounded-full"
+                            />
+                            {t}
+                          </Badge>
+                        ))
                       )}
+                    </span>
+                  </Td>
+                  <Td numeric>{r.notes ? <NoteBadge note={r.notes} /> : null}</Td>
+                </TableRow>
+
+                {isOpen ? (
+                  <TableRow className="bg-muted/30 hover:bg-muted/30">
+                    <Td
+                      colSpan={reportMonths.length + 4}
+                      className="p-0 first:pl-0 last:pr-0"
                     >
-                      <Td>
-                        <div className="flex items-center gap-1.5">
-                          <ChevronRight
-                            className={cn(
-                              "size-3.5 shrink-0 text-muted transition-transform",
-                              isOpen && "rotate-90"
-                            )}
-                          />
-                          <span className="font-mono text-xs font-semibold text-ink">
-                            {r.refCode}
-                          </span>
-                        </div>
-                      </Td>
-                      <Td>
-                        <span className="inline-flex items-center gap-1.5">
-                          <Swatch color={groupColor(r.group)} />
-                          <span className="font-sans text-[11px] text-muted">
-                            {r.group}
-                          </span>
-                        </span>
-                      </Td>
-                      {reportMonths.map((m) => (
-                        <Td key={m} className="text-right text-muted">
-                          {fmtCell(r.monthly[m])}
-                        </Td>
-                      ))}
-                      <Td className="text-right font-semibold text-gold">
-                        {fmtCell(r.total)}
-                      </Td>
-                      <Td>
-                        <div className="flex flex-wrap gap-1">
-                          {r.tokens.length === 0 ? (
-                            <span className="text-faint">—</span>
-                          ) : (
-                            r.tokens.map((t) => (
-                              <Pill key={t} color={tokenColor(dr, t)}>
-                                {t}
-                              </Pill>
-                            ))
-                          )}
-                        </div>
-                      </Td>
-                      <Td className="text-right">
-                        {r.notes ? <NoteTag note={r.notes} /> : null}
-                      </Td>
-                    </tr>
+                      <RefCodeDetail refCode={r.refCode} group={r.group} />
+                    </Td>
+                  </TableRow>
+                ) : null}
+              </React.Fragment>
+            );
+          })}
+          {rows.length === 0 ? (
+            <EmptyRow colSpan={reportMonths.length + 4}>
+              No ref codes match these filters.
+            </EmptyRow>
+          ) : null}
+        </TableBody>
+      </DataTable>
 
-                    {isOpen ? (
-                      <tr className="border-b border-line bg-paper/40">
-                        <td colSpan={reportMonths.length + 4} className="p-0">
-                          <RefCodeDetail refCode={r.refCode} group={r.group} />
-                        </td>
-                      </tr>
-                    ) : null}
-                  </React.Fragment>
-                );
-              })}
-              {rows.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={reportMonths.length + 4}
-                    className="px-3 py-10 text-center font-sans text-xs text-muted"
-                  >
-                    No ref codes match these filters.
-                  </td>
-                </tr>
-              ) : null}
-            </tbody>
-          </table>
-        </div>
-      </Card>
-
-      <DarkBar
-        left="Net · filtered"
-        right={`${formatUSD(filteredTotal)} · ${rows.length} codes`}
+      <TotalRow
+        className="border-t pt-4"
+        label="Net · filtered"
+        value={`${formatUSD(filteredTotal)} · ${rows.length} codes`}
       />
-    </div>
+    </Panel>
   );
 }
 
@@ -289,20 +304,20 @@ function RefCodeDetail({ refCode, group }: { refCode: string; group: string }) {
   // Code-level monthly totals across the full history (sum of tokens).
   const history = historyMonths.map((m) => ({
     m,
-    v: series.reduce((acc, s) => acc + (s.monthly[m] ?? 0), 0),
+    label: monthLong(m),
+    value: series.reduce((acc, s) => acc + (s.monthly[m] ?? 0), 0),
   }));
-  const maxHist = Math.max(1, ...history.map((h) => h.v));
-  const activeMonths = history.filter((h) => h.v > 0).length;
+  const activeMonths = history.filter((h) => h.value > 0).length;
   const peak = history.reduce(
-    (best, h) => (h.v > best.v ? h : best),
-    history[0] ?? { m: "", v: 0 }
+    (best, h) => (h.value > best.value ? h : best),
+    history[0] ?? { m: "", label: "", value: 0 }
   );
 
   // Month filter for the token breakdown. "all" = full-history totals; any
   // other value scopes the composition to a single month. Only months that
   // actually carry DR for this code are offered (latest first).
   const [month, setMonth] = React.useState<string>("all");
-  const activeMonthKeys = history.filter((h) => h.v > 0).map((h) => h.m);
+  const activeMonthKeys = history.filter((h) => h.value > 0).map((h) => h.m);
   const monthOptions = ["all", ...[...activeMonthKeys].reverse()];
 
   const tokenValue = (s: (typeof series)[number]) =>
@@ -315,137 +330,144 @@ function RefCodeDetail({ refCode, group }: { refCode: string; group: string }) {
   const monthTotal =
     month === "all"
       ? series.reduce((acc, s) => acc + (s.total ?? 0), 0)
-      : history.find((h) => h.m === month)?.v ?? 0;
+      : history.find((h) => h.m === month)?.value ?? 0;
   const compositionLabel = month === "all" ? "full history" : monthLong(month);
 
-  return (
-    <div className="grid gap-6 px-6 py-5 lg:grid-cols-[1fr_360px]">
-      {/* left: token composition */}
-      <div className="space-y-4">
-        <div>
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <p className="font-sans text-[10px] font-medium tracking-[0.16em] text-muted uppercase">
-              Token composition · {compositionLabel}
-            </p>
-            <Dropdown
-              label="month"
-              value={month}
-              onChange={setMonth}
-              options={monthOptions}
-              render={(v) => (v === "all" ? "All history" : monthLong(v))}
-            />
-          </div>
-          <div className="space-y-1.5">
-            {shownTokens.map((s) => (
-              <div
-                key={s.token}
-                className="grid grid-cols-[104px_1fr_auto] items-center gap-3"
-              >
-                <span className="inline-flex items-center gap-1.5">
-                  <Swatch color={tokenColor(dr, s.token)} />
-                  <span className="font-mono text-[11px] text-ink">
-                    {s.token}
-                  </span>
-                </span>
-                <Bar value={s.value} max={maxToken} color={tokenColor(dr, s.token)} />
-                <span className="min-w-28 text-right font-mono text-[11px] whitespace-nowrap text-muted tabular-nums">
-                  {formatUSD2(s.value)}
-                </span>
-              </div>
-            ))}
-            {series.length === 0 ? (
-              <p className="font-sans text-[11px] text-faint">
-                No token-level history recorded.
-              </p>
-            ) : null}
-          </div>
-          {series.length > 0 ? (
-            <div className="mt-2 flex items-center justify-between border-t border-line pt-2 font-sans text-[10px] text-faint">
-              <span>
-                Total · {month === "all" ? "full history" : monthLong(month)}
-              </span>
-              <span className="font-mono text-muted tabular-nums">
-                {formatUSD2(monthTotal)}
-              </span>
-            </div>
-          ) : null}
-        </div>
-      </div>
+  const historyConfig = {
+    value: { label: "DR", color: groupColor(group) },
+  } satisfies ChartConfig;
 
-      {/* right: history sparkbars + stats */}
-      <div className="space-y-3">
-        <p className="font-sans text-[10px] font-medium tracking-[0.16em] text-muted uppercase">
-          DR history · monthly{" "}
-          <span className="text-faint normal-case tracking-normal">
-            (click a bar to filter)
-          </span>
-        </p>
-        <div className="flex h-24 items-end gap-[2px]">
-          {history.map((h) => {
-            const selected = month === h.m;
-            const active = h.v > 0;
-            return (
-              <button
-                key={h.m}
-                type="button"
-                disabled={!active}
-                onClick={() =>
-                  setMonth((cur) => (cur === h.m ? "all" : h.m))
-                }
-                title={`${monthLong(h.m)} · ${formatUSD2(h.v)}`}
-                className={cn(
-                  "flex-1 rounded-[1px] transition-[background-color,opacity]",
-                  active ? "cursor-pointer hover:opacity-100" : "cursor-default"
-                )}
-                style={{
-                  height: `${Math.max(2, (h.v / maxHist) * 100)}%`,
-                  // Selection is signalled purely by colour — a darker shade of
-                  // the bar's own group colour. Height stays value-driven, so
-                  // the bar never grows.
-                  background: selected
-                    ? `color-mix(in srgb, ${groupColor(group)} 80%, #000)`
-                    : groupColor(group),
-                  opacity: selected ? 1 : active ? 0.85 : 0.18,
-                }}
-              />
-            );
-          })}
-        </div>
-        <div className="flex justify-between font-sans text-[10px] text-faint">
-          <span>{monthShort(historyMonths[0])} ’{historyMonths[0].slice(2, 4)}</span>
-          <span>
-            {monthShort(historyMonths[historyMonths.length - 1])} ’
-            {historyMonths[historyMonths.length - 1].slice(2, 4)}
-          </span>
-        </div>
-        <div className="grid grid-cols-2 gap-2 pt-1">
-          <MiniStat label="Months active" value={String(activeMonths)} />
-          <MiniStat
-            label="Peak month"
-            value={peak.v > 0 ? monthLong(peak.m) : "—"}
+  return (
+    <div className="grid gap-8 px-6 py-6 lg:grid-cols-[1fr_24rem]">
+      {/* left: token composition */}
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h3 className="text-sm font-medium">
+            Token composition{" "}
+            <span className="font-normal text-muted-foreground">
+              · {compositionLabel}
+            </span>
+          </h3>
+          <Dropdown
+            label="Month"
+            value={month}
+            onChange={setMonth}
+            options={monthOptions}
+            render={(v) => (v === "all" ? "All history" : monthLong(v))}
+            className="h-8"
           />
         </div>
-      </div>
-    </div>
-  );
-}
 
-function MiniStat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="neu-inset-sm rounded-xl px-3 py-2.5">
-      <p className="font-sans text-[9.5px] tracking-[0.12em] text-muted uppercase">
-        {label}
-      </p>
-      <p className="mt-1 font-sans text-xs font-medium text-ink">{value}</p>
+        <div className="flex flex-col gap-2.5">
+          {shownTokens.map((s) => (
+            <div
+              key={s.token}
+              className="grid grid-cols-[7rem_1fr_auto] items-center gap-3 text-sm"
+            >
+              <span className="flex items-center gap-2">
+                <Swatch color={tokenColor(dr, s.token)} />
+                {/* sans, to match the token badges in the ledger above:
+                    the same symbol was being set in two different faces */}
+                <span className="truncate">{s.token}</span>
+              </span>
+              <Bar
+                value={s.value}
+                max={maxToken}
+                color={tokenColor(dr, s.token)}
+                label={`${s.token} share`}
+              />
+              <span className="tabular-nums">{formatUSD2(s.value)}</span>
+            </div>
+          ))}
+          {series.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No token-level history recorded.
+            </p>
+          ) : null}
+        </div>
+
+        {series.length > 0 ? (
+          <div className="flex items-center justify-between border-t pt-3 text-sm">
+            <span className="text-muted-foreground">
+              Total · {compositionLabel}
+            </span>
+            <span className="font-medium tabular-nums">
+              {formatUSD2(monthTotal)}
+            </span>
+          </div>
+        ) : null}
+      </div>
+
+      {/* right: history + stats */}
+      <div className="flex flex-col gap-4">
+        <h3 className="text-sm font-medium">
+          DR history{" "}
+          <span className="font-normal text-muted-foreground">
+            · monthly, select a bar to filter
+          </span>
+        </h3>
+
+        <ChartContainer config={historyConfig} className="aspect-auto h-32 w-full">
+          <BarChart data={history} margin={{ top: 4, left: 0, right: 0 }}>
+            <XAxis
+              dataKey="m"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              minTickGap={28}
+              tickFormatter={(m: string) => monthLong(m)}
+            />
+            <ChartTooltip
+              cursor={false}
+              content={
+                <ChartTooltipContent
+                  hideIndicator
+                  labelFormatter={(_, p) => monthLong(String(p?.[0]?.payload?.m))}
+                  formatter={moneyTooltip({ value: "DR" }, (n) => formatUSD2(n))}
+                />
+              }
+            />
+            <RBar
+              dataKey="value"
+              radius={3}
+              onClick={(d: { payload?: { m?: string; value?: number } }) => {
+                const m = d?.payload?.m;
+                if (!m || !d.payload?.value) return;
+                setMonth((cur) => (cur === m ? "all" : m));
+              }}
+            >
+              {history.map((h) => (
+                <Cell
+                  key={h.m}
+                  fill="var(--color-value)"
+                  // Selection is carried by opacity against the same hue, so
+                  // the bar never changes colour or height as it is picked.
+                  fillOpacity={month === h.m ? 1 : h.value > 0 ? 0.55 : 0.15}
+                  cursor={h.value > 0 ? "pointer" : "default"}
+                />
+              ))}
+            </RBar>
+          </BarChart>
+        </ChartContainer>
+
+        <dl className="grid grid-cols-2 gap-3">
+          <MiniStat label="Months active" value={activeMonths} />
+          <MiniStat
+            label="Peak month"
+            value={peak.value > 0 ? monthLong(peak.m) : "—"}
+          />
+        </dl>
+      </div>
     </div>
   );
 }
 
 /* --------------------------------------------------------------- helpers */
 
-function fmtCell(v: number | null | undefined) {
-  if (v == null) return <span className="text-faint">—</span>;
-  if (v === 0) return <span className="text-faint">0</span>;
+function cell(v: number | null | undefined) {
+  if (v == null) return <Dash />;
+  // A real zero is a reported figure, not a gap, so it keeps its digit.
+  if (v === 0) return <span className="text-muted-foreground">0</span>;
   return formatUSD(v);
 }
 
@@ -463,39 +485,3 @@ function exportCsv(rows: RefCodeRow[], reportMonths: string[]) {
   ]);
   downloadCsv("soter_by_ref_code.csv", toCsv(header, body));
 }
-
-function Th({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <th
-      className={cn(
-        "bg-thead px-3 py-2.5 font-sans text-[10.5px] font-medium tracking-[0.1em] text-muted uppercase",
-        className
-      )}
-    >
-      {children}
-    </th>
-  );
-}
-
-function Td({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <td
-      className={cn("px-3 py-2.5 font-mono text-xs whitespace-nowrap", className)}
-    >
-      {children}
-    </td>
-  );
-}
-

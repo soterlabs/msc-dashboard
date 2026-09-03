@@ -1,13 +1,42 @@
 "use client";
 
 import * as React from "react";
+import {
+  Bar as RBar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  LabelList,
+  XAxis,
+  YAxis,
+} from "recharts";
 
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
 import type { SkyTotalReport } from "@/lib/sky-total/types";
 import { formatCompactTokens, formatTokens, monthShort } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 import { useSkyTotal } from "../data-context";
-import { Card, DisplayTitle, KpiCard, SectionTitle, Swatch } from "../dr/primitives";
+import {
+  DataTable,
+  Dash,
+  FilterGroup,
+  FilterItem,
+  LegendItem,
+  PageHeader,
+  Panel,
+  StatCard,
+  TableBody,
+  TableHeader,
+  TableRow,
+  Td,
+  Th,
+} from "../kit";
 
 const num = (v: number | null) => v ?? 0;
 
@@ -29,27 +58,28 @@ export function SkyTotalNetRevenue() {
     ordered.reduce((t, r) => t + num(pick(r)), 0);
 
   return (
-    <div className="space-y-7">
-      <header>
-        <DisplayTitle accent="consolidated protocol net revenue · buffer basis">
-          Sky total net revenue
-        </DisplayTitle>
-      </header>
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        title="Sky total net revenue"
+        description="Consolidated protocol net revenue · buffer basis"
+        /* no meta row: the basis is in the line above, the unit is on every
+           card, and the settlement count is the first card's own footnote */
+      />
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <KpiCard
+      <div className="grid grid-cols-1 gap-4 @3xl/main:grid-cols-3">
+        <StatCard
           label="Total Sky Net Revenue"
           value={formatCompactTokens(sum((r) => r.skyNetRevenue))}
           unit="USDS"
           note={`Consolidated, across ${months.length} monthly settlements`}
         />
-        <KpiCard
+        <StatCard
           label="Total MSC net"
           value={formatCompactTokens(sum((r) => r.mscNet))}
           unit="USDS"
           note="Prime-agent perimeter, buffer basis"
         />
-        <KpiCard
+        <StatCard
           label="Total non-MSC net"
           value={formatCompactTokens(sum((r) => r.nonMscNet))}
           unit="USDS"
@@ -61,9 +91,9 @@ export function SkyTotalNetRevenue() {
 
       <ReconciliationTable reports={ordered} monthLabels={monthLabels} />
 
-      <p className="font-mono text-[11px] text-faint">
-        Source: soter · settlement-reports · sky_total · {months.length} monthly reports · USDS ·
-        methodology handoff 2026-07-16 §3 (buffer basis)
+      <p className="text-xs text-muted-foreground">
+        Source: soter · settlement-reports · sky_total · {months.length} monthly
+        reports · USDS · methodology handoff 2026-07-16 §3 (buffer basis)
       </p>
     </div>
   );
@@ -92,26 +122,39 @@ function stepsFor(r: SkyTotalReport): Step[] {
   ];
 }
 
-/** Resolve each step to a [lo, hi] span and the running level it leaves behind. */
+/**
+ * Resolve each step to the floating span a waterfall bar occupies: `base` is
+ * the invisible pedestal it sits on and `delta` its drawn height, so a stacked
+ * bar chart can render the whole thing with no bespoke geometry.
+ */
 function layoutBars(steps: Step[]) {
   let running = 0;
   return steps.map((s) => {
     if (s.kind === "total") {
       running = s.value;
-      return { ...s, lo: Math.min(0, s.value), hi: Math.max(0, s.value), leaves: s.value };
+      return { ...s, base: Math.min(0, s.value), delta: Math.abs(s.value) };
     }
     const start = running;
     const end = running + s.value;
     running = end;
-    return { ...s, lo: Math.min(start, end), hi: Math.max(start, end), leaves: end };
+    return { ...s, base: Math.min(start, end), delta: Math.abs(s.value) };
   });
 }
 
-const W = 760;
-const H = 360;
-const M = { top: 30, right: 16, bottom: 64, left: 58 };
-const PLOT_W = W - M.left - M.right;
-const PLOT_H = H - M.top - M.bottom;
+/**
+ * Direction is data, so these come from the chart ramp rather than from the
+ * interface's accent, which is neutral and would collide with the subtotal.
+ * Blue in, red out, and a subtotal — neither, and able to land either side of
+ * zero — in the text colour. Blue rather than green because red/green is the
+ * pair most commonly lost to colour blindness, and it is the one pair a reader
+ * has to tell apart to read the chart at all.
+ */
+const waterfallConfig = {
+  delta: { label: "Amount" },
+  inflow: { label: "Into the buffer", color: "var(--chart-3)" },
+  outflow: { label: "Out of the buffer", color: "var(--destructive)" },
+  subtotal: { label: "Subtotal", color: "var(--foreground)" },
+} satisfies ChartConfig;
 
 function Waterfall({
   reports,
@@ -121,144 +164,121 @@ function Waterfall({
   monthLabels: Record<string, string>;
 }) {
   const [month, setMonth] = React.useState(reports[reports.length - 1].month);
-  const report = reports.find((r) => r.month === month) ?? reports[reports.length - 1];
+  const report =
+    reports.find((r) => r.month === month) ?? reports[reports.length - 1];
   const bars = layoutBars(stepsFor(report));
 
-  const top = Math.max(...bars.map((b) => b.hi), 1);
-  const niceMax = Math.ceil(top / 5_000_000) * 5_000_000;
-  const y = (v: number) => M.top + PLOT_H - (v / niceMax) * PLOT_H;
-
-  const band = PLOT_W / bars.length;
-  const barW = Math.min(64, band * 0.6);
-  const bandX = (i: number) => M.left + band * i;
-  const barX = (i: number) => bandX(i) + (band - barW) / 2;
-  const ticks = [0, niceMax / 2, niceMax];
-
   return (
-    <section>
-      <SectionTitle
-        title="How the month reconciles"
-        info="Debt minted to the buffer, less what flows back out to primes, the Demand-side Buffer, the Core Council (genesis portion) and the Grove TGE penalty, gives MSC net; adding non-MSC net gives Sky Net Revenue."
-      />
-
-      <Card className="px-4 pt-4 pb-3">
-        {/* month selector */}
-        <div className="mb-2 flex flex-wrap gap-1">
-          {reports.map((r) => (
-            <button
-              key={r.month}
-              type="button"
-              onClick={() => setMonth(r.month)}
-              className={cn(
-                "rounded-md px-2.5 py-1 font-mono text-[11px] transition-colors",
-                r.month === month
-                  ? "bg-lavender/20 text-ink"
-                  : "text-muted hover:bg-paper hover:text-ink",
-              )}
-            >
-              {monthShort(r.month)}
-            </button>
-          ))}
-        </div>
-
-        <svg
-          viewBox={`0 0 ${W} ${H}`}
-          className="w-full"
-          role="img"
-          aria-label={`Sky net revenue waterfall for ${monthLabels[report.month] ?? report.month}`}
+    <Panel
+      title="How the month reconciles"
+      hint="Debt minted to the buffer, less what flows back out to primes, the Demand-side Buffer, the Core Council (genesis portion) and the Grove TGE penalty, gives MSC net; adding non-MSC net gives Sky Net Revenue."
+      description={`${monthLabels[report.month] ?? report.month} · every figure in USDS`}
+      action={
+        <FilterGroup
+          value={[month]}
+          onValueChange={(v) => v[0] && setMonth(v[0])}
+          aria-label="Settlement month"
         >
-          {ticks.map((t) => (
-            <g key={t}>
-              <line x1={M.left} x2={W - M.right} y1={y(t)} y2={y(t)} stroke="var(--line)" strokeWidth={1} />
-              <text
-                x={M.left - 8}
-                y={y(t)}
-                textAnchor="end"
-                dominantBaseline="middle"
-                className="fill-faint font-mono text-[10px]"
-              >
-                {formatCompactTokens(t)}
-              </text>
-            </g>
+          {reports.map((r) => (
+            <FilterItem key={r.month} value={r.month}>
+              {monthShort(r.month)}
+            </FilterItem>
           ))}
-
-          {/* connectors between successive bars */}
-          {bars.slice(0, -1).map((b, i) => (
-            <line
-              key={`c-${b.key}`}
-              x1={barX(i) + barW}
-              x2={barX(i + 1)}
-              y1={y(b.leaves)}
-              y2={y(b.leaves)}
-              stroke="var(--faint)"
-              strokeWidth={1}
-              strokeDasharray="3 3"
-            />
-          ))}
-
-          {bars.map((b, i) => {
-            const isTotal = b.kind === "total";
-            return (
-              <g key={b.key}>
-                <rect
-                  x={barX(i)}
-                  y={y(b.hi)}
-                  width={barW}
-                  height={Math.max(y(b.lo) - y(b.hi), 1)}
-                  rx={4}
-                  fill="var(--lavender)"
-                  fillOpacity={isTotal ? 1 : 0.28}
-                />
-                {/* value label above the bar */}
-                <text
-                  x={barX(i) + barW / 2}
-                  y={y(b.hi) - 7}
-                  textAnchor="middle"
-                  className={cn("font-mono text-[10px]", isTotal ? "fill-ink font-medium" : "fill-muted")}
-                >
-                  {isTotal ? formatCompactTokens(b.value) : signedCompact(b.value)}
-                </text>
-                {/* two-line x label */}
-                <text
-                  x={bandX(i) + band / 2}
-                  y={H - 42}
-                  textAnchor="middle"
-                  className={cn("font-sans text-[10px]", isTotal ? "fill-ink font-medium" : "fill-muted")}
-                >
-                  {b.label.split(" ").map((word, k) => (
-                    <tspan key={k} x={bandX(i) + band / 2} dy={k === 0 ? 0 : 11}>
-                      {word}
-                    </tspan>
-                  ))}
-                </text>
-              </g>
-            );
-          })}
-        </svg>
-
-        {/* legend */}
-        <div className="mt-1 flex items-center gap-4 px-2">
-          <span className="flex items-center gap-1.5 font-sans text-[11px] text-muted">
-            <Swatch color="var(--lavender)" className="rounded-[3px]" />
-            Subtotal / headline
-          </span>
-          <span className="flex items-center gap-1.5 font-sans text-[11px] text-muted">
-            <Swatch color="var(--lavender)" className="rounded-[3px] opacity-30" />
-            Flow (in / out)
-          </span>
-        </div>
-
-        {report.notes.length > 0 && (
-          <ul className="mt-3 space-y-1 border-t border-line px-2 pt-3">
+        </FilterGroup>
+      }
+      footer={
+        report.notes.length > 0 ? (
+          <ul className="grid w-full gap-1.5">
             {report.notes.map((note, i) => (
-              <li key={i} className="font-mono text-[10.5px] leading-relaxed text-faint">
+              <li key={i} className="text-xs leading-relaxed">
                 {note}
               </li>
             ))}
           </ul>
-        )}
-      </Card>
-    </section>
+        ) : null
+      }
+    >
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-wrap gap-4">
+          <LegendItem color="var(--chart-3)">Into the buffer</LegendItem>
+          <LegendItem color="var(--destructive)">Out of the buffer</LegendItem>
+          <LegendItem color="var(--foreground)">Subtotal</LegendItem>
+        </div>
+
+        <ChartContainer
+          config={waterfallConfig}
+          className="aspect-auto h-80 w-full @3xl/main:h-96"
+        >
+          <BarChart data={bars} margin={{ top: 24, left: 4, right: 4 }}>
+            <CartesianGrid vertical={false} />
+            <XAxis
+              dataKey="label"
+              interval={0}
+              tickLine={false}
+              axisLine={false}
+              tickMargin={10}
+              height={44}
+              fontSize={12}
+            />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              width={52}
+              fontSize={12}
+              tickFormatter={(v: number) => formatCompactTokens(v)}
+            />
+            <ChartTooltip
+              cursor={false}
+              content={
+                <ChartTooltipContent
+                  hideIndicator
+                  formatter={(_v, _n, item) => (
+                    <span className="flex flex-1 items-center justify-between gap-4 leading-none">
+                      <span className="text-muted-foreground">
+                        {(item as { payload?: Step })?.payload?.kind === "total"
+                          ? "Subtotal"
+                          : ((item as { payload?: Step })?.payload?.value ?? 0) < 0
+                            ? "Out of the buffer"
+                            : "Into the buffer"}
+                      </span>
+                      <span className="font-medium text-foreground tabular-nums">
+                        {formatTokens(
+                          (item as { payload?: Step })?.payload?.value ?? 0,
+                        )}
+                      </span>
+                    </span>
+                  )}
+                />
+              }
+            />
+            {/* the invisible pedestal each floating bar sits on */}
+            <RBar dataKey="base" stackId="w" fill="transparent" maxBarSize={72} />
+            <RBar dataKey="delta" stackId="w" radius={4} maxBarSize={72}>
+              {bars.map((b) => (
+                <Cell
+                  key={b.key}
+                  fill={
+                    b.kind === "total"
+                      ? "var(--color-subtotal)"
+                      : b.value < 0
+                        ? "var(--color-outflow)"
+                        : "var(--color-inflow)"
+                  }
+                />
+              ))}
+              <LabelList
+                dataKey="value"
+                position="top"
+                offset={8}
+                className="fill-foreground"
+                fontSize={12}
+                formatter={(v: unknown) => signedCompact(Number(v))}
+              />
+            </RBar>
+          </BarChart>
+        </ChartContainer>
+      </div>
+    </Panel>
   );
 }
 
@@ -273,9 +293,13 @@ type Row =
     };
 
 /** First-seen union of the keys of a per-prime array across all reports. */
-function unionKeys(reports: SkyTotalReport[], pick: (r: SkyTotalReport) => { key: string; label: string }[]) {
+function unionKeys(
+  reports: SkyTotalReport[],
+  pick: (r: SkyTotalReport) => { key: string; label: string }[],
+) {
   const seen = new Map<string, string>();
-  for (const r of reports) for (const line of pick(r)) if (!seen.has(line.key)) seen.set(line.key, line.label);
+  for (const r of reports)
+    for (const line of pick(r)) if (!seen.has(line.key)) seen.set(line.key, line.label);
   return [...seen].map(([key, label]) => ({ key, label }));
 }
 
@@ -288,17 +312,30 @@ function ReconciliationTable({
 }) {
   const debtPrimes = unionKeys(reports, (r) => r.debtMinted);
   const subproxyPrimes = unionKeys(reports, (r) => r.subproxy);
-  const lineVal = (list: (r: SkyTotalReport) => { key: string; value: number | null }[], key: string) =>
-    (r: SkyTotalReport) => list(r).find((x) => x.key === key)?.value ?? null;
+  const lineVal =
+    (
+      list: (r: SkyTotalReport) => { key: string; value: number | null }[],
+      key: string,
+    ) =>
+    (r: SkyTotalReport) =>
+      list(r).find((x) => x.key === key)?.value ?? null;
 
   const rows: Row[] = [
     { kind: "group", label: "MSC leg (buffer basis)" },
     ...debtPrimes.map(
-      (p): Row => ({ kind: "prime", label: `Debt minted — ${p.label}`, value: lineVal((r) => r.debtMinted, p.key) }),
+      (p): Row => ({
+        kind: "prime",
+        label: `Debt minted — ${p.label}`,
+        value: lineVal((r) => r.debtMinted, p.key),
+      }),
     ),
     { kind: "subtotal", label: "Debt minted — subtotal", value: (r) => r.debtMintedSubtotal },
     ...subproxyPrimes.map(
-      (p): Row => ({ kind: "prime", label: `Subproxy — ${p.label}`, value: lineVal((r) => r.subproxy, p.key) }),
+      (p): Row => ({
+        kind: "prime",
+        label: `Subproxy — ${p.label}`,
+        value: lineVal((r) => r.subproxy, p.key),
+      }),
     ),
     { kind: "subtotal", label: "Sent to prime subproxy — subtotal (raw)", value: (r) => r.subproxySubtotalRaw },
     { kind: "less", label: "Sent to Demand-side Buffer", value: (r) => r.demandSideBuffer },
@@ -317,76 +354,71 @@ function ReconciliationTable({
   const cols = reports.length + 1;
 
   return (
-    <section>
-      <SectionTitle
-        title="Monthly reconciliation"
-        info="Every line of the settlement report, components down and months across."
-      />
-      <Card className="overflow-x-auto">
-        <table className="w-full border-collapse text-right font-mono text-[12px]">
-          <thead>
-            <tr className="border-b border-line text-[10.5px] text-muted">
-              <th className="px-4 py-3 text-left font-medium uppercase tracking-widest">Component</th>
-              {reports.map((r) => (
-                <th key={r.month} className="px-4 py-3 font-medium whitespace-nowrap uppercase tracking-widest">
-                  {monthLabels[r.month] ?? r.month}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) =>
-              row.kind === "group" ? (
-                <tr key={row.label} className="border-b border-line bg-paper/60">
-                  <td
-                    colSpan={cols}
-                    className="px-4 py-2 text-left font-sans text-[10.5px] font-semibold uppercase tracking-widest text-muted"
-                  >
-                    {row.label}
-                  </td>
-                </tr>
-              ) : (
-                <tr
-                  key={row.label}
+    <Panel
+      title="Monthly reconciliation"
+      hint="Every line of the settlement report, components down and months across."
+      flush
+    >
+      <DataTable>
+        <TableHeader>
+          <TableRow className="hover:bg-transparent">
+            <Th className="min-w-[280px]">Component</Th>
+            {reports.map((r) => (
+              <Th key={r.month} numeric>
+                {monthLabels[r.month] ?? r.month}
+              </Th>
+            ))}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((row) =>
+            row.kind === "group" ? (
+              <TableRow key={row.label} className="bg-muted/40 hover:bg-muted/40">
+                <Td colSpan={cols} className="font-medium">
+                  {row.label}
+                </Td>
+              </TableRow>
+            ) : (
+              <TableRow
+                key={row.label}
+                className={cn(
+                  row.kind === "headline" && "bg-muted/60 hover:bg-muted/60",
+                )}
+              >
+                <Td
                   className={cn(
-                    "border-b border-line last:border-0",
-                    row.kind === "subtotal" && "bg-paper/40",
-                    row.kind === "headline" && "bg-paper font-semibold",
+                    (row.kind === "prime" || row.kind === "detail") &&
+                      "pl-10 text-muted-foreground first:pl-10",
+                    (row.kind === "subtotal" || row.kind === "headline") &&
+                      "font-medium",
                   )}
                 >
-                  <td
-                    className={cn(
-                      "px-4 py-2.5 text-left whitespace-nowrap",
-                      row.kind === "prime" || row.kind === "detail" ? "pl-6 text-muted" : "text-ink",
-                      (row.kind === "subtotal" || row.kind === "headline") && "font-semibold",
-                    )}
-                  >
-                    {row.label}
-                  </td>
-                  {reports.map((r) => {
-                    const v = row.value(r);
-                    return (
-                      <td
-                        key={r.month}
-                        className={cn(
-                          "px-4 py-2.5 whitespace-nowrap tabular-nums",
-                          row.kind === "headline"
-                            ? "text-lavender"
-                            : row.kind === "less"
-                              ? "text-muted"
-                              : "text-ink",
-                        )}
-                      >
-                        {v === null ? <span className="text-faint">—</span> : formatTokens(v)}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ),
-            )}
-          </tbody>
-        </table>
-      </Card>
-    </section>
+                  {row.label}
+                </Td>
+                {reports.map((r) => {
+                  const v = row.value(r);
+                  return (
+                    <Td
+                      key={r.month}
+                      numeric
+                      className={cn(
+                        // the per-prime and add-back lines are the arithmetic;
+                        // the subtotals are what the statement is for
+                        (row.kind === "prime" || row.kind === "detail") &&
+                          "text-muted-foreground",
+                        row.kind === "subtotal" && "font-medium",
+                        row.kind === "headline" && "font-semibold",
+                      )}
+                    >
+                      {v === null ? <Dash /> : formatTokens(v)}
+                    </Td>
+                  );
+                })}
+              </TableRow>
+            ),
+          )}
+        </TableBody>
+      </DataTable>
+    </Panel>
   );
 }
