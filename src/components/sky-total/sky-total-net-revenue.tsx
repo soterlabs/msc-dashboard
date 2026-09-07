@@ -17,7 +17,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import type { SkyTotalReport } from "@/lib/sky-total/types";
+import type { SkyTotalBasis, SkyTotalReport } from "@/lib/sky-total/types";
 import { formatCompactTokens, formatTokens, monthShort } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -37,7 +37,21 @@ import {
   Th,
 } from "../kit";
 
-const num = (v: number | null) => v ?? 0;
+/**
+ * What each basis counts. Kept next to the view rather than in the dataset:
+ * the reports state it in prose, and it is a reader-facing explanation, not a
+ * figure anything is computed from.
+ */
+const BASIS_META: Record<SkyTotalBasis, { label: string; blurb: string }> = {
+  buffer: {
+    label: "buffer",
+    blurb: "The settlement that executed in this month — the previous cycle's revenue",
+  },
+  accrual: {
+    label: "accrual",
+    blurb: "Revenue earned in this month, paid at the settlement that follows it",
+  },
+};
 
 /** Signed compact figure for a waterfall delta, e.g. "+12.3M" / "−1.4M". */
 function signedCompact(v: number) {
@@ -52,35 +66,48 @@ export function SkyTotalNetRevenue() {
     () => [...reports].sort((a, b) => a.month.localeCompare(b.month)),
     [reports],
   );
+  const latest = ordered[ordered.length - 1];
 
-  const sum = (pick: (r: SkyTotalReport) => number | null) =>
-    ordered.reduce((t, r) => t + num(pick(r)), 0);
+  // Where the definition changed, read off the data rather than written down:
+  // the note below has to keep telling the truth after the next refresh.
+  const lastBuffer = [...ordered].reverse().find((r) => r.basis === "buffer");
+  const firstAccrual = ordered.find((r) => r.basis === "accrual");
 
+  /* The cards headline the latest month rather than a running total, because
+     the series changed definition partway through and a sum across the break
+     would not mean anything: a buffer month carries the settlement that
+     EXECUTED in it (so, the previous cycle's revenue), an accrual month the
+     revenue EARNED in it. Adding the two either counts a cycle twice or skips
+     one, depending where the boundary falls. The table below keeps every month
+     side by side, which is the honest way to see the whole series. */
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Sky total net revenue"
-        description="Consolidated protocol net revenue · buffer basis"
-        /* no meta row: the basis is in the line above, the unit is on every
-           card, and the settlement count is the first card's own footnote */
+        description="Consolidated protocol net revenue"
+        meta={[
+          { label: "latest", value: monthLabels[latest.month] ?? latest.month },
+          { label: "basis", value: BASIS_META[latest.basis].label },
+          { label: "months", value: months.length },
+        ]}
       />
 
       <div className="grid grid-cols-1 gap-4 @3xl/main:grid-cols-3">
         <StatCard
-          label="Total Sky Net Revenue"
-          value={formatCompactTokens(sum((r) => r.skyNetRevenue))}
+          label={`Sky Net Revenue · ${monthLabels[latest.month] ?? latest.month}`}
+          value={formatCompactTokens(latest.skyNetRevenue)}
           unit="USDS"
-          note={`Consolidated, across ${months.length} monthly settlements`}
+          note={BASIS_META[latest.basis].blurb}
         />
         <StatCard
-          label="Total MSC net"
-          value={formatCompactTokens(sum((r) => r.mscNet))}
+          label="MSC net"
+          value={formatCompactTokens(latest.mscNet)}
           unit="USDS"
-          note="Prime-agent perimeter, buffer basis"
+          note="Prime-agent perimeter — minted to the buffer, less what went out to primes"
         />
         <StatCard
-          label="Total non-MSC net"
-          value={formatCompactTokens(sum((r) => r.nonMscNet))}
+          label="Non-MSC net"
+          value={formatCompactTokens(latest.nonMscNet)}
           unit="USDS"
           note="Protocol P&L outside the MSC perimeter"
         />
@@ -92,7 +119,10 @@ export function SkyTotalNetRevenue() {
 
       <p className="text-xs text-muted-foreground">
         Source: soter · settlement-reports · sky_total · {months.length} monthly
-        reports · USDS · methodology handoff 2026-07-16 §3 (buffer basis)
+        reports · USDS
+        {lastBuffer && firstAccrual
+          ? ` · buffer basis through ${monthLabels[lastBuffer.month] ?? lastBuffer.month}, accrual from ${monthLabels[firstAccrual.month] ?? firstAccrual.month} (operator definition 2026-08-07)`
+          : ` · ${BASIS_META[latest.basis].label} basis`}
       </p>
     </div>
   );
@@ -108,50 +138,44 @@ type Step = {
   value: number;
 };
 
+/**
+ * The waterfall is the same on both bases — minted, less what went out, gives
+ * MSC net; plus the non-MSC leg gives Sky Net Revenue. Only the wording of the
+ * first two changes, because on the accrual basis they preview a settlement
+ * that has not run yet.
+ *
+ * The Core Council transfer and the Grove TGE penalty used to appear here. They
+ * are not deductions from net revenue and the reports now print them below the
+ * line (or, on the accrual basis, not at all until the settlement executes), so
+ * they belong in the statement table rather than in this chain.
+ */
 function stepsFor(r: SkyTotalReport): Step[] {
+  const accrual = r.basis === "accrual";
   return [
     {
-      key: "debt",
-      label: "Debt minted",
+      key: "minted",
+      label: accrual ? "MSC debt (mint)" : "Debt minted",
       kind: "flow",
-      value: num(r.debtMintedSubtotal),
+      value: r.mintedTotal,
     },
     {
-      key: "subproxy",
-      label: "Prime subproxy",
+      key: "sent",
+      label: accrual ? "Send to primes" : "Sent to primes",
       kind: "flow",
-      value: num(r.subproxySubtotalRaw),
+      value: r.sentTotal,
     },
-    {
-      key: "demand",
-      label: "Demand-side buffer",
-      kind: "flow",
-      value: num(r.demandSideBuffer),
-    },
-    {
-      key: "cc",
-      label: "Core Council",
-      kind: "flow",
-      value: num(r.coreCouncilGenesisRepayment),
-    },
-    {
-      key: "tge",
-      label: "Grove TGE penalty",
-      kind: "flow",
-      value: num(r.groveTgePenalty),
-    },
-    { key: "msc", label: "MSC net", kind: "total", value: num(r.mscNet) },
+    { key: "msc", label: "MSC net", kind: "total", value: r.mscNet },
     {
       key: "nonmsc",
       label: "Non-MSC net",
       kind: "flow",
-      value: num(r.nonMscNet),
+      value: r.nonMscNet,
     },
     {
       key: "sky",
       label: "Sky Net Revenue",
       kind: "total",
-      value: num(r.skyNetRevenue),
+      value: r.skyNetRevenue,
     },
   ];
 }
@@ -231,8 +255,8 @@ function Waterfall({ reports }: { reports: SkyTotalReport[] }) {
   return (
     <Panel
       title="How the month reconciles"
-      hint="Debt minted to the buffer, less what flows back out to primes, the Demand-side Buffer, the Core Council (genesis portion) and the Grove TGE penalty, gives MSC net; adding non-MSC net gives Sky Net Revenue."
-      description="Every figure in USDS"
+      hint="Debt minted, less what goes back out to the primes, gives MSC net; adding the non-MSC leg gives Sky Net Revenue. The Core Council transfer and the capital seedings sit below that line — see the statement below."
+      description={`Every figure in USDS · ${BASIS_META[report.basis].label} basis — ${BASIS_META[report.basis].blurb.toLowerCase()}`}
       action={
         <MonthPicker
           value={month}
@@ -353,21 +377,18 @@ function Waterfall({ reports }: { reports: SkyTotalReport[] }) {
 
 type Row =
   | { kind: "group"; label: string }
+  | { kind: "basis"; label: string }
   | {
       kind: "prime" | "subtotal" | "less" | "detail" | "headline";
       label: string;
       value: (r: SkyTotalReport) => number | null;
     };
 
-/** First-seen union of the keys of a per-prime array across all reports. */
-function unionKeys(
-  reports: SkyTotalReport[],
-  pick: (r: SkyTotalReport) => { key: string; label: string }[],
-) {
+/** First-seen union of the prime keys across all reports, in report order. */
+function unionPrimes(reports: SkyTotalReport[]) {
   const seen = new Map<string, string>();
   for (const r of reports)
-    for (const line of pick(r))
-      if (!seen.has(line.key)) seen.set(line.key, line.label);
+    for (const line of r.primes) if (!seen.has(line.key)) seen.set(line.key, line.label);
   return [...seen].map(([key, label]) => ({ key, label }));
 }
 
@@ -378,77 +399,86 @@ function ReconciliationTable({
   reports: SkyTotalReport[];
   monthLabels: Record<string, string>;
 }) {
-  const debtPrimes = unionKeys(reports, (r) => r.debtMinted);
-  const subproxyPrimes = unionKeys(reports, (r) => r.subproxy);
-  const lineVal =
-    (
-      list: (r: SkyTotalReport) => { key: string; value: number | null }[],
-      key: string,
-    ) =>
+  const primes = unionPrimes(reports);
+  const primeVal =
+    (key: string, field: "minted" | "sent") => (r: SkyTotalReport) =>
+      r.primes.find((p) => p.key === key)?.[field] ?? null;
+
+  // Only worth a section if some month actually reports it: the accrual months
+  // cannot, and a block of dashes says nothing.
+  const anyBelow = reports.some((r) => r.belowTheLine);
+  const below =
+    (field: keyof NonNullable<SkyTotalReport["belowTheLine"]>) =>
     (r: SkyTotalReport) =>
-      list(r).find((x) => x.key === key)?.value ?? null;
+      r.belowTheLine?.[field] ?? null;
 
   const rows: Row[] = [
-    { kind: "group", label: "MSC leg (buffer basis)" },
-    ...debtPrimes.map((p): Row => ({
+    // Which reading each column is on. Without it the table silently splices
+    // two definitions of a month together, which is the one thing a reader has
+    // to know before comparing columns.
+    { kind: "basis", label: "Basis" },
+    { kind: "group", label: "MSC leg" },
+    ...primes.map((p): Row => ({
       kind: "prime",
       label: `Debt minted — ${p.label}`,
-      value: lineVal((r) => r.debtMinted, p.key),
+      value: primeVal(p.key, "minted"),
     })),
     {
       kind: "subtotal",
-      label: "Debt minted — subtotal",
-      value: (r) => r.debtMintedSubtotal,
+      label: "Debt minted — total",
+      value: (r) => r.mintedTotal,
     },
-    ...subproxyPrimes.map((p): Row => ({
+    ...primes.map((p): Row => ({
       kind: "prime",
-      label: `Subproxy — ${p.label}`,
-      value: lineVal((r) => r.subproxy, p.key),
+      label: `Sent to prime — ${p.label}`,
+      value: primeVal(p.key, "sent"),
     })),
     {
       kind: "subtotal",
-      label: "Sent to prime subproxy — subtotal (raw)",
-      value: (r) => r.subproxySubtotalRaw,
+      label: "Sent to primes — total",
+      value: (r) => r.sentTotal,
     },
-    {
-      kind: "less",
-      label: "Sent to Demand-side Buffer",
-      value: (r) => r.demandSideBuffer,
-    },
-    {
-      kind: "detail",
-      label: "Core Council — on-chain gross",
-      value: (r) => r.coreCouncilGross,
-    },
-    {
-      kind: "detail",
-      label: "Core Council — Step 1 Capital (add-back)",
-      value: (r) => r.coreCouncilStep1Capital,
-    },
-    {
-      kind: "less",
-      label: "Core Council — net cost",
-      value: (r) => r.coreCouncilGenesisRepayment,
-    },
-    {
-      kind: "less",
-      label: "Grove TGE penalty",
-      value: (r) => r.groveTgePenalty,
-    },
-    {
-      kind: "subtotal",
-      label: "MSC net (buffer basis)",
-      value: (r) => r.mscNet,
-    },
+    { kind: "subtotal", label: "MSC net", value: (r) => r.mscNet },
     { kind: "group", label: "Non-MSC leg" },
     { kind: "detail", label: "non-MSC income", value: (r) => r.nonMscIncome },
     { kind: "detail", label: "non-MSC expense", value: (r) => r.nonMscExpense },
+    {
+      kind: "detail",
+      label: "Demand-side Buffer transfer",
+      value: (r) => r.demandSideBuffer,
+    },
     { kind: "subtotal", label: "non-MSC net", value: (r) => r.nonMscNet },
     {
       kind: "headline",
       label: "Sky Net Revenue",
       value: (r) => r.skyNetRevenue,
     },
+    ...(anyBelow
+      ? ([
+          { kind: "group", label: "Below the line (not deducted above)" },
+          {
+            kind: "less",
+            label: "Core Council Buffer transfer",
+            value: below("coreCouncil"),
+          },
+          {
+            kind: "detail",
+            label: "of which: Step 1 Capital distribution",
+            value: below("step1Capital"),
+          },
+          {
+            kind: "detail",
+            label: "of which: genesis / expense repayments",
+            value: below("genesisRepayments"),
+          },
+          { kind: "less", label: "Capital seedings", value: below("capitalSeedings") },
+          {
+            kind: "subtotal",
+            label: "Remitted to Sky reserves (known items only)",
+            value: below("remitted"),
+          },
+        ] as Row[])
+      : []),
   ];
 
   const cols = reports.length + 1;
@@ -480,6 +510,15 @@ function ReconciliationTable({
                 <Td colSpan={cols} className="font-medium">
                   {row.label}
                 </Td>
+              </TableRow>
+            ) : row.kind === "basis" ? (
+              <TableRow key={row.label}>
+                <Td className="text-muted-foreground">{row.label}</Td>
+                {reports.map((r) => (
+                  <Td key={r.month} numeric className="text-muted-foreground">
+                    {BASIS_META[r.basis].label}
+                  </Td>
+                ))}
               </TableRow>
             ) : (
               <TableRow

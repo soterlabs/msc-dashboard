@@ -67,31 +67,80 @@ const SSR_KNOWN_PARTNERS = new Set(["grove", "keel", "obex", "osero", "spark"]);
 
 // ---------------------------------------------------------------- sources
 
-function syncRepo(name, sparsePaths) {
+const remoteUrl = (name) =>
+  // CI/Railway builds have no SSH key — clone over HTTPS with GITHUB_TOKEN.
+  process.env.GITHUB_TOKEN
+    ? `https://x-access-token:${process.env.GITHUB_TOKEN}@github.com/soterlabs/${name}.git`
+    : `git@github.com:soterlabs/${name}.git`;
+
+/**
+ * A source checkout, at `commit` if given and at the default branch otherwise.
+ *
+ * `<NAME>_DIR` points at an existing checkout and skips cloning — the caller's
+ * responsibility to have it at the right revision, which is what the refresh
+ * reports at the end.
+ */
+function syncRepo(name, sparsePaths, commit) {
   const envVar = name.toUpperCase().replaceAll("-", "_") + "_DIR";
   const envDir = process.env[envVar];
   if (envDir) {
     if (!fs.existsSync(envDir)) throw new Error(`${envVar} points to a missing directory: ${envDir}`);
     return envDir;
   }
-  // Always start from a fresh shallow clone: no stale pulls and no half-cloned
-  // cache to wedge on. Any git failure throws and fails the refresh.
+  // Always start from a fresh clone: no stale pulls and no half-cloned cache to
+  // wedge on. Any git failure throws and fails the refresh.
   const dir = path.join(CACHE, name);
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(CACHE, { recursive: true });
+  const git = (...args) => execFileSync("git", args, { stdio: "pipe" });
+
+  if (commit) {
+    // A specific commit cannot be `clone --depth 1`d: fetch just that one.
+    git("init", "-q", dir);
+    git("-C", dir, "remote", "add", "origin", remoteUrl(name));
+    if (sparsePaths) {
+      git("-C", dir, "sparse-checkout", "set", ...sparsePaths);
+      git("-C", dir, "config", "core.sparseCheckout", "true");
+    }
+    git("-C", dir, "fetch", "-q", "--depth", "1", "origin", commit);
+    git("-C", dir, "checkout", "-q", "FETCH_HEAD");
+    return dir;
+  }
+
   const args = ["clone", "--depth", "1", "-q"];
   if (sparsePaths) args.push("--filter=blob:none", "--no-checkout");
-  // CI/Railway builds have no SSH key — clone over HTTPS with GITHUB_TOKEN.
-  const remote = process.env.GITHUB_TOKEN
-    ? `https://x-access-token:${process.env.GITHUB_TOKEN}@github.com/soterlabs/${name}.git`
-    : `git@github.com:soterlabs/${name}.git`;
-  args.push(remote, dir);
+  args.push(remoteUrl(name), dir);
   execFileSync("git", args, { stdio: "pipe" });
   if (sparsePaths) {
-    execFileSync("git", ["-C", dir, "sparse-checkout", "set", ...sparsePaths], { stdio: "pipe" });
-    execFileSync("git", ["-C", dir, "checkout", "-q"], { stdio: "pipe" });
+    git("-C", dir, "sparse-checkout", "set", ...sparsePaths);
+    git("-C", dir, "checkout", "-q");
   }
   return dir;
+}
+
+/**
+ * The settle-dr-dune commit a settlement-cycle checkout pins, read straight
+ * from the tree — the submodule itself is never initialised.
+ *
+ * DR is read at that commit rather than at settle-dr-dune's own HEAD, so the
+ * DR tab shows what the settlement was actually computed from. The pipeline
+ * repo moves between settlements: on 2026-09-07 its HEAD carried a ref code
+ * (3006) that no settlement had attributed yet, which the attribution guard
+ * correctly refuses — following the pin is what makes DR and SSR agree by
+ * construction instead of by luck of timing.
+ */
+function pinnedDrCommit(cycleDir) {
+  const line = execFileSync("git", ["-C", cycleDir, "ls-tree", "HEAD", "settle-dr-dune"], {
+    stdio: "pipe",
+    encoding: "utf8",
+  }).trim();
+  const sha = line.match(/^160000 commit ([0-9a-f]{40})\t/)?.[1];
+  if (!sha) {
+    throw new Error(
+      `settlement-cycle does not pin settle-dr-dune as a submodule (git ls-tree gave "${line}")`,
+    );
+  }
+  return sha;
 }
 
 // ---------------------------------------------------------------- helpers
@@ -663,17 +712,28 @@ function generateSsr(reportsDir) {
 
 // ------------------------------------------------- Sky total net revenue (sky-total.json)
 //
-// summary.md is "buffer basis" (methodology handoff 2026-07-16 §3): an MSC leg
-// broken down per prime, a non-MSC leg, and the Sky Net Revenue headline. We
-// read the explicit subtotal / headline rows the report prints rather than
-// re-summing, so the "of which" carve-outs never enter a total, then reconcile
-// the waterfall against those headlines and FAIL if it drifts by over a cent.
+// The report changed methodology mid-series and the parser has to read both,
+// because the closed months are not restated (see src/lib/sky-total/types.ts):
+//
+//   buffer basis   `## MSC leg (buffer basis)` — three columns, one row per
+//                  prime per section ("Debt minted to buffer" / "Sent to prime
+//                  subproxy"), each section closed by its own subtotal row.
+//   accrual basis  `## MSC leg (accrual — next settlement preview)` — one row
+//                  per prime with mint and send side by side, closed by a
+//                  single `total` row.
+//
+// Both reduce to the same thing: per prime, what was minted and what went out.
+// Everything below normalises to that, then reconciles the two totals and the
+// headline against the figures the report prints for itself, failing the
+// refresh if either drifts by more than a cent. Re-summing rather than reading
+// the printed rows would quietly paper over exactly the disagreement worth
+// knowing about.
 
 /** Title-case a lowercase prime id: "spark" → "Spark", "skybase" → "Skybase". */
 const primeLabel = (key) => key.charAt(0).toUpperCase() + key.slice(1);
 
-/** Strip markdown bold and trim: "**subtotal**" → "subtotal". */
-const plain = (s) => str(s).replaceAll("**", "").trim();
+/** Strip markdown bold, non-breaking spaces and trim: "**subtotal**" → "subtotal". */
+const plain = (s) => str(s).replaceAll("**", "").replaceAll("&nbsp;", " ").trim();
 
 /**
  * Rows of each `## <heading>` section's table, keyed by heading. Each row is an
@@ -698,120 +758,196 @@ function skyTotalSections(md) {
   return sections;
 }
 
-function parseSkyTotalMd(md) {
-  const sections = skyTotalSections(md);
-  const msc = sections["MSC leg (buffer basis)"];
-  const nonMsc = sections["Non-MSC leg"];
-  const headline = sections["Sky Net Revenue"];
-  if (!msc || !nonMsc || !headline) {
-    throw new Error(
-      "expected `## MSC leg (buffer basis)`, `## Non-MSC leg` and `## Sky Net Revenue` sections",
-    );
+/** The `## MSC leg (…)` heading and its rows, whichever basis the month uses. */
+function mscLeg(sections) {
+  for (const [heading, rows] of Object.entries(sections)) {
+    const m = heading.match(/^MSC leg \((.+)\)$/);
+    if (m) return { label: m[1], basis: m[1].startsWith("buffer") ? "buffer" : "accrual", rows };
   }
+  throw new Error("no `## MSC leg (…)` section");
+}
 
-  const r = {
-    block: money(md.match(/settlement block \*\*(\d+)\*\*/)?.[1]),
-    debtMinted: [],
-    debtMintedSubtotal: null,
-    subproxy: [],
-    subproxySubtotalRaw: null,
-    demandSideBuffer: null,
-    coreCouncilGross: null,
-    coreCouncilStep1Capital: null,
-    coreCouncilGenesisRepayment: null,
-    groveTgePenalty: null,
-    mscNet: null,
-    nonMscIncome: null,
-    nonMscExpense: null,
-    nonMscNet: null,
-    skyNetRevenue: null,
-  };
+/**
+ * Buffer basis: `| Section | Line | USDS |`, one prime per row per section.
+ * Returns the per-prime lines plus the subtotals the report prints.
+ */
+function parseBufferMscLeg(rows) {
+  const minted = new Map();
+  const sent = new Map();
+  let mintedTotal = null;
+  let sentTotal = null;
+  let mscNet = null;
 
-  // MSC leg: `| Section | Line | USDS |` (row 0 is the header).
-  for (const [rawSection, rawLine, rawValue] of msc.slice(1)) {
+  for (const [rawSection, rawLine, rawValue] of rows.slice(1)) {
     const section = plain(rawSection);
     const line = plain(rawLine);
     const value = money(rawValue);
     if (section === "Debt minted to buffer") {
-      if (line === "subtotal") r.debtMintedSubtotal = value;
-      else r.debtMinted.push({ key: line, label: primeLabel(line), value });
+      if (line.startsWith("subtotal")) mintedTotal = value;
+      else minted.set(line, value ?? 0);
     } else if (section === "Sent to prime subproxy") {
-      if (line === "subtotal (raw)") r.subproxySubtotalRaw = value;
-      // "— of which:" rows are carve-out annotations, not prime lines.
-      else if (!/of which/i.test(line) && !line.startsWith("—")) {
-        r.subproxy.push({ key: line, label: primeLabel(line), value });
-      }
-    } else if (section === "Sent to Demand-side Buffer") {
-      r.demandSideBuffer = value;
-    } else if (section === "Sent to Core Council") {
-      if (line === "on-chain gross") r.coreCouncilGross = value;
-      else if (/step 1 capital/i.test(line)) r.coreCouncilStep1Capital = value;
-      // The printed "genesis repayment" line is derived below from gross + the
-      // add-back — its sign is unreliable in months where the add-back exceeds
-      // the gross (the report flags those with a warning).
-    } else if (section.startsWith("Grove TGE penalty")) {
-      r.groveTgePenalty = value;
-    } else if (section === "MSC net (buffer basis)") {
-      r.mscNet = value;
+      // "subtotal (raw)" before 2026-08, "subtotal (net of seedings)" after.
+      if (line.startsWith("subtotal")) sentTotal = value;
+      // "— of which:" rows annotate the section; they are not primes.
+      else if (!/of which/i.test(line) && !line.startsWith("—")) sent.set(line, value ?? 0);
+    } else if (section.startsWith("MSC net")) {
+      mscNet = value;
     }
   }
+  return { primes: mergePrimes(minted, sent), mintedTotal, sentTotal, mscNet };
+}
+
+/**
+ * Accrual basis: `| Prime | MSC debt (mint) | Send to prime |`, closed by a
+ * `total` row and then an `MSC net (accrual)` row that only fills the last cell.
+ */
+function parseAccrualMscLeg(rows) {
+  const minted = new Map();
+  const sent = new Map();
+  let mintedTotal = null;
+  let sentTotal = null;
+  let mscNet = null;
+
+  for (const [rawPrime, rawMint, rawSend] of rows.slice(1)) {
+    const key = plain(rawPrime);
+    if (!key) continue;
+    if (key === "total") {
+      mintedTotal = money(rawMint);
+      sentTotal = money(rawSend);
+    } else if (key.startsWith("MSC net")) {
+      // The figure sits in the last column, the mint column being blank.
+      mscNet = money(rawSend) ?? money(rawMint);
+    } else {
+      minted.set(key, money(rawMint) ?? 0);
+      sent.set(key, money(rawSend) ?? 0);
+    }
+  }
+  return { primes: mergePrimes(minted, sent), mintedTotal, sentTotal, mscNet };
+}
+
+/**
+ * One row per prime named by either side. A prime that only ever appears under
+ * one of them (keel and skybase draw no debt; grove_pau minted nothing) keeps a
+ * real 0 rather than dropping out of the table.
+ */
+function mergePrimes(minted, sent) {
+  const keys = [...new Set([...minted.keys(), ...sent.keys()])];
+  return keys.map((key) => ({
+    key,
+    label: primeLabel(key),
+    minted: minted.get(key) ?? 0,
+    sent: sent.get(key) ?? 0,
+  }));
+}
+
+/** `## Below the line (…)`, buffer months only. */
+function parseBelowTheLine(rows) {
+  if (!rows) return null;
+  const out = {
+    coreCouncil: null,
+    step1Capital: null,
+    genesisRepayments: null,
+    capitalSeedings: null,
+    remitted: null,
+  };
+  for (const [rawField, rawValue] of rows.slice(1)) {
+    const field = plain(rawField);
+    const value = money(rawValue);
+    if (field.startsWith("− Core Council Buffer transfer")) out.coreCouncil = value;
+    else if (/of which: Step 1 Capital/.test(field)) out.step1Capital = value;
+    else if (/of which: genesis/.test(field)) out.genesisRepayments = value;
+    else if (field.startsWith("− capital seedings")) out.capitalSeedings = value;
+    else if (field.startsWith("remitted to Sky reserves")) out.remitted = value;
+  }
+  return out;
+}
+
+function parseSkyTotalMd(md) {
+  const sections = skyTotalSections(md);
+  const leg = mscLeg(sections);
+  const nonMsc = sections["Non-MSC leg"];
+  const headline = sections["Sky Net Revenue"];
+  if (!nonMsc || !headline) {
+    throw new Error("expected `## Non-MSC leg` and `## Sky Net Revenue` sections");
+  }
+
+  const msc =
+    leg.basis === "buffer" ? parseBufferMscLeg(leg.rows) : parseAccrualMscLeg(leg.rows);
 
   // Non-MSC leg: `| Line | USDS |`.
+  let nonMscIncome = null;
+  let nonMscExpense = null;
+  let nonMscNet = null;
+  let demandSideBuffer = null;
   for (const [rawLine, rawValue] of nonMsc.slice(1)) {
     const line = plain(rawLine);
     const value = money(rawValue);
-    if (line === "non-MSC income") r.nonMscIncome = value;
-    else if (line === "non-MSC expense") r.nonMscExpense = value;
-    else if (line === "non-MSC net") r.nonMscNet = value;
+    if (line === "non-MSC income") nonMscIncome = value;
+    else if (line === "non-MSC expense") nonMscExpense = value;
+    else if (line === "non-MSC net") nonMscNet = value;
+    else if (line.startsWith("Demand-side Buffer transfer")) demandSideBuffer = value;
   }
 
   // Sky Net Revenue: `| Field | USDS |`.
+  let skyNetRevenue = null;
   for (const [rawField, rawValue] of headline.slice(1)) {
-    if (plain(rawField) === "Sky Net Revenue") r.skyNetRevenue = money(rawValue);
+    if (plain(rawField) === "Sky Net Revenue") skyNetRevenue = money(rawValue);
   }
 
-  // Core-Council net cost = on-chain gross + the Step 1 Capital add-back. That
-  // form reconciles every month and is what the report's own MSC net uses; the
-  // printed "genesis repayment" line's sign is unreliable (see above).
-  if (r.coreCouncilGross !== null && r.coreCouncilStep1Capital !== null) {
-    r.coreCouncilGenesisRepayment = round(r.coreCouncilGross + r.coreCouncilStep1Capital, 2);
-  }
-
-  // A missing ROW is a format change (fail loud). The waterfall inputs must be
-  // present as numbers — a null there can't be reconciled, so it's fatal too.
+  // A missing ROW is a format change, and every figure below feeds a total, so
+  // a null in any of them cannot be reconciled either way.
   const required = {
-    debtMintedSubtotal: r.debtMintedSubtotal,
-    subproxySubtotalRaw: r.subproxySubtotalRaw,
-    demandSideBuffer: r.demandSideBuffer,
-    coreCouncilGross: r.coreCouncilGross,
-    coreCouncilStep1Capital: r.coreCouncilStep1Capital,
-    coreCouncilGenesisRepayment: r.coreCouncilGenesisRepayment,
-    groveTgePenalty: r.groveTgePenalty,
-    mscNet: r.mscNet,
-    nonMscNet: r.nonMscNet,
-    skyNetRevenue: r.skyNetRevenue,
+    mintedTotal: msc.mintedTotal,
+    sentTotal: msc.sentTotal,
+    mscNet: msc.mscNet,
+    nonMscIncome,
+    nonMscExpense,
+    nonMscNet,
+    skyNetRevenue,
   };
-  const missing = Object.entries(required).filter(([, v]) => v === null).map(([k]) => k);
-  if (!r.debtMinted.length) missing.push("debtMinted rows");
-  if (!r.subproxy.length) missing.push("subproxy rows");
-  if (missing.length) throw new Error(`rows not found or empty: ${missing.join(", ")}`);
+  const missing = Object.entries(required)
+    .filter(([, v]) => v === null)
+    .map(([k]) => k);
+  if (!msc.primes.length) missing.push("per-prime rows");
+  if (missing.length) {
+    throw new Error(`rows not found or empty (${leg.label}): ${missing.join(", ")}`);
+  }
 
-  // Reconcile the waterfall against the report's own printed headlines.
-  reconcile(
-    "MSC net",
-    r.debtMintedSubtotal + r.subproxySubtotalRaw + r.demandSideBuffer +
-      r.coreCouncilGenesisRepayment + r.groveTgePenalty,
-    r.mscNet,
-  );
-  reconcile("Sky Net Revenue", r.mscNet + r.nonMscNet, r.skyNetRevenue);
+  // Reconcile against the report's own printed figures, on both bases.
+  reconcile("minted total", sum(msc.primes.map((p) => p.minted)), msc.mintedTotal);
+  reconcile("sent total", sum(msc.primes.map((p) => p.sent)), msc.sentTotal);
+  reconcile("MSC net", msc.mintedTotal + msc.sentTotal, msc.mscNet);
+  reconcile("non-MSC net", nonMscIncome + nonMscExpense, nonMscNet);
+  reconcile("Sky Net Revenue", msc.mscNet + nonMscNet, skyNetRevenue);
 
+  const belowKey = Object.keys(sections).find((h) => h.startsWith("Below the line"));
   const notes = md
     .split("\n")
     .filter((l) => l.trim().startsWith(">"))
     .map((l) => l.replace(/^>\s?/, "").trim());
 
-  return { ...r, notes };
+  return {
+    basis: leg.basis,
+    // Buffer months name the settlement block(s) they were read from; an
+    // accrual month previews a settlement that has not executed, so it has none.
+    blocks: [...md.matchAll(/settlement blocks?\s+\*\*(\d+)\*\*(?:,\s*\*\*(\d+)\*\*)*/g)]
+      .flatMap((m) => m.slice(1).filter(Boolean))
+      .map(Number),
+    primes: msc.primes,
+    mintedTotal: msc.mintedTotal,
+    sentTotal: msc.sentTotal,
+    mscNet: msc.mscNet,
+    nonMscIncome,
+    nonMscExpense,
+    nonMscNet,
+    demandSideBuffer,
+    skyNetRevenue,
+    belowTheLine: belowKey ? parseBelowTheLine(sections[belowKey]) : null,
+    notes,
+  };
 }
+
+const sum = (xs) => round(xs.reduce((a, x) => a + (x ?? 0), 0), 2);
 
 /** Throws if a derived total drifts from the report's printed figure. */
 function reconcile(what, derived, reported) {
@@ -897,15 +1033,19 @@ function main() {
 
   // Sources are cloned only if something selected needs them. Prime payments
   // come from a local CSV, so `--only=prime` needs neither repo (nor SSH).
-  const drDir = wants("dr")
-    ? syncRepo("settle-dr-dune", [
-        DR_WORKBOOK.join("/"),
-        DR_RATES_PY.join("/"),
-      ])
-    : null;
-  // Only for config/dr_ref_codes.yaml: settlement-cycle also carries an indexer,
-  // a database and every source workbook, none of which this script reads.
+  //
+  // settlement-cycle comes first: it carries the ref-code attribution AND the
+  // settle-dr-dune commit the settlement used, so it decides which DR workbook
+  // is read. Cloned for two files; the indexer, database and source workbooks
+  // it also holds are never fetched.
   const cycleDir = wants("dr") ? syncRepo("settlement-cycle", [DR_REF_CODES_YAML.join("/")]) : null;
+  const drCommit = cycleDir && !process.env.SETTLE_DR_DUNE_DIR ? pinnedDrCommit(cycleDir) : null;
+  if (drCommit) {
+    console.log(`[generate-data] DR at settle-dr-dune ${drCommit.slice(0, 7)} (pinned by settlement-cycle)`);
+  }
+  const drDir = wants("dr")
+    ? syncRepo("settle-dr-dune", [DR_WORKBOOK.join("/"), DR_RATES_PY.join("/")], drCommit)
+    : null;
   const reportsDir = wants("ssr") || wants("sky-total") ? syncRepo("settlement-reports") : null;
 
   // Build every selected dataset before writing any, so a parse failure never
