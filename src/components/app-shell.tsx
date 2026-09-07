@@ -126,7 +126,12 @@ function AppSidebar({
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
+            {/* The wordmark is a label, not a control — rendered as a div so it
+                keeps the menu button's layout without being a <button> a
+                keyboard lands on. `pointer-events-none` hides it from the mouse
+                but not from Tab, which is how it read before. */}
             <SidebarMenuButton
+              render={<div />}
               size="lg"
               className="pointer-events-none gap-3 data-[state=open]:bg-transparent"
             >
@@ -150,6 +155,10 @@ function AppSidebar({
               <SidebarMenuItem key={n.key}>
                 <SidebarMenuButton
                   isActive={section === n.key}
+                  /* isActive only styles the item (data-active). This is the
+                     one thing that tells a screen reader which report is
+                     open — without it all four items announce identically. */
+                  aria-current={section === n.key ? "page" : undefined}
                   onClick={() => onSelect(n.key)}
                   tooltip={n.label}
                 >
