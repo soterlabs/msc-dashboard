@@ -1,8 +1,18 @@
 "use client";
 
 import * as React from "react";
-import { ArrowUpRight, ChevronDown, ChevronUp, ChevronsUpDown, Download, Search } from "lucide-react";
+import {
+  ArrowUpRightIcon,
+  CaretDownIcon,
+  CaretUpDownIcon,
+  CaretUpIcon,
+  DownloadSimpleIcon,
+  MagnifyingGlassIcon,
+} from "@phosphor-icons/react";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { downloadCsv, filteredFilename, toCsv } from "@/lib/csv";
 import {
   CSV_COLUMNS,
@@ -21,20 +31,33 @@ import {
   type WalletFilter,
 } from "@/lib/prime/domain";
 import type { PrimeKind } from "@/lib/prime/types";
-import { formatCompactTokens, formatTokens, monthLong, shortAddress } from "@/lib/format";
+import {
+  formatCompactTokens,
+  formatTokens,
+  monthLong,
+  shortAddress,
+} from "@/lib/format";
 import { explorerUrl, txUrl } from "@/lib/links";
 import { cn } from "@/lib/utils";
 
 import { usePrime } from "../data-context";
 import { Dropdown } from "../dr/dropdown";
 import {
-  Card,
-  DisplayTitle,
-  FilterButton,
-  KpiCard,
-  MetaItem,
-  Pill,
-} from "../dr/primitives";
+  ActionButton,
+  DataTable,
+  Dash,
+  EmptyRow,
+  FilterGroup,
+  FilterItem,
+  PageHeader,
+  Panel,
+  StatCard,
+  TableBody,
+  TableHeader,
+  TableRow,
+  Td,
+  Th,
+} from "../kit";
 
 type Filter = "all" | PrimeKind;
 /**
@@ -50,15 +73,15 @@ const FILTERS: { key: Filter; label: string }[] = [
   { key: "settlement cycle", label: "Settlement cycles" },
   { key: "other", label: "Genesis & transfers" },
 ];
+
 const COLUMNS: {
   key: SortKey | null;
   label: string;
-  align?: "right";
-  num?: boolean;
+  numeric?: boolean;
 }[] = [
   { key: "castDate", label: "Cast date" },
   { key: "prime", label: "Prime" },
-  { key: "usds", label: "USDS", align: "right", num: true },
+  { key: "usds", label: "USDS", numeric: true },
   { key: "settlesAccrual", label: "Month" },
   { key: "label", label: "Label" },
   { key: "walletType", label: "Wallet" },
@@ -68,52 +91,70 @@ const COLUMNS: {
   { key: null, label: "Reference" },
 ];
 
-function ExplorerLink({ href, children }: { href: string; children: React.ReactNode }) {
+function ExplorerLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-0.5 font-mono text-[11px] text-gold underline-offset-2 hover:underline"
+      // A column of primary-coloured links was the loudest thing on the page,
+      // and primary means "headline / on" everywhere else. The underline is
+      // what makes these read as links; the colour stays out of it.
+      className="inline-flex items-center gap-1 font-mono underline decoration-muted-foreground underline-offset-4 hover:decoration-foreground"
     >
       {children}
-      <ArrowUpRight className="size-3" />
+      <ArrowUpRightIcon aria-hidden className="size-3 text-muted-foreground" />
     </a>
   );
 }
 
+/** Sortable column header, in shadcn's data-table idiom: the whole header is a
+ * ghost button carrying the sort affordance. */
 function SortHeader({
   label,
   active,
   dir,
-  align,
+  numeric,
   onClick,
 }: {
   label: string;
   active: boolean;
   dir: SortDir;
-  align?: "right";
+  numeric?: boolean;
   onClick: () => void;
 }) {
-  const Icon = !active ? ChevronsUpDown : dir === "asc" ? ChevronUp : ChevronDown;
+  const Icon = !active ? CaretUpDownIcon : dir === "asc" ? CaretUpIcon : CaretDownIcon;
   return (
-    <th
+    <Th
+      numeric={numeric}
       aria-sort={active ? (dir === "asc" ? "ascending" : "descending") : "none"}
-      className={cn("px-4 py-3 font-medium", align === "right" && "text-right")}
+      className="px-1 first:pl-3 last:pr-3"
     >
-      <button
-        type="button"
+      <Button
+        variant="ghost"
+        size="sm"
         onClick={onClick}
         className={cn(
-          "inline-flex items-center gap-1 uppercase tracking-[0.12em] transition-colors hover:text-ink",
-          align === "right" && "flex-row-reverse",
-          active ? "text-ink" : "text-muted"
+          "h-8 gap-1 px-3 text-xs font-medium",
+          // row-reverse pins the pair to the column's right edge, so a numeric
+          // header sits directly over its own figures.
+          numeric && "flex-row-reverse",
+          active ? "text-foreground" : "text-muted-foreground",
         )}
       >
         {label}
-        <Icon className={cn("size-3", active ? "text-gold" : "text-faint")} />
-      </button>
-    </th>
+        <Icon
+          aria-hidden
+          className={cn("size-3", active ? "text-foreground" : "opacity-60")}
+        />
+      </Button>
+    </Th>
   );
 }
 
@@ -164,45 +205,37 @@ export function PrimePayments() {
   };
 
   return (
-    <div className="space-y-7">
-      {/* page header */}
-      <header>
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-          <DisplayTitle accent="spell mints & budget transfers">
-            Prime payments
-          </DisplayTitle>
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 lg:justify-end">
-            <MetaItem label="payments" value={kpis.paymentCount} />
-            <MetaItem label="settlement" value={formatCompactTokens(kpis.cycleTotal)} />
-            <MetaItem label="other" value={formatCompactTokens(kpis.otherTotal)} />
-            <MetaItem label="total USDS" value={formatCompactTokens(kpis.cycleTotal + kpis.otherTotal)} />
-            <button
-              type="button"
-              onClick={download}
-              title={`Download the ${rows.length} row(s) currently shown, as CSV`}
-              className="neu-btn neu-focus inline-flex h-9 items-center gap-1.5 rounded-full px-3.5 font-sans text-[11px] font-medium tracking-wide text-muted hover:text-ink"
-            >
-              <Download className="size-3.5" /> Download CSV
-            </button>
-          </div>
-        </div>
-      </header>
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        title="Prime payments"
+        description="Spell mints & budget transfers"
+        /* no meta row: all four figures are the three KPI cards below plus the
+           payments panel's own count */
+        actions={
+          <ActionButton
+            onClick={download}
+            title={`Download the ${rows.length} row(s) currently shown, as CSV`}
+          >
+            <DownloadSimpleIcon data-icon="inline-start" aria-hidden />
+            Download CSV
+          </ActionButton>
+        }
+      />
 
-      {/* KPI row */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <KpiCard
+      <div className="grid grid-cols-1 gap-4 @3xl/main:grid-cols-3">
+        <StatCard
           label="Total paid"
           value={formatCompactTokens(kpis.cycleTotal + kpis.otherTotal)}
           unit="USDS"
           note={`${kpis.paymentCount} payments to primes`}
         />
-        <KpiCard
+        <StatCard
           label="Settlement cycles"
           value={formatCompactTokens(kpis.cycleTotal)}
           unit="USDS"
           note="Monthly settlement of accrued distribution rewards"
         />
-        <KpiCard
+        <StatCard
           label="Genesis & transfers"
           value={formatCompactTokens(kpis.otherTotal)}
           unit="USDS"
@@ -210,161 +243,166 @@ export function PrimePayments() {
         />
       </div>
 
-      {/* controls: filter tabs + selects + search */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
-        <nav className="flex flex-wrap gap-2">
-          {FILTERS.map((f) => (
-            <FilterButton key={f.key} active={filter === f.key} onClick={() => setFilter(f.key)}>
-              {f.label}
-            </FilterButton>
-          ))}
-        </nav>
-        <div className="flex flex-wrap items-center gap-2">
-          <Dropdown
-            label="Prime"
-            value={prime}
-            onChange={setPrime}
-            options={PRIME_OPTIONS}
-            render={(v) => (v === "all" ? "All" : v)}
-          />
-          <Dropdown
-            label="Wallet"
-            value={wallet}
-            onChange={(v) => isWalletFilter(v) && setWallet(v)}
-            options={WALLET_OPTIONS}
-            render={(v) => (v === "all" ? "All" : v)}
-          />
-          <Dropdown
-            label="Month"
-            value={month}
-            onChange={setMonth}
-            options={MONTH_OPTIONS}
-            render={(v) => (v === "all" ? "All" : monthLong(v))}
-          />
-          <label className="neu-inset-sm flex h-10 min-w-57.5 items-center gap-2 rounded-full px-4">
-            <Search className="size-3.5 text-muted" />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="search prime, label or address…"
-              className="w-full bg-transparent font-mono text-xs text-ink outline-none placeholder:text-faint"
-            />
-          </label>
-        </div>
-      </div>
+      <Panel
+        title="Payments"
+        description={`Showing ${rows.length} of ${kpis.paymentCount} payments · ${formatTokens(total)} USDS · amounts are whole tokens`}
+        flush
+      >
+        {/* toolbar */}
+        <div className="flex flex-wrap items-center gap-2 px-6 pt-6 pb-4">
+          <FilterGroup
+            value={[filter]}
+            onValueChange={(v) => v[0] && setFilter(v[0] as Filter)}
+            aria-label="Payment kind"
+          >
+            {FILTERS.map((f) => (
+              <FilterItem key={f.key} value={f.key}>
+                {f.label}
+              </FilterItem>
+            ))}
+          </FilterGroup>
 
-      {/* payments table */}
-      <Card className="overflow-x-auto">
-        <table className="w-full border-collapse text-left font-mono text-[12px]">
-          <thead>
-            <tr className="border-b border-line text-[10.5px] text-muted">
+          <div className="ml-auto flex flex-wrap items-center gap-2">
+            <Dropdown
+              label="Prime"
+              value={prime}
+              onChange={setPrime}
+              options={PRIME_OPTIONS}
+              render={(v) => (v === "all" ? "All" : v)}
+            />
+            <Dropdown
+              label="Wallet"
+              value={wallet}
+              onChange={(v) => isWalletFilter(v) && setWallet(v)}
+              options={WALLET_OPTIONS}
+              render={(v) => (v === "all" ? "All" : v)}
+            />
+            <Dropdown
+              label="Month"
+              value={month}
+              onChange={setMonth}
+              options={MONTH_OPTIONS}
+              render={(v) => (v === "all" ? "All" : monthLong(v))}
+            />
+            <div className="relative w-full sm:w-64">
+              <MagnifyingGlassIcon
+                aria-hidden
+                className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+              />
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search prime, label or address…"
+                aria-label="Search payments"
+                className="pl-9"
+              />
+            </div>
+          </div>
+        </div>
+
+        <DataTable containerClassName="max-h-[42rem]">
+          <TableHeader className="sticky top-0 z-10 bg-card">
+            <TableRow className="hover:bg-transparent">
               {COLUMNS.map((c) =>
                 c.key ? (
                   <SortHeader
                     key={c.label}
                     label={c.label}
-                    align={c.align}
+                    numeric={c.numeric}
                     active={sortKey === c.key}
                     dir={sortDir}
                     onClick={() => onSort(c.key!)}
                   />
                 ) : (
-                  <th
-                    key={c.label}
-                    className="px-4 py-3 font-medium uppercase tracking-[0.12em]"
-                  >
-                    {c.label}
-                  </th>
+                  <Th key={c.label}>{c.label}</Th>
                 )
               )}
-            </tr>
-          </thead>
-          <tbody>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {rows.map((r, i) => (
-              <tr
-                key={`${r.txHash}-${r.subproxyConstant}-${i}`}
-                className="border-b border-line last:border-0 hover:bg-paper"
-              >
-                <td className="px-4 py-3 whitespace-nowrap text-ink">{r.castDate}</td>
-                <td className="px-4 py-3 whitespace-nowrap">
-                  <span className="font-medium text-ink">{r.prime}</span>
-                </td>
-                <td className="px-4 py-3 text-right whitespace-nowrap font-medium tabular-nums text-ink">
+              <TableRow key={`${r.txHash}-${r.subproxyConstant}-${i}`}>
+                <Td>{r.castDate}</Td>
+                <Td className="font-medium">{r.prime}</Td>
+                <Td numeric className="font-medium">
                   {formatTokens(r.usds)}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap text-muted">
-                  {r.settlesAccrual ? accrualLabel(r.settlesAccrual) : <span className="text-faint">—</span>}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap">
-                  <span title={r.lineItem || undefined}>
-                    <Pill>{r.label}</Pill>
-                  </span>
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap text-muted">
-                  {r.walletType}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap">
+                </Td>
+                <Td className="text-muted-foreground">
+                  {r.settlesAccrual ? accrualLabel(r.settlesAccrual) : <Dash />}
+                </Td>
+                <Td>
+                  <Badge
+                    variant="secondary"
+                    className="font-normal"
+                    title={r.lineItem || undefined}
+                  >
+                    {r.label}
+                  </Badge>
+                </Td>
+                <Td className="text-muted-foreground">{r.walletType}</Td>
+                <Td>
                   {r.source === "transfer" ? (
-                    <span title={r.fromAddress || undefined} className="text-ink">
-                      {r.fromLabel || shortAddress(r.fromAddress)}
+                    <span title={r.fromAddress || undefined}>
+                      {r.fromLabel || (
+                        <span className="font-mono">
+                          {shortAddress(r.fromAddress)}
+                        </span>
+                      )}
                     </span>
                   ) : (
-                    <span className="text-faint">mint</span>
+                    <span className="text-muted-foreground">mint</span>
                   )}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap">
+                </Td>
+                <Td>
                   {txUrl(PAYMENT_CHAIN, r.txHash) ? (
                     <ExplorerLink href={txUrl(PAYMENT_CHAIN, r.txHash)!}>
                       {shortAddress(r.txHash)}
                     </ExplorerLink>
                   ) : (
-                    <span className="font-mono text-[11px] text-muted">
+                    <span className="font-mono text-muted-foreground">
                       {shortAddress(r.txHash)}
                     </span>
                   )}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap">
+                </Td>
+                <Td>
                   {r.spellAddress ? (
-                    <>
-                      <span className="text-muted">{r.spell} · </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="font-mono text-muted-foreground">
+                        {r.spell}
+                      </span>
                       {explorerUrl(PAYMENT_CHAIN, r.spellAddress) ? (
-                        <ExplorerLink href={explorerUrl(PAYMENT_CHAIN, r.spellAddress)!}>
+                        <ExplorerLink
+                          href={explorerUrl(PAYMENT_CHAIN, r.spellAddress)!}
+                        >
                           {shortAddress(r.spellAddress)}
                         </ExplorerLink>
                       ) : (
-                        <span className="font-mono text-[11px] text-muted">
+                        <span className="font-mono text-muted-foreground">
                           {shortAddress(r.spellAddress)}
                         </span>
                       )}
-                    </>
+                    </span>
                   ) : (
-                    <span className="text-faint">—</span>
+                    <Dash />
                   )}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap">
+                </Td>
+                <Td>
                   {r.reference ? (
                     <ExplorerLink href={r.reference}>post</ExplorerLink>
                   ) : (
-                    <span className="text-faint">—</span>
+                    <Dash />
                   )}
-                </td>
-              </tr>
+                </Td>
+              </TableRow>
             ))}
             {rows.length === 0 && (
-              <tr>
-                <td colSpan={COLUMNS.length} className="px-4 py-10 text-center text-muted">
-                  No payments match the current filter.
-                </td>
-              </tr>
+              <EmptyRow colSpan={COLUMNS.length}>
+                No payments match the current filter.
+              </EmptyRow>
             )}
-          </tbody>
-        </table>
-      </Card>
-
-      <p className={cn("font-mono text-[11px] text-faint")}>
-        Showing {rows.length} of {kpis.paymentCount} payments · {formatTokens(total)} USDS ·
-        amounts are whole tokens
-      </p>
+          </TableBody>
+        </DataTable>
+      </Panel>
     </div>
   );
 }
