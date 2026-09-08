@@ -61,14 +61,45 @@ test("sky-total: a stringified number is rejected", () => {
 
 test("sky-total: a stringified per-prime value is rejected", () => {
   const st = fixture("sky-total");
-  st.reports[0].debtMinted[0].value = "16190100.91";
-  rejects(validateSkyTotal, st, "reports[0].debtMinted[0].value");
+  st.reports[0].primes[0].minted = "16190100.91";
+  rejects(validateSkyTotal, st, "reports[0].primes[0].minted");
 });
 
 test("sky-total: a missing nested array is rejected (regression)", () => {
   const st = fixture("sky-total");
-  delete st.reports[0].subproxy;
-  rejects(validateSkyTotal, st, "reports[0].subproxy");
+  delete st.reports[0].primes;
+  rejects(validateSkyTotal, st, "reports[0].primes");
+});
+
+// The series spans two methodologies and the reader is told which one each
+// month is on, so an unrecognised basis has to fail rather than render blank.
+test("sky-total: an unknown basis is rejected", () => {
+  const st = fixture("sky-total");
+  st.reports[0].basis = "cash";
+  rejects(validateSkyTotal, st, "reports[0].basis");
+});
+
+// belowTheLine is absent on the accrual basis, so null is a real value there —
+// but a malformed object must not slip through as if it were.
+test("sky-total: belowTheLine accepts null and rejects a non-object", () => {
+  // Nulling a month that HAS the section — reports[0] is January, which never
+  // had one, so asserting on it would pass without testing anything.
+  const ok = fixture("sky-total");
+  const i = ok.reports.findIndex((r: { belowTheLine: unknown }) => r.belowTheLine !== null);
+  assert.ok(i >= 0, "fixture has no month with a below-the-line section");
+  ok.reports[i].belowTheLine = null;
+  assert.ok(validateSkyTotal(ok));
+
+  const bad = fixture("sky-total");
+  bad.reports[i].belowTheLine = "none";
+  rejects(validateSkyTotal, bad, `reports[${i}].belowTheLine`);
+});
+
+// Every month reconciles against these, so the refresh can never emit a null.
+test("sky-total: a null headline figure is rejected", () => {
+  const st = fixture("sky-total");
+  st.reports[0].mscNet = null;
+  rejects(validateSkyTotal, st, "reports[0].mscNet");
 });
 
 test("validators return the same object they were given", () => {

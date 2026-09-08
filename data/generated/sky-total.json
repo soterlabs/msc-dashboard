@@ -5,7 +5,9 @@
     "2026-03",
     "2026-04",
     "2026-05",
-    "2026-06"
+    "2026-06",
+    "2026-07",
+    "2026-08"
   ],
   "monthLabels": {
     "2026-01": "Jan",
@@ -13,387 +15,518 @@
     "2026-03": "Mar",
     "2026-04": "Apr",
     "2026-05": "May",
-    "2026-06": "Jun"
+    "2026-06": "Jun",
+    "2026-07": "Jul",
+    "2026-08": "Aug"
   },
   "reports": [
     {
       "month": "2026-01",
-      "block": 24369632,
-      "debtMinted": [
+      "basis": "buffer",
+      "blocks": [],
+      "primes": [
         {
           "key": "spark",
           "label": "Spark",
-          "value": 24439872.87
+          "minted": 0,
+          "sent": 0
         },
         {
           "key": "grove",
           "label": "Grove",
-          "value": 14311822
+          "minted": 0,
+          "sent": 0
         },
         {
           "key": "obex",
           "label": "Obex",
-          "value": 1768819
-        }
-      ],
-      "debtMintedSubtotal": 40520513.87,
-      "subproxy": [
-        {
-          "key": "spark",
-          "label": "Spark",
-          "value": -7071339
+          "minted": 0,
+          "sent": 0
         },
         {
-          "key": "grove",
-          "label": "Grove",
-          "value": 0
+          "key": "grove_pau",
+          "label": "Grove_pau",
+          "minted": 0,
+          "sent": 0
         },
         {
-          "key": "obex",
-          "label": "Obex",
-          "value": -442327
+          "key": "osero",
+          "label": "Osero",
+          "minted": 0,
+          "sent": 0
         },
         {
           "key": "keel",
           "label": "Keel",
-          "value": 0
+          "minted": 0,
+          "sent": 0
         },
         {
           "key": "skybase",
           "label": "Skybase",
-          "value": -10000000
+          "minted": 0,
+          "sent": 0
         }
       ],
-      "subproxySubtotalRaw": -17513666,
-      "demandSideBuffer": 0,
-      "coreCouncilGross": -6632421,
-      "coreCouncilStep1Capital": 6398285.17,
-      "coreCouncilGenesisRepayment": -234135.83,
-      "groveTgePenalty": 0,
-      "mscNet": 22772712.04,
+      "mintedTotal": 0,
+      "sentTotal": 0,
+      "mscNet": 0,
       "nonMscIncome": 25259561.59,
       "nonMscExpense": -16040847.78,
       "nonMscNet": 9218713.81,
-      "skyNetRevenue": 31991425.85,
-      "notes": [
-        "⚠ grove_tge_penalty: no override for 2026-01 in config/sky_total.yaml — booked $0. The methodology doc's §3 line was 1,396,260 for 2026-06; back-fill earlier months from the corresponding MSC forum posts.",
-        "⚠ one_off_transfers: excluding 10,000,000.00 USDS from 'skybase' subproxy (config/sky_total.yaml → one_off_transfers[2026-01][skybase])"
-      ]
+      "demandSideBuffer": 0,
+      "skyNetRevenue": 9218713.81,
+      "belowTheLine": null,
+      "notes": []
     },
     {
       "month": "2026-02",
-      "block": 24570218,
-      "debtMinted": [
-        {
-          "key": "spark",
-          "label": "Spark",
-          "value": 7729005.14
-        },
-        {
-          "key": "grove",
-          "label": "Grove",
-          "value": 6205320
-        },
-        {
-          "key": "obex",
-          "label": "Obex",
-          "value": 2095775
-        }
+      "basis": "buffer",
+      "blocks": [
+        24369632
       ],
-      "debtMintedSubtotal": 16030100.14,
-      "subproxy": [
+      "primes": [
         {
           "key": "spark",
           "label": "Spark",
-          "value": -1387824
+          "minted": 25547255,
+          "sent": -7071339
         },
         {
           "key": "grove",
           "label": "Grove",
-          "value": -6090
+          "minted": 14311822,
+          "sent": 0
         },
         {
           "key": "obex",
           "label": "Obex",
-          "value": -71342
+          "minted": 1768819,
+          "sent": -442327
+        },
+        {
+          "key": "grove_pau",
+          "label": "Grove_pau",
+          "minted": 0,
+          "sent": 0
+        },
+        {
+          "key": "osero",
+          "label": "Osero",
+          "minted": 0,
+          "sent": 0
         },
         {
           "key": "keel",
           "label": "Keel",
-          "value": 0
+          "minted": 0,
+          "sent": 0
         },
         {
           "key": "skybase",
           "label": "Skybase",
-          "value": 0
+          "minted": 0,
+          "sent": 0
         }
       ],
-      "subproxySubtotalRaw": -1465256,
-      "demandSideBuffer": 0,
-      "coreCouncilGross": -4808248,
-      "coreCouncilStep1Capital": 2195952.32,
-      "coreCouncilGenesisRepayment": -2612295.68,
-      "groveTgePenalty": 0,
-      "mscNet": 11952548.46,
+      "mintedTotal": 41627896,
+      "sentTotal": -7513666,
+      "mscNet": 34114230,
       "nonMscIncome": 15153981.13,
       "nonMscExpense": -16126768.01,
       "nonMscNet": -972786.88,
-      "skyNetRevenue": 10979761.58,
+      "demandSideBuffer": 0,
+      "skyNetRevenue": 33141443.12,
+      "belowTheLine": {
+        "coreCouncil": -6632421,
+        "step1Capital": -5845338,
+        "genesisRepayments": -787083,
+        "capitalSeedings": -10000000,
+        "remitted": 16509022.12
+      },
       "notes": [
-        "⚠ grove_tge_penalty: no override for 2026-02 in config/sky_total.yaml — booked $0. The methodology doc's §3 line was 1,396,260 for 2026-06; back-fill earlier months from the corresponding MSC forum posts."
+        "⚠ one_off_transfers: excluding 10,000,000.00 USDS from 'skybase' subproxy (config/sky_total.yaml → one_off_transfers[2026-02][skybase])"
       ]
     },
     {
       "month": "2026-03",
-      "block": 24971851,
-      "debtMinted": [
-        {
-          "key": "spark",
-          "label": "Spark",
-          "value": 7330204.01
-        },
-        {
-          "key": "grove",
-          "label": "Grove",
-          "value": 6290684
-        },
-        {
-          "key": "obex",
-          "label": "Obex",
-          "value": 2075648
-        }
+      "basis": "buffer",
+      "blocks": [
+        24570218,
+        24772796
       ],
-      "debtMintedSubtotal": 15696536.01,
-      "subproxy": [
+      "primes": [
         {
           "key": "spark",
           "label": "Spark",
-          "value": -1725726
+          "minted": 15826021,
+          "sent": -2652956
         },
         {
           "key": "grove",
           "label": "Grove",
-          "value": -138412
+          "minted": 12552149,
+          "sent": -11720
         },
         {
           "key": "obex",
           "label": "Obex",
-          "value": -69793
+          "minted": 4044197,
+          "sent": -137061
+        },
+        {
+          "key": "grove_pau",
+          "label": "Grove_pau",
+          "minted": 0,
+          "sent": 0
+        },
+        {
+          "key": "osero",
+          "label": "Osero",
+          "minted": 0,
+          "sent": 0
         },
         {
           "key": "keel",
           "label": "Keel",
-          "value": -30241
+          "minted": 0,
+          "sent": 0
         },
         {
           "key": "skybase",
           "label": "Skybase",
-          "value": -225299
+          "minted": 0,
+          "sent": -203134
         }
       ],
-      "subproxySubtotalRaw": -2189471,
-      "demandSideBuffer": 0,
-      "coreCouncilGross": -678176,
-      "coreCouncilStep1Capital": 1313074.55,
-      "coreCouncilGenesisRepayment": 634898.55,
-      "groveTgePenalty": 0,
-      "mscNet": 14141963.56,
+      "mintedTotal": 32422367,
+      "sentTotal": -3004871,
+      "mscNet": 29417496,
       "nonMscIncome": 13303732.59,
       "nonMscExpense": -20880323.41,
       "nonMscNet": -7576590.82,
-      "skyNetRevenue": 6565372.74,
+      "demandSideBuffer": 0,
+      "skyNetRevenue": 21840905.18,
+      "belowTheLine": {
+        "coreCouncil": -7354155,
+        "step1Capital": -7354155,
+        "genesisRepayments": 0,
+        "capitalSeedings": -20000000,
+        "remitted": -5513249.82
+      },
       "notes": [
-        "⚠ grove_tge_penalty: no override for 2026-03 in config/sky_total.yaml — booked $0. The methodology doc's §3 line was 1,396,260 for 2026-06; back-fill earlier months from the corresponding MSC forum posts.",
-        "⚠ cc_genesis_repayment is NEGATIVE (-634,898.55) — the 20% Step 1 Capital rule (doc §3) doesn't hold for this cycle, or an outflow is unmodeled. Cross-check against BA's forum figure for MSC#2026-03 before treating this month's Sky Net Revenue as reconciled."
+        "⚠ one_off_transfers: excluding 10,000,000.00 USDS from 'keel' subproxy (config/sky_total.yaml → one_off_transfers[2026-03][keel])",
+        "⚠ one_off_transfers: excluding 10,000,000.00 USDS from 'osero' subproxy (config/sky_total.yaml → one_off_transfers[2026-03][osero])"
       ]
     },
     {
       "month": "2026-04",
-      "block": 25072324,
-      "debtMinted": [
-        {
-          "key": "spark",
-          "label": "Spark",
-          "value": 8781143.27
-        },
-        {
-          "key": "grove",
-          "label": "Grove",
-          "value": 9385986
-        },
-        {
-          "key": "obex",
-          "label": "Obex",
-          "value": 1969499
-        }
+      "basis": "buffer",
+      "blocks": [
+        24971851
       ],
-      "debtMintedSubtotal": 20136628.27,
-      "subproxy": [
+      "primes": [
         {
           "key": "spark",
           "label": "Spark",
-          "value": -1512762
+          "minted": 7662339,
+          "sent": -1725726
         },
         {
           "key": "grove",
           "label": "Grove",
-          "value": -241690
+          "minted": 6290684,
+          "sent": -138412
         },
         {
           "key": "obex",
           "label": "Obex",
-          "value": -64862
+          "minted": 2075648,
+          "sent": -69793
+        },
+        {
+          "key": "grove_pau",
+          "label": "Grove_pau",
+          "minted": 0,
+          "sent": 0
+        },
+        {
+          "key": "osero",
+          "label": "Osero",
+          "minted": 0,
+          "sent": 0
         },
         {
           "key": "keel",
           "label": "Keel",
-          "value": -52915
+          "minted": 0,
+          "sent": -30241
         },
         {
           "key": "skybase",
           "label": "Skybase",
-          "value": -201469
+          "minted": 0,
+          "sent": -225299
         }
       ],
-      "subproxySubtotalRaw": -2073698,
-      "demandSideBuffer": 0,
-      "coreCouncilGross": -3144308,
-      "coreCouncilStep1Capital": 3391981.33,
-      "coreCouncilGenesisRepayment": 247673.33,
-      "groveTgePenalty": 0,
-      "mscNet": 18310603.6,
+      "mintedTotal": 16028671,
+      "sentTotal": -2189471,
+      "mscNet": 13839200,
       "nonMscIncome": 18294454.47,
       "nonMscExpense": -19645151.42,
       "nonMscNet": -1350696.95,
-      "skyNetRevenue": 16959906.65,
-      "notes": [
-        "⚠ grove_tge_penalty: no override for 2026-04 in config/sky_total.yaml — booked $0. The methodology doc's §3 line was 1,396,260 for 2026-06; back-fill earlier months from the corresponding MSC forum posts.",
-        "⚠ cc_genesis_repayment is NEGATIVE (-247,673.33) — the 20% Step 1 Capital rule (doc §3) doesn't hold for this cycle, or an outflow is unmodeled. Cross-check against BA's forum figure for MSC#2026-04 before treating this month's Sky Net Revenue as reconciled."
-      ]
+      "demandSideBuffer": 0,
+      "skyNetRevenue": 12488503.05,
+      "belowTheLine": {
+        "coreCouncil": -678176,
+        "step1Capital": -678176,
+        "genesisRepayments": 0,
+        "capitalSeedings": 0,
+        "remitted": 11810327.05
+      },
+      "notes": []
     },
     {
       "month": "2026-05",
-      "block": 25373623,
-      "debtMinted": [
-        {
-          "key": "spark",
-          "label": "Spark",
-          "value": 12845823.69
-        },
-        {
-          "key": "grove",
-          "label": "Grove",
-          "value": 8877823
-        },
-        {
-          "key": "obex",
-          "label": "Obex",
-          "value": 2461845
-        }
+      "basis": "buffer",
+      "blocks": [
+        25072324
       ],
-      "debtMintedSubtotal": 24185491.69,
-      "subproxy": [
+      "primes": [
         {
           "key": "spark",
           "label": "Spark",
-          "value": -4204857
+          "minted": 9179021,
+          "sent": -1512762
         },
         {
           "key": "grove",
           "label": "Grove",
-          "value": -271843
+          "minted": 9385986,
+          "sent": -241690
         },
         {
           "key": "obex",
           "label": "Obex",
-          "value": -526204
+          "minted": 1969499,
+          "sent": -64862
+        },
+        {
+          "key": "grove_pau",
+          "label": "Grove_pau",
+          "minted": 0,
+          "sent": 0
+        },
+        {
+          "key": "osero",
+          "label": "Osero",
+          "minted": 0,
+          "sent": 0
         },
         {
           "key": "keel",
           "label": "Keel",
-          "value": -32279
+          "minted": 0,
+          "sent": -52915
         },
         {
           "key": "skybase",
           "label": "Skybase",
-          "value": -1806616
+          "minted": 0,
+          "sent": -201469
         }
       ],
-      "subproxySubtotalRaw": -6841799,
-      "demandSideBuffer": 0,
-      "coreCouncilGross": -2946125,
-      "coreCouncilStep1Capital": 2500713.22,
-      "coreCouncilGenesisRepayment": -445411.78,
-      "groveTgePenalty": 0,
-      "mscNet": 16898280.91,
+      "mintedTotal": 20534506,
+      "sentTotal": -2073698,
+      "mscNet": 18460808,
       "nonMscIncome": 15022235.5,
       "nonMscExpense": -19416950.31,
       "nonMscNet": -4394714.81,
-      "skyNetRevenue": 12503566.09,
-      "notes": [
-        "⚠ grove_tge_penalty: no override for 2026-05 in config/sky_total.yaml — booked $0. The methodology doc's §3 line was 1,396,260 for 2026-06; back-fill earlier months from the corresponding MSC forum posts."
-      ]
+      "demandSideBuffer": 0,
+      "skyNetRevenue": 14066093.19,
+      "belowTheLine": {
+        "coreCouncil": -3144308,
+        "step1Capital": -3144308,
+        "genesisRepayments": 0,
+        "capitalSeedings": 0,
+        "remitted": 10921785.19
+      },
+      "notes": []
     },
     {
       "month": "2026-06",
-      "block": 25574490,
-      "debtMinted": [
-        {
-          "key": "spark",
-          "label": "Spark",
-          "value": 16190100.91
-        },
-        {
-          "key": "grove",
-          "label": "Grove",
-          "value": 12342158
-        },
-        {
-          "key": "obex",
-          "label": "Obex",
-          "value": 3450783
-        }
+      "basis": "buffer",
+      "blocks": [
+        25373623
       ],
-      "debtMintedSubtotal": 31983041.91,
-      "subproxy": [
+      "primes": [
         {
           "key": "spark",
           "label": "Spark",
-          "value": -9746443
+          "minted": 13427874,
+          "sent": -4204857
         },
         {
           "key": "grove",
           "label": "Grove",
-          "value": -2328332
+          "minted": 8877823,
+          "sent": -271843
         },
         {
           "key": "obex",
           "label": "Obex",
-          "value": -1519539
+          "minted": 2461845,
+          "sent": -526204
+        },
+        {
+          "key": "grove_pau",
+          "label": "Grove_pau",
+          "minted": 0,
+          "sent": 0
+        },
+        {
+          "key": "osero",
+          "label": "Osero",
+          "minted": 0,
+          "sent": 0
         },
         {
           "key": "keel",
           "label": "Keel",
-          "value": -77284
+          "minted": 0,
+          "sent": -32279
         },
         {
           "key": "skybase",
           "label": "Skybase",
-          "value": -204242
+          "minted": 0,
+          "sent": -1806616
         }
       ],
-      "subproxySubtotalRaw": -13875840,
-      "demandSideBuffer": -34902,
-      "coreCouncilGross": -3378069,
-      "coreCouncilStep1Capital": 2561825.64,
-      "coreCouncilGenesisRepayment": -816243.36,
-      "groveTgePenalty": -1396260,
-      "mscNet": 15859796.55,
+      "mintedTotal": 24767542,
+      "sentTotal": -6841799,
+      "mscNet": 17925743,
       "nonMscIncome": 15881199.53,
       "nonMscExpense": -18931867.9,
       "nonMscNet": -3050668.37,
-      "skyNetRevenue": 12809128.18,
+      "demandSideBuffer": 0,
+      "skyNetRevenue": 14875074.63,
+      "belowTheLine": {
+        "coreCouncil": -2946125,
+        "step1Capital": -2946125,
+        "genesisRepayments": 0,
+        "capitalSeedings": 0,
+        "remitted": 11928949.63
+      },
       "notes": []
+    },
+    {
+      "month": "2026-07",
+      "basis": "accrual",
+      "blocks": [],
+      "primes": [
+        {
+          "key": "spark",
+          "label": "Spark",
+          "minted": 9465419,
+          "sent": -4442924
+        },
+        {
+          "key": "grove",
+          "label": "Grove",
+          "minted": 9685438,
+          "sent": -1808084
+        },
+        {
+          "key": "obex",
+          "label": "Obex",
+          "minted": 2535968,
+          "sent": -916736
+        },
+        {
+          "key": "osero",
+          "label": "Osero",
+          "minted": 497,
+          "sent": -12043
+        },
+        {
+          "key": "keel",
+          "label": "Keel",
+          "minted": 0,
+          "sent": -35328
+        },
+        {
+          "key": "skybase",
+          "label": "Skybase",
+          "minted": 0,
+          "sent": -374489
+        }
+      ],
+      "mintedTotal": 21687322,
+      "sentTotal": -7589604,
+      "mscNet": 14097718,
+      "nonMscIncome": 15638940.23,
+      "nonMscExpense": -19219232.42,
+      "nonMscNet": -3580292.19,
+      "demandSideBuffer": null,
+      "skyNetRevenue": 10517425.81,
+      "belowTheLine": null,
+      "notes": []
+    },
+    {
+      "month": "2026-08",
+      "basis": "accrual",
+      "blocks": [],
+      "primes": [
+        {
+          "key": "spark",
+          "label": "Spark",
+          "minted": 6357912,
+          "sent": -937436
+        },
+        {
+          "key": "grove",
+          "label": "Grove",
+          "minted": 9574714,
+          "sent": -1342064
+        },
+        {
+          "key": "obex",
+          "label": "Obex",
+          "minted": 1631729,
+          "sent": -458340
+        },
+        {
+          "key": "osero",
+          "label": "Osero",
+          "minted": 7006,
+          "sent": -30156
+        },
+        {
+          "key": "keel",
+          "label": "Keel",
+          "minted": 0,
+          "sent": -31776
+        },
+        {
+          "key": "skybase",
+          "label": "Skybase",
+          "minted": 0,
+          "sent": -101204
+        }
+      ],
+      "mintedTotal": 17571361,
+      "sentTotal": -2900976,
+      "mscNet": 14670385,
+      "nonMscIncome": 16063850.25,
+      "nonMscExpense": -14988939.18,
+      "nonMscNet": 1074911.07,
+      "demandSideBuffer": null,
+      "skyNetRevenue": 15745296.07,
+      "belowTheLine": null,
+      "notes": [
+        "⚠ msc_preview: no entry for 2026-08 in config/sky_total.yaml — every prime's mint/send is DERIVED from the monthly reports and cross-checks against nothing. Pin the MSC post's published figures (and any prior-cycle corrections riding the settlement) before treating this month as reconciled."
+      ]
     }
   ]
 }

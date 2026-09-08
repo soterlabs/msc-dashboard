@@ -53,7 +53,8 @@ const NAV: {
     key: "dr",
     label: "Distribution Rewards",
     icon: CoinsIcon,
-    source: "dr_comparison_latest.xlsx",
+    // The Dune workbook this used to name was retired in #22.
+    source: "dr_comparison_hypersync.xlsx",
   },
   {
     key: "ssr",

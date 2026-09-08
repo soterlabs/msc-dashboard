@@ -92,7 +92,7 @@ Sources of truth:
 
 | Dataset | From |
 | --- | --- |
-| `dr.json` | `soterlabs/settle-dr-dune` → `hypersync-results/dr_comparison_hypersync.xlsx` (amounts) + `py/drhs/revenue/rates.py` (reward schedule) |
+| `dr.json` | `soterlabs/settle-dr-dune` **at the commit settlement-cycle pins** → `hypersync-results/dr_comparison_hypersync.xlsx` (amounts) + `py/drhs/revenue/rates.py` (reward schedule) |
 | | `soterlabs/settlement-cycle` → `config/dr_ref_codes.yaml` (ref code → prime) |
 | | `data/dr/l2-addresses.csv` in this repo |
 | `ssr.json` | `soterlabs/settlement-reports` → `reports/<partner>/<month>/` |
@@ -115,6 +115,46 @@ piece now comes from wherever it actually lives: attribution from the config the
 settlement itself reads, rates from the pipeline's own schedule (which is how
 the dashboard picked up the 2026-07-09 cut of XR from 0.5% to 0.2%), and the
 address list from a frozen copy in this repo.
+
+### Why DR follows a pinned commit
+
+`settle-dr-dune` is a submodule of `settlement-cycle`, and a settlement is
+computed from the commit pinned at the time it ran. The refresh reads that
+pin — `git ls-tree HEAD settle-dr-dune` in the cycle checkout — and fetches
+exactly that commit, rather than the pipeline repo's own HEAD.
+
+The pipeline keeps moving between settlements. On 2026-09-07 its HEAD carried a
+ref code (`3006`) that no settlement had attributed yet, so a refresh from HEAD
+failed the attribution guard outright; had it not, the DR tab would have been
+showing amounts the August settlement never paid, next to an SSR tab that read
+the settled ones. Following the pin is what keeps the two agreeing by
+construction rather than by luck of timing.
+
+`SETTLE_DR_DUNE_DIR` overrides this — the checkout it points at is used as-is,
+at whatever revision it happens to be on.
+
+`SETTLEMENT_CYCLE_DIR` therefore decides the DR revision too, when
+`SETTLE_DR_DUNE_DIR` is not also set: the pin is read from whatever branch that
+checkout is on. The refresh prints the commit it resolved, so the log says which
+one was used.
+
+## Sky total spans two methodologies
+
+`sky_total` changed definition mid-series. Closed months are not *converted* to
+the newer basis — each keeps the reading it was published under — though their
+figures do get restated upstream when the methodology behind that reading
+changes (the 2026-08-06 execution-month re-bucketing moved every Jan–Jun
+month's Sky Net Revenue, and the refresh reflected it):
+
+| Months | Basis | The month carries |
+| --- | --- | --- |
+| Jan–Jun 2026 | buffer | the settlement that **executed** in it — so the previous cycle's revenue |
+| Jul 2026 → | accrual | the revenue **earned** in it, paid at the settlement that follows |
+
+`SkyTotalReport.basis` says which reading a month is on, and the view labels
+every column with it. The two do not add up: summing across the boundary either
+counts a cycle twice or skips one, which is why that tab headlines the latest
+month rather than a running total.
 
 ## How the app reads it
 

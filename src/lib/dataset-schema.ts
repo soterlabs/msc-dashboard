@@ -18,7 +18,7 @@
  * Covered by dataset-schema.test.ts — `pnpm test`.
  */
 import type { PrimeDataset, PrimeKind, PrimeSource, PrimeWallet } from "./prime/types";
-import type { SkyTotalDataset } from "./sky-total/types";
+import type { SkyTotalBasis, SkyTotalDataset } from "./sky-total/types";
 import type { SsrDataset, SsrPartner } from "./ssr/types";
 import type { DrDataset } from "./dr/types";
 
@@ -104,6 +104,11 @@ function monthly(problems: Problems, at: string, v: unknown) {
 function stringList(problems: Problems, parent: Record<string, unknown>, key: string, at = "") {
   const path = at ? `${at}.${key}` : key;
   list(problems, parent, key, at).forEach((s, i) => str(problems, `${path}[${i}]`, s));
+}
+
+function numberList(problems: Problems, parent: Record<string, unknown>, key: string, at = "") {
+  const path = at ? `${at}.${key}` : key;
+  list(problems, parent, key, at).forEach((n, i) => num(problems, `${path}[${i}]`, n));
 }
 
 function monthLabels(problems: Problems, v: unknown) {
@@ -319,21 +324,26 @@ export function validateSsr(data: unknown): SsrDataset {
 
 /* ------------------------------------------------------------ Sky total */
 
-/** Nullable-number scalars on each SkyTotalReport (mirror sky-total/types.ts). */
+/** Every month has these, on either basis, and each one feeds a total. */
 const SKY_TOTAL_NUMBERS = [
-  "block",
-  "debtMintedSubtotal",
-  "subproxySubtotalRaw",
-  "demandSideBuffer",
-  "coreCouncilGross",
-  "coreCouncilStep1Capital",
-  "coreCouncilGenesisRepayment",
-  "groveTgePenalty",
+  "mintedTotal",
+  "sentTotal",
   "mscNet",
   "nonMscIncome",
   "nonMscExpense",
   "nonMscNet",
   "skyNetRevenue",
+];
+
+const SKY_TOTAL_BASES: readonly SkyTotalBasis[] = ["buffer", "accrual"];
+
+/** Buffer months only, and each line may legitimately be absent. */
+const BELOW_THE_LINE_NUMBERS = [
+  "coreCouncil",
+  "step1Capital",
+  "genesisRepayments",
+  "capitalSeedings",
+  "remitted",
 ];
 
 export function validateSkyTotal(data: unknown): SkyTotalDataset {
@@ -346,17 +356,34 @@ export function validateSkyTotal(data: unknown): SkyTotalDataset {
   rowsOf(p, data, "reports").forEach((r, i) => {
     const at = `reports[${i}]`;
     str(p, `${at}.month`, r.month);
+    oneOf(p, `${at}.basis`, r.basis, SKY_TOTAL_BASES);
 
-    for (const field of ["debtMinted", "subproxy"] as const) {
-      rowsOf(p, r, field, at).forEach((line, j) => {
-        const lat = `${at}.${field}[${j}]`;
-        str(p, `${lat}.key`, line.key);
-        str(p, `${lat}.label`, line.label);
-        num(p, `${lat}.value`, line.value, true);
-      });
+    rowsOf(p, r, "primes", at).forEach((line, j) => {
+      const lat = `${at}.primes[${j}]`;
+      str(p, `${lat}.key`, line.key);
+      str(p, `${lat}.label`, line.label);
+      // Not nullable: a prime with no activity carries a real 0, so a null here
+      // means a cell went unparsed rather than a prime having sat out.
+      num(p, `${lat}.minted`, line.minted);
+      num(p, `${lat}.sent`, line.sent);
+    });
+
+    // The report reconciles against these, so the refresh cannot emit a null.
+    for (const f of SKY_TOTAL_NUMBERS) num(p, `${at}.${f}`, r[f]);
+    num(p, `${at}.demandSideBuffer`, r.demandSideBuffer, true);
+    numberList(p, r, "blocks", at);
+
+    // Absent on the accrual basis, where the figures are not knowable yet.
+    if (r.belowTheLine !== null) {
+      if (!isObj(r.belowTheLine)) {
+        p.push(`${at}.belowTheLine should be an object or null, got ${show(r.belowTheLine)}`);
+      } else {
+        for (const f of BELOW_THE_LINE_NUMBERS) {
+          num(p, `${at}.belowTheLine.${f}`, r.belowTheLine[f], true);
+        }
+      }
     }
 
-    for (const f of SKY_TOTAL_NUMBERS) num(p, `${at}.${f}`, r[f], true);
     stringList(p, r, "notes", at);
   });
 
