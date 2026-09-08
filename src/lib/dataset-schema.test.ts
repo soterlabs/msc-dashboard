@@ -82,13 +82,17 @@ test("sky-total: an unknown basis is rejected", () => {
 // belowTheLine is absent on the accrual basis, so null is a real value there —
 // but a malformed object must not slip through as if it were.
 test("sky-total: belowTheLine accepts null and rejects a non-object", () => {
+  // Nulling a month that HAS the section — reports[0] is January, which never
+  // had one, so asserting on it would pass without testing anything.
   const ok = fixture("sky-total");
-  ok.reports[0].belowTheLine = null;
+  const i = ok.reports.findIndex((r: { belowTheLine: unknown }) => r.belowTheLine !== null);
+  assert.ok(i >= 0, "fixture has no month with a below-the-line section");
+  ok.reports[i].belowTheLine = null;
   assert.ok(validateSkyTotal(ok));
 
   const bad = fixture("sky-total");
-  bad.reports[0].belowTheLine = "none";
-  rejects(validateSkyTotal, bad, "reports[0].belowTheLine");
+  bad.reports[i].belowTheLine = "none";
+  rejects(validateSkyTotal, bad, `reports[${i}].belowTheLine`);
 });
 
 // Every month reconciles against these, so the refresh can never emit a null.

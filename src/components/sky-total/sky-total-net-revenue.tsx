@@ -443,8 +443,12 @@ function ReconciliationTable({
     { kind: "detail", label: "non-MSC income", value: (r) => r.nonMscIncome },
     { kind: "detail", label: "non-MSC expense", value: (r) => r.nonMscExpense },
     {
+      // "of which", not a third component: the transfer is already inside the
+      // expense line above, and non-MSC net foots as income + expense alone.
+      // Left flush with the components it sits under, the column would stop
+      // adding up on screen the first month this is not zero.
       kind: "detail",
-      label: "Demand-side Buffer transfer",
+      label: "of which: Demand-side Buffer transfer",
       value: (r) => r.demandSideBuffer,
     },
     { kind: "subtotal", label: "non-MSC net", value: (r) => r.nonMscNet },

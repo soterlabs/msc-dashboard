@@ -324,7 +324,6 @@ export function validateSsr(data: unknown): SsrDataset {
 
 /* ------------------------------------------------------------ Sky total */
 
-/** Nullable-number scalars on each SkyTotalReport (mirror sky-total/types.ts). */
 /** Every month has these, on either basis, and each one feeds a total. */
 const SKY_TOTAL_NUMBERS = [
   "mintedTotal",

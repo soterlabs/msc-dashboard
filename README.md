@@ -133,10 +133,18 @@ construction rather than by luck of timing.
 `SETTLE_DR_DUNE_DIR` overrides this — the checkout it points at is used as-is,
 at whatever revision it happens to be on.
 
+`SETTLEMENT_CYCLE_DIR` therefore decides the DR revision too, when
+`SETTLE_DR_DUNE_DIR` is not also set: the pin is read from whatever branch that
+checkout is on. The refresh prints the commit it resolved, so the log says which
+one was used.
+
 ## Sky total spans two methodologies
 
-`sky_total` changed definition mid-series, and the closed months are not
-restated:
+`sky_total` changed definition mid-series. Closed months are not *converted* to
+the newer basis — each keeps the reading it was published under — though their
+figures do get restated upstream when the methodology behind that reading
+changes (the 2026-08-06 execution-month re-bucketing moved every Jan–Jun
+month's Sky Net Revenue, and the refresh reflected it):
 
 | Months | Basis | The month carries |
 | --- | --- | --- |

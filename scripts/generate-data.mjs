@@ -98,11 +98,19 @@ function syncRepo(name, sparsePaths, commit) {
     // A specific commit cannot be `clone --depth 1`d: fetch just that one.
     git("init", "-q", dir);
     git("-C", dir, "remote", "add", "origin", remoteUrl(name));
+    const fetchArgs = ["-C", dir, "fetch", "-q", "--depth", "1"];
     if (sparsePaths) {
       git("-C", dir, "sparse-checkout", "set", ...sparsePaths);
       git("-C", dir, "config", "core.sparseCheckout", "true");
+      // Same deal as the --filter=blob:none clone below: fetch the tree, then
+      // let the checkout pull only the blobs the sparse paths actually need.
+      // Without it this drags down every blob at the commit — 11 MB of
+      // settle-dr-dune for the two files that are read.
+      git("-C", dir, "config", "remote.origin.promisor", "true");
+      git("-C", dir, "config", "remote.origin.partialclonefilter", "blob:none");
+      fetchArgs.push("--filter=blob:none");
     }
-    git("-C", dir, "fetch", "-q", "--depth", "1", "origin", commit);
+    git(...fetchArgs, "origin", commit);
     git("-C", dir, "checkout", "-q", "FETCH_HEAD");
     return dir;
   }
@@ -758,13 +766,49 @@ function skyTotalSections(md) {
   return sections;
 }
 
-/** The `## MSC leg (…)` heading and its rows, whichever basis the month uses. */
+/**
+ * The `## MSC leg (…)` heading and its rows, whichever basis the month uses.
+ *
+ * The two labels are matched exactly rather than defaulting the unknown case to
+ * one of them: `basis` is reader-facing — it captions the cards, the waterfall
+ * and a row of the statement table — so a third methodology arriving under a
+ * heading nobody has read yet must stop the refresh, not ship mislabelled.
+ */
+const MSC_LEG_BASES = [
+  ["buffer basis", "buffer"],
+  ["accrual — next settlement preview", "accrual"],
+];
+
 function mscLeg(sections) {
   for (const [heading, rows] of Object.entries(sections)) {
-    const m = heading.match(/^MSC leg \((.+)\)$/);
-    if (m) return { label: m[1], basis: m[1].startsWith("buffer") ? "buffer" : "accrual", rows };
+    const label = heading.match(/^MSC leg \((.+)\)$/)?.[1];
+    if (!label) continue;
+    const known = MSC_LEG_BASES.find(([text]) => text === label);
+    if (!known) {
+      throw new Error(
+        `unrecognised MSC leg basis "${label}" — known: ` +
+          `${MSC_LEG_BASES.map(([t]) => `"${t}"`).join(", ")}. ` +
+          `A new methodology needs SkyTotalBasis and the view's BASIS_META extending.`,
+      );
+    }
+    return { label, basis: known[1], rows };
   }
   throw new Error("no `## MSC leg (…)` section");
+}
+
+/**
+ * Rows under a per-prime section are prime ids. Anything else there is an
+ * annotation the report added ("— of which: …"), and letting one through would
+ * put a bogus prime in the statement table carrying a silent 0 that reconciles
+ * against nothing — so an unrecognised label stops the refresh instead.
+ */
+function primeKey(raw, section) {
+  const key = plain(raw);
+  if (/of which/i.test(key) || key.startsWith("—")) return null;
+  if (!/^[a-z][a-z0-9_]*$/.test(key)) {
+    throw new Error(`${section}: "${key}" is not a prime id`);
+  }
+  return key;
 }
 
 /**
@@ -784,12 +828,17 @@ function parseBufferMscLeg(rows) {
     const value = money(rawValue);
     if (section === "Debt minted to buffer") {
       if (line.startsWith("subtotal")) mintedTotal = value;
-      else minted.set(line, value ?? 0);
+      else {
+        const key = primeKey(line, section);
+        if (key) minted.set(key, value ?? 0);
+      }
     } else if (section === "Sent to prime subproxy") {
       // "subtotal (raw)" before 2026-08, "subtotal (net of seedings)" after.
       if (line.startsWith("subtotal")) sentTotal = value;
-      // "— of which:" rows annotate the section; they are not primes.
-      else if (!/of which/i.test(line) && !line.startsWith("—")) sent.set(line, value ?? 0);
+      else {
+        const key = primeKey(line, section);
+        if (key) sent.set(key, value ?? 0);
+      }
     } else if (section.startsWith("MSC net")) {
       mscNet = value;
     }
@@ -809,15 +858,17 @@ function parseAccrualMscLeg(rows) {
   let mscNet = null;
 
   for (const [rawPrime, rawMint, rawSend] of rows.slice(1)) {
-    const key = plain(rawPrime);
-    if (!key) continue;
-    if (key === "total") {
+    const label = plain(rawPrime);
+    if (!label) continue;
+    if (label === "total") {
       mintedTotal = money(rawMint);
       sentTotal = money(rawSend);
-    } else if (key.startsWith("MSC net")) {
+    } else if (label.startsWith("MSC net")) {
       // The figure sits in the last column, the mint column being blank.
       mscNet = money(rawSend) ?? money(rawMint);
     } else {
+      const key = primeKey(label, "MSC leg (accrual)");
+      if (!key) continue;
       minted.set(key, money(rawMint) ?? 0);
       sent.set(key, money(rawSend) ?? 0);
     }
@@ -840,8 +891,17 @@ function mergePrimes(minted, sent) {
   }));
 }
 
-/** `## Below the line (…)`, buffer months only. */
-function parseBelowTheLine(rows) {
+/**
+ * `## Below the line (…)`, buffer months only.
+ *
+ * These rows are matched by label like everything else here, so they get the
+ * same treatment: a label that stops matching is a format change and fails the
+ * refresh, and the two identities the section states are checked. Without that
+ * a reworded row would quietly become a dash while "Remitted to Sky reserves"
+ * kept being printed as its subtotal — a column that no longer foots, which is
+ * the one failure this file exists to make impossible.
+ */
+function parseBelowTheLine(rows, skyNetRevenue) {
   if (!rows) return null;
   const out = {
     coreCouncil: null,
@@ -859,6 +919,22 @@ function parseBelowTheLine(rows) {
     else if (field.startsWith("− capital seedings")) out.capitalSeedings = value;
     else if (field.startsWith("remitted to Sky reserves")) out.remitted = value;
   }
+
+  const missing = Object.entries(out).filter(([, v]) => v === null).map(([k]) => k);
+  if (missing.length) {
+    throw new Error(`below-the-line rows not found: ${missing.join(", ")}`);
+  }
+
+  reconcile(
+    "Core Council transfer",
+    round(out.step1Capital + out.genesisRepayments, 2),
+    out.coreCouncil,
+  );
+  reconcile(
+    "remitted to Sky reserves",
+    round(skyNetRevenue + out.coreCouncil + out.capitalSeedings, 2),
+    out.remitted,
+  );
   return out;
 }
 
@@ -930,9 +1006,12 @@ function parseSkyTotalMd(md) {
     basis: leg.basis,
     // Buffer months name the settlement block(s) they were read from; an
     // accrual month previews a settlement that has not executed, so it has none.
-    blocks: [...md.matchAll(/settlement blocks?\s+\*\*(\d+)\*\*(?:,\s*\*\*(\d+)\*\*)*/g)]
-      .flatMap((m) => m.slice(1).filter(Boolean))
-      .map(Number),
+    //
+    // Two stages on purpose: one regex with a repeated capture group keeps only
+    // that group's LAST repetition, so "**a**, **b**, **c**" would silently
+    // yield a and c. Today's months list at most two.
+    blocks: [...md.matchAll(/settlement blocks?\s+((?:\*\*\d+\*\*(?:,\s*)?)+)/g)]
+      .flatMap((m) => [...m[1].matchAll(/\d+/g)].map((d) => Number(d[0]))),
     primes: msc.primes,
     mintedTotal: msc.mintedTotal,
     sentTotal: msc.sentTotal,
@@ -942,7 +1021,7 @@ function parseSkyTotalMd(md) {
     nonMscNet,
     demandSideBuffer,
     skyNetRevenue,
-    belowTheLine: belowKey ? parseBelowTheLine(sections[belowKey]) : null,
+    belowTheLine: belowKey ? parseBelowTheLine(sections[belowKey], skyNetRevenue) : null,
     notes,
   };
 }
