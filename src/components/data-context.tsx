@@ -1,15 +1,18 @@
 "use client";
 
 /**
- * Carries the datasets from the server page down to the interactive views.
+ * Carries a dataset from a route's server component down to its interactive
+ * view.
  *
- * src/app/page.tsx reads data/generated/*.json on the server and renders this
- * provider; the views pull what they need with useDr / useSsr / usePrime
- * instead of importing a data module. That keeps every dataset out of the
- * browser's JS bundle and gives one place to swap in an API read later.
+ * Each route reads only the file it needs (`src/app/<section>/…/page.tsx`) and
+ * wraps its view in the matching provider, so visiting Prime Payments no longer
+ * ships the DR, SSR and Sky Total datasets alongside it — before routing there
+ * was one page and every payload carried all four.
  *
- * A dataset behind a hidden feature flag arrives as `null` — the page does not
- * read it at all, so its numbers stay out of the payload too (src/lib/flags.ts).
+ * One context per dataset rather than one holding all of them: with routes, "no
+ * DR here" is the normal case on three pages out of four, and a shared object
+ * with three nulls in it would say nothing about which page forgot to load
+ * what.
  */
 import * as React from "react";
 
@@ -18,52 +21,32 @@ import type { SkyTotalDataset } from "@/lib/sky-total/types";
 import type { SsrDataset } from "@/lib/ssr/types";
 import type { DrDataset } from "@/lib/dr/types";
 
-export interface Datasets {
-  dr: DrDataset;
-  ssr: SsrDataset;
-  /** null when NEXT_PUBLIC_SHOW_SKY_TOTAL_NET_REVENUE is off. */
-  skyTotal: SkyTotalDataset | null;
-  /** null when NEXT_PUBLIC_SHOW_PRIME_PAYMENTS is off. */
-  prime: PrimeDataset | null;
-}
-
-const DataContext = React.createContext<Datasets | null>(null);
-
-export function DataProvider({
-  value,
-  children,
-}: {
-  value: Datasets;
-  children: React.ReactNode;
-}) {
-  return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
-}
-
-function useDatasets(): Datasets {
-  const value = React.useContext(DataContext);
-  if (!value) {
-    throw new Error("useDatasets must be used inside <DataProvider> (see src/app/page.tsx)");
-  }
-  return value;
-}
-
 /**
- * Unwraps a flagged dataset. Reaching this error means a view rendered while
- * its tab was flagged off — the tab and the dataset are driven by the same
- * flag, so they cannot disagree unless one of them stopped consulting it.
+ * Builds a provider and its hook. The hook throws rather than returning null:
+ * reaching it means a view rendered outside the route that loads its data, and
+ * a named error beats `Cannot read properties of null` three components deep.
  */
-function flagged<T>(value: T | null, envVar: string): T {
-  if (value === null) {
-    throw new Error(
-      `dataset not loaded — this view is hidden by a feature flag; set ${envVar}=true and rebuild.`,
-    );
+function datasetContext<T>(name: string) {
+  const Context = React.createContext<T | null>(null);
+
+  function Provider({ value, children }: { value: T; children: React.ReactNode }) {
+    return <Context.Provider value={value}>{children}</Context.Provider>;
   }
-  return value;
+
+  function use(): T {
+    const value = React.useContext(Context);
+    if (!value) {
+      throw new Error(
+        `use${name}() outside its provider — the ${name} view must be rendered by a route that loads ${name} data.`,
+      );
+    }
+    return value;
+  }
+
+  return [Provider, use] as const;
 }
 
-export const useDr = (): DrDataset => useDatasets().dr;
-export const useSsr = (): SsrDataset => useDatasets().ssr;
-export const useSkyTotal = (): SkyTotalDataset =>
-  flagged(useDatasets().skyTotal, "NEXT_PUBLIC_SHOW_SKY_TOTAL_NET_REVENUE");
-export const usePrime = (): PrimeDataset =>
-  flagged(useDatasets().prime, "NEXT_PUBLIC_SHOW_PRIME_PAYMENTS");
+export const [DrProvider, useDr] = datasetContext<DrDataset>("Dr");
+export const [SsrProvider, useSsr] = datasetContext<SsrDataset>("Ssr");
+export const [SkyTotalProvider, useSkyTotal] = datasetContext<SkyTotalDataset>("SkyTotal");
+export const [PrimeProvider, usePrime] = datasetContext<PrimeDataset>("Prime");

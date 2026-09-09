@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import {
   CaretRightIcon,
   DownloadSimpleIcon,
@@ -27,6 +28,7 @@ import {
 import { downloadCsv, toCsv } from "@/lib/csv";
 import { formatUSD, formatUSD2, monthLong } from "@/lib/format";
 import type { RefCodeRow } from "@/lib/dr/types";
+import { paths } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
 import { useDr } from "../data-context";
@@ -56,11 +58,14 @@ import {
 type SortKey = "total" | "refCode" | "latest";
 
 export function RefCodesView({
+  openRefCode,
   selectedGroups,
   onSetGroups,
   onSelectAll,
   onClearGroups,
 }: {
+  /** The code whose history is open, from the URL. */
+  openRefCode: string | null;
   /** Groups currently shown. Empty shows none. */
   selectedGroups: Set<string>;
   onSetGroups: (groups: string[]) => void;
@@ -79,7 +84,7 @@ export function RefCodesView({
   const [token, setToken] = React.useState("All");
   const [onlyNotes, setOnlyNotes] = React.useState(false);
   const [sort, setSort] = React.useState<SortKey>("total");
-  const [openRef, setOpenRef] = React.useState<string | null>(null);
+  const router = useRouter();
 
   const tokens = React.useMemo(() => ["All", ...allTokens(dr)], [dr]);
 
@@ -213,12 +218,18 @@ export function RefCodesView({
         </TableHeader>
         <TableBody>
           {rows.map((r) => {
-            const isOpen = openRef === r.refCode;
+            const isOpen = openRefCode === r.refCode;
             return (
               <React.Fragment key={r.refCode}>
                 <TableRow
                   onClick={() =>
-                    setOpenRef((o) => (o === r.refCode ? null : r.refCode))
+                    /* Opening a code gives it its own address, so "look at
+                       128" is a link rather than a description of which row to
+                       click. Closing returns to the bare ledger. */
+                    router.push(
+                      isOpen ? paths.dr("refcodes") : paths.drRefCode(r.refCode),
+                      { scroll: false },
+                    )
                   }
                   aria-expanded={isOpen}
                   className="cursor-pointer"

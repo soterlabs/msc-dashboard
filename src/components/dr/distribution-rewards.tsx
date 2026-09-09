@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 
 import {
   Tabs,
@@ -13,6 +14,7 @@ import {
   visibleSummaryGroups,
 } from "@/lib/dr/domain";
 import { dayLong, monthRangeLabel } from "@/lib/format";
+import { paths, type DrTab } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
 import { useDr } from "../data-context";
@@ -21,10 +23,8 @@ import { RatesView } from "./rates-view";
 import { RefCodesView } from "./ref-codes-view";
 import { SummaryView } from "./summary-view";
 
-type Tab = "summary" | "refcodes" | "rates";
-
 interface TabDef {
-  key: Tab;
+  key: DrTab;
   label: string;
   title: string;
   accent: string;
@@ -35,9 +35,22 @@ interface TabDef {
   meta?: Meta[];
 }
 
-export function DistributionRewards() {
+/**
+ * `tab` and `openRefCode` come from the URL, not from state: they are what the
+ * address bar says, so a shared link opens where the sender was. The group
+ * filter below stays in state — it is how the ledger is being read rather than
+ * which page this is, and it survives a tab change because navigating between
+ * these tabs re-renders this same component with new props.
+ */
+export function DistributionRewards({
+  tab,
+  openRefCode,
+}: {
+  tab: DrTab;
+  openRefCode: string | null;
+}) {
   const dr = useDr();
-  const [tab, setTab] = React.useState<Tab>("summary");
+  const router = useRouter();
   /** Every group present in the ledger (used for select-all / all-selected). */
   const allGroups = React.useMemo(
     () => Array.from(new Set(visibleRefCodeRows(dr).map((r) => r.group))),
@@ -99,7 +112,7 @@ export function DistributionRewards() {
 
   const viewGroupInLedger = (group: string) => {
     setSelectedGroups(new Set([group]));
-    setTab("refcodes");
+    router.push(paths.dr("refcodes"));
   };
 
   const setGroups = (groups: string[]) => setSelectedGroups(new Set(groups));
@@ -117,7 +130,7 @@ export function DistributionRewards() {
 
       {/* The panels below are rendered outside TabsContent because each view
           owns its own data reads and layout; the bar is here for the switch. */}
-      <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)}>
+      <Tabs value={tab} onValueChange={(v) => router.push(paths.dr(v as DrTab))}>
         {/* The vocabulary the rest of the console's controls use: a pill on a
             tint of --input, solid --primary when it is the one that is on.
 
@@ -154,6 +167,7 @@ export function DistributionRewards() {
       {tab === "summary" && <SummaryView onViewGroup={viewGroupInLedger} />}
       {tab === "refcodes" && (
         <RefCodesView
+          openRefCode={openRefCode}
           selectedGroups={selectedGroups}
           onSetGroups={setGroups}
           onSelectAll={selectAllGroups}

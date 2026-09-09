@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import {
   Bar as RBar,
   BarChart,
@@ -19,6 +20,7 @@ import {
 } from "@/components/ui/chart";
 import type { SkyTotalBasis, SkyTotalReport } from "@/lib/sky-total/types";
 import { formatCompactTokens, formatTokens, monthShort } from "@/lib/format";
+import { paths } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
 import { useSkyTotal } from "../data-context";
@@ -59,7 +61,8 @@ function signedCompact(v: number) {
   return v < 0 ? `−${s}` : `+${s}`;
 }
 
-export function SkyTotalNetRevenue() {
+/** `month` comes from the URL; without one, the latest. */
+export function SkyTotalNetRevenue({ month }: { month: string | null }) {
   const { months, monthLabels, reports } = useSkyTotal();
 
   const ordered = React.useMemo(
@@ -113,7 +116,7 @@ export function SkyTotalNetRevenue() {
         />
       </div>
 
-      <Waterfall reports={ordered} />
+      <Waterfall reports={ordered} month={month} />
 
       <ReconciliationTable reports={ordered} monthLabels={monthLabels} />
 
@@ -246,8 +249,14 @@ function WrappedTick({
   );
 }
 
-function Waterfall({ reports }: { reports: SkyTotalReport[] }) {
-  const [month, setMonth] = React.useState(reports[reports.length - 1].month);
+function Waterfall({
+  reports,
+  month,
+}: {
+  reports: SkyTotalReport[];
+  month: string | null;
+}) {
+  const router = useRouter();
   const report =
     reports.find((r) => r.month === month) ?? reports[reports.length - 1];
   const bars = layoutBars(stepsFor(report));
@@ -259,8 +268,8 @@ function Waterfall({ reports }: { reports: SkyTotalReport[] }) {
       description={`Every figure in USDS · ${BASIS_META[report.basis].label} basis — ${BASIS_META[report.basis].blurb.toLowerCase()}`}
       action={
         <MonthPicker
-          value={month}
-          onChange={setMonth}
+          value={report.month}
+          onChange={(m) => router.push(paths.skyTotal(m))}
           months={reports.map((r) => r.month)}
           render={monthShort}
           label="Month"
