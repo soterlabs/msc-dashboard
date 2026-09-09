@@ -1,6 +1,8 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { Icon } from "@phosphor-icons/react";
 import {
   BankIcon,
@@ -30,98 +32,53 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { FLAGS, type Flags } from "@/lib/flags";
-import { DataProvider, type Datasets } from "./data-context";
-import { DistributionRewards } from "./dr/distribution-rewards";
-import { PrimePayments } from "./prime/prime-payments";
-import { SkyTotalNetRevenue } from "./sky-total/sky-total-net-revenue";
+import {
+  SECTIONS,
+  VISIBLE_SECTIONS,
+  paths,
+  sectionFromPath,
+  type Section,
+} from "@/lib/routes";
 import { SoterLabsMark } from "./soter-labs";
 import { ThemeToggle } from "./theme-toggle";
-import { SupplySideRevenues } from "./ssr/supply-side-revenues";
 
-type Section = "dr" | "ssr" | "sky-total" | "prime";
-
-const NAV: {
-  key: Section;
-  label: string;
-  icon: Icon;
-  source: string;
-  /** Tabs without a flag are always shown; see src/lib/flags.ts. */
-  flag?: keyof Flags;
-}[] = [
-  {
-    key: "dr",
-    label: "Distribution Rewards",
-    icon: CoinsIcon,
-    // The Dune workbook this used to name was retired in #22.
-    source: "dr_comparison_hypersync.xlsx",
-  },
-  {
-    key: "ssr",
-    label: "Supply Side Revenues",
-    icon: TrendUpIcon,
-    source: "soter · settlement-reports",
-  },
-  {
-    key: "sky-total",
-    label: "Sky Total Net Revenue",
-    icon: BankIcon,
-    source: "soter · settlement-reports · sky_total",
-    flag: "skyTotalNetRevenue",
-  },
-  {
-    key: "prime",
-    label: "Prime Payments",
-    icon: ScrollIcon,
-    source: "prime/payments.csv",
-    flag: "primePayments",
-  },
-];
+/** Icons live here, not in the route map: nothing on the server needs them. */
+const ICONS: Record<Section, Icon> = {
+  dr: CoinsIcon,
+  ssr: TrendUpIcon,
+  "sky-total": BankIcon,
+  prime: ScrollIcon,
+};
 
 /**
- * The tabs this build shows. Flags are build-time constants, so this is settled
- * once at module load rather than re-derived per render.
+ * The chrome around every route: sidebar, header, and the frame the section's
+ * own page renders into.
+ *
+ * It holds no section state any more — the URL is the state, so this reads the
+ * pathname and the nav is a list of links. That is what makes a view
+ * shareable: /supply-side-revenues/grove/2026-08 opens on Grove's August
+ * settlement instead of on whatever the last click left behind.
  */
-const VISIBLE_NAV = NAV.filter((n) => !n.flag || FLAGS[n.flag]);
-
-export function AppShell({ dr, ssr, skyTotal, prime }: Datasets) {
-  const [section, setSection] = React.useState<Section>("dr");
-  // The datasets are inert once loaded, so the context value only needs to be
-  // stable across re-renders caused by switching sections.
-  const datasets = React.useMemo(
-    () => ({ dr, ssr, skyTotal, prime }),
-    [dr, ssr, skyTotal, prime],
-  );
+export function AppShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const current = sectionFromPath(pathname);
 
   return (
-    <DataProvider value={datasets}>
-      <SidebarProvider>
-        <AppSidebar section={section} onSelect={setSection} />
-        <SidebarInset>
-          <SiteHeader section={section} />
-          {/* `section` only ever holds a visible tab: it starts at "dr", which
-              carries no flag, and every setter comes from VISIBLE_NAV. */}
-          <div className="@container/main flex flex-1 flex-col gap-6 p-4 md:gap-8 md:p-6 lg:p-8">
-            {section === "dr" && <DistributionRewards />}
-            {section === "ssr" && <SupplySideRevenues />}
-            {section === "sky-total" && <SkyTotalNetRevenue />}
-            {section === "prime" && <PrimePayments />}
-          </div>
-        </SidebarInset>
-      </SidebarProvider>
-    </DataProvider>
+    <SidebarProvider>
+      <AppSidebar section={current?.key} />
+      <SidebarInset>
+        <SiteHeader section={current?.key} />
+        <div className="@container/main flex flex-1 flex-col gap-6 p-4 md:gap-8 md:p-6 lg:p-8">
+          {children}
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
 
 /* ------------------------------------------------------------- sidebar */
 
-function AppSidebar({
-  section,
-  onSelect,
-}: {
-  section: Section;
-  onSelect: (s: Section) => void;
-}) {
+function AppSidebar({ section }: { section?: Section }) {
   return (
     <Sidebar variant="inset" collapsible="icon">
       <SidebarHeader>
@@ -152,22 +109,29 @@ function AppSidebar({
         <SidebarGroup>
           <SidebarGroupLabel>Reports</SidebarGroupLabel>
           <SidebarMenu>
-            {VISIBLE_NAV.map((n) => (
-              <SidebarMenuItem key={n.key}>
-                <SidebarMenuButton
-                  isActive={section === n.key}
-                  /* isActive only styles the item (data-active). This is the
-                     one thing that tells a screen reader which report is
-                     open — without it all four items announce identically. */
-                  aria-current={section === n.key ? "page" : undefined}
-                  onClick={() => onSelect(n.key)}
-                  tooltip={n.label}
-                >
-                  <n.icon weight={section === n.key ? "fill" : "regular"} />
-                  <span>{n.label}</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
+            {VISIBLE_SECTIONS.map((s) => {
+              const Icon = ICONS[s.key];
+              const active = section === s.key;
+              return (
+                <SidebarMenuItem key={s.key}>
+                  <SidebarMenuButton
+                    isActive={active}
+                    /* isActive only styles the item (data-active). This is the
+                       one thing that tells a screen reader which report is
+                       open — without it all four items announce identically. */
+                    aria-current={active ? "page" : undefined}
+                    tooltip={s.label}
+                    /* A real <a>: middle-click, cmd-click and "copy link
+                       address" all have to work on a nav whose whole point is
+                       that its destinations are shareable. */
+                    render={<Link href={`/${s.slug}`} />}
+                  >
+                    <Icon weight={active ? "fill" : "regular"} />
+                    <span>{s.label}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            })}
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
@@ -177,8 +141,8 @@ function AppSidebar({
 
 /* --------------------------------------------------------------- header */
 
-function SiteHeader({ section }: { section: Section }) {
-  const current = NAV.find((n) => n.key === section)!;
+function SiteHeader({ section }: { section?: Section }) {
+  const current = SECTIONS.find((s) => s.key === section);
   return (
     <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 rounded-t-2xl border-b bg-background/80 backdrop-blur-xl">
       <div className="flex w-full items-center gap-2 px-4 lg:px-6">
@@ -189,10 +153,12 @@ function SiteHeader({ section }: { section: Section }) {
         />
         <Breadcrumb>
           <BreadcrumbList>
-            <BreadcrumbItem className="hidden sm:block">Reports</BreadcrumbItem>
+            <BreadcrumbItem className="hidden sm:block">
+              <Link href={paths.home}>Reports</Link>
+            </BreadcrumbItem>
             <BreadcrumbSeparator className="hidden sm:block" />
             <BreadcrumbItem>
-              <BreadcrumbPage>{current.label}</BreadcrumbPage>
+              <BreadcrumbPage>{current?.label ?? "Not found"}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
@@ -201,7 +167,7 @@ function SiteHeader({ section }: { section: Section }) {
           <div className="hidden items-center gap-2 text-xs lg:flex">
             <span className="text-muted-foreground">Source</span>
             <span className="rounded-md bg-muted px-2 py-1 text-muted-foreground">
-              {current.source}
+              {current?.source ?? "—"}
             </span>
           </div>
           <ThemeToggle />

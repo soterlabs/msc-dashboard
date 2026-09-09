@@ -156,15 +156,52 @@ every column with it. The two do not add up: summing across the boundary either
 counts a cycle twice or skips one, which is why that tab headlines the latest
 month rather than a running total.
 
+## URLs
+
+Every view has one, so it can be sent to someone:
+
+| | |
+| --- | --- |
+| `/distribution-rewards` | summary; `/refcodes` and `/rates` are the other tabs |
+| `/distribution-rewards/refcodes/128` | that code's token history, open |
+| `/supply-side-revenues` | all primes |
+| `/supply-side-revenues/grove` | Grove, its latest settlement |
+| `/supply-side-revenues/grove/2026-08` | Grove, August |
+| `/sky-total/2026-08` | that month's waterfall; bare `/sky-total` is the latest |
+| `/prime-payments` | the payments ledger |
+
+`src/lib/routes.ts` is the one place these are spelled: the route segments, the
+sidebar links and the views' drill-downs all read it, because a slug typed
+twice is a 404 nobody notices until they share the link.
+
+**Navigation only.** The URL carries which report, prime, month and ref code —
+not the filters, sort or search, which are how a page is being read rather than
+which page it is, and would otherwise rewrite history on every keystroke.
+
+**A month is optional and pinned.** `/supply-side-revenues/grove` keeps working
+as months are added; `/supply-side-revenues/grove/2026-08` keeps showing August.
+A month a prime never settled 404s — Osero has no January, and a link claiming
+otherwise should say so rather than quietly showing different figures.
+
+**A hidden report has no address.** With its flag off, the route 404s and its
+loader is never called, so the tab being unreachable and its numbers being
+absent stay the same fact.
+
 ## How the app reads it
 
-`src/app/page.tsx` is a server component: it reads `data/generated/` through
-`src/lib/load.ts` and passes the datasets to the client views as props, which
-reach them via `useDr()` / `useSsr()` / `useSkyTotal()` / `usePrime()`. The loaders use `node:fs`,
-so importing one from a client component fails the build on purpose — the
-datasets are not meant to be part of the browser bundle.
+Each route's `page.tsx` is a server component: it reads the one file it needs
+from `data/generated/` through `src/lib/load.ts` and hands it to its view
+through the matching provider, which the view reads with `useDr()` / `useSsr()`
+/ `useSkyTotal()` / `usePrime()`. The loaders use `node:fs`, so importing one
+from a client component fails the build on purpose — the datasets are not meant
+to be part of the browser bundle.
 
-The page is statically prerendered, so the numbers are fixed at build time.
+Because a route loads only its own dataset, opening Prime Payments no longer
+ships the DR, SSR and Sky Total numbers with it; before the routes there was one
+page and every payload carried all four.
+
+The pages are statically prerendered — including one per prime, month and ref
+code, from `generateStaticParams` — so the numbers are fixed at build time.
 
 `src/lib/dataset-schema.ts` validates each dataset against its TypeScript type
 on load and **fails the build** naming the offending field. That matters because

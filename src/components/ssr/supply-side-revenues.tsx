@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { ArrowLeftIcon, ArrowRightIcon } from "@phosphor-icons/react";
 import {
   Bar as RBar,
@@ -48,6 +49,7 @@ import {
   monthLong,
   monthRangeLabel,
 } from "@/lib/format";
+import { paths } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
 import { useSsr } from "../data-context";
@@ -71,8 +73,19 @@ import {
   moneyTooltip,
 } from "../kit";
 
-export function SupplySideRevenues() {
-  const [openPartner, setOpenPartner] = React.useState<SsrPartner | null>(null);
+/**
+ * `partner` and `month` come from the URL — /supply-side-revenues/grove/2026-08
+ * is Grove's August settlement, and that link means the same thing to whoever
+ * it is sent to. A bare partner path shows its latest month.
+ */
+export function SupplySideRevenues({
+  partner: openPartner,
+  month,
+}: {
+  partner: SsrPartner | null;
+  month: string | null;
+}) {
+  const router = useRouter();
   const ssr = useSsr();
   const kpis = ssrKpis(ssr);
   const partners = orderedPartners(ssr);
@@ -110,10 +123,14 @@ export function SupplySideRevenues() {
       {openPartner ? (
         <PartnerBreakdown
           partner={openPartner}
-          onBack={() => setOpenPartner(null)}
+          month={month}
+          onBack={() => router.push(paths.ssr())}
         />
       ) : (
-        <Summary partners={partners} onOpenPartner={setOpenPartner} />
+        <Summary
+          partners={partners}
+          onOpenPartner={(p) => router.push(paths.ssrPartner(p))}
+        />
       )}
     </div>
   );
@@ -339,14 +356,22 @@ function Summary({
 
 function PartnerBreakdown({
   partner,
+  month: monthFromUrl,
   onBack,
 }: {
   partner: SsrPartner;
+  month: string | null;
   onBack: () => void;
 }) {
+  const router = useRouter();
   const ssr = useSsr();
-  const { months, monthLabels } = ssr;
-  const [month, setMonth] = React.useState<string>(months[months.length - 1]);
+  const { monthLabels } = ssr;
+  // Only the months this prime settled — Osero has two, and a picker offering
+  // the other six would produce links that 404.
+  const months = reportsFor(ssr, partner).map((r) => r.month);
+  // A bare /supply-side-revenues/grove means "the latest", so it keeps working
+  // as months are added; a pinned month stays pinned.
+  const month = monthFromUrl ?? months[months.length - 1];
   const [onlyEarning, setOnlyEarning] = React.useState(true);
 
   const report = reportFor(ssr, partner, month);
@@ -380,7 +405,7 @@ function PartnerBreakdown({
         <span className="text-sm text-muted-foreground">Month</span>
         <MonthPicker
           value={month}
-          onChange={setMonth}
+          onChange={(m) => router.push(paths.ssrPartner(partner, m))}
           months={months}
           render={(m) => monthLabels[m] ?? m}
           label="Settlement month"
@@ -456,7 +481,8 @@ function PartnerBreakdown({
               radius={[0, 0, 4, 4]}
               maxBarSize={64}
               onClick={(d: { payload?: { key?: string } }) =>
-                d?.payload?.key && setMonth(d.payload.key)
+                d?.payload?.key &&
+                router.push(paths.ssrPartner(partner, d.payload.key))
               }
               cursor="pointer"
             />
@@ -467,7 +493,8 @@ function PartnerBreakdown({
               radius={[4, 4, 0, 0]}
               maxBarSize={64}
               onClick={(d: { payload?: { key?: string } }) =>
-                d?.payload?.key && setMonth(d.payload.key)
+                d?.payload?.key &&
+                router.push(paths.ssrPartner(partner, d.payload.key))
               }
               cursor="pointer"
             />

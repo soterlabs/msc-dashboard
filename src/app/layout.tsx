@@ -3,6 +3,7 @@ import { Geist_Mono, Public_Sans } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { AppShell } from "@/components/app-shell";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 
@@ -61,7 +62,11 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className="min-h-full font-sans">
-        <TooltipProvider>{children}</TooltipProvider>
+        {/* The chrome wraps every route, so moving between reports swaps only
+            the page below it — the sidebar and header never remount. */}
+        <TooltipProvider>
+          <AppShell>{children}</AppShell>
+        </TooltipProvider>
       </body>
     </html>
   );
