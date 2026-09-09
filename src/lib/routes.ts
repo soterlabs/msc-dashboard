@@ -13,7 +13,7 @@
  */
 import { FLAGS, type Flags } from "./flags";
 
-export type Section = "dr" | "ssr" | "sky-total" | "prime";
+export type Section = "dr" | "ssr" | "sky-total" | "buybacks" | "prime";
 
 export interface SectionRoute {
   key: Section;
@@ -46,6 +46,13 @@ export const SECTIONS: SectionRoute[] = [
     label: "Sky Total Net Revenue",
     source: "soter · settlement-reports · sky_total",
     flag: "skyTotalNetRevenue",
+  },
+  {
+    key: "buybacks",
+    slug: "buybacks",
+    label: "Buybacks & Burn",
+    source: "soter · settlement-reports · tmf",
+    flag: "buybacks",
   },
   {
     key: "prime",
@@ -85,6 +92,12 @@ export const paths = {
 
   skyTotal: (month?: string) =>
     month ? `/${slugOf("sky-total")}/${month}` : `/${slugOf("sky-total")}`,
+
+  /** The ledger at a granularity; monthly is the default and stays bare. */
+  buybacks: (granularity?: string) =>
+    granularity && granularity !== "monthly"
+      ? `/${slugOf("buybacks")}/${granularity}`
+      : `/${slugOf("buybacks")}`,
 
   prime: () => `/${slugOf("prime")}`,
 };

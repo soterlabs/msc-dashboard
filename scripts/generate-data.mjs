@@ -1,5 +1,5 @@
 /**
- * Regenerates data/generated/{dr,ssr,sky-total,prime}.json from the sources of truth:
+ * Regenerates data/generated/{dr,ssr,sky-total,tmf,prime}.json from the sources of truth:
  *
  *   - github.com/soterlabs/settle-dr-dune      → hypersync-results/dr_comparison_hypersync.xlsx
  *                                              + py/drhs/revenue/rates.py                → dr.json
@@ -7,6 +7,7 @@
  *   - data/dr/l2-addresses.csv (local, see its README)                                   → dr.json
  *   - github.com/soterlabs/settlement-reports  → reports/<partner>/<month>/              → ssr.json
  *   - github.com/soterlabs/settlement-reports  → reports/sky_total/<month>/summary.md    → sky-total.json
+ *   - github.com/soterlabs/settlement-reports  → reports/tmf/data/sbe_history.json       → tmf.json
  *   - data/prime/payments.csv (local, see its README)                                    → prime.json
  *
  * settlement-reports is settlement-cycle's publish target — reports/<partner>/
@@ -34,6 +35,7 @@
  *   pnpm refresh                    all datasets (needs network + repo access)
  *   pnpm refresh -- --only=dr,ssr   just those, cloning only the repos they need
  *   pnpm refresh:sky-total          sky-total.json only, from settlement-reports
+ *   pnpm refresh:tmf                tmf.json only, from settlement-reports
  *   pnpm refresh:prime              prime.json only, from the local CSVs (offline)
  */
 import { execFileSync } from "node:child_process";
@@ -1054,6 +1056,53 @@ function generateSkyTotal(reportsDir) {
   return { months, monthLabels, reports };
 }
 
+// ------------------------------------------------- Smart Burn Engine (tmf.json)
+//
+// The one dataset the refresh does not compute: upstream publishes
+// reports/tmf/data/sbe_history.json already aggregated, and this copies it
+// through. So the check that matters is not arithmetic but shape, and upstream
+// hands us the means to make it: `schema_version` is bumped on any field
+// rename or removal, so a major bump stops the refresh instead of writing a
+// file whose fields the views no longer recognise.
+
+const TMF_JSON = ["reports", "tmf", "data", "sbe_history.json"];
+
+/** The major version of the document this refresh knows how to read. */
+const TMF_SCHEMA_MAJOR = 1;
+
+function generateTmf(reportsDir) {
+  const rel = path.join(...TMF_JSON);
+  const file = path.join(reportsDir, rel);
+  if (!fs.existsSync(file)) {
+    throw new Error(`settlement-reports has no ${rel}`);
+  }
+
+  let doc;
+  try {
+    doc = JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch (e) {
+    throw new Error(`${rel} is not valid JSON (${e.message})`);
+  }
+
+  const version = str(doc.schema_version);
+  const major = Number(version.split(".")[0]);
+  if (!/^\d+\.\d+\.\d+$/.test(version) || !Number.isInteger(major)) {
+    throw new Error(`${rel}: schema_version is not semver — got ${json(doc.schema_version)}`);
+  }
+  if (major !== TMF_SCHEMA_MAJOR) {
+    throw new Error(
+      `${rel}: schema_version ${version} — this refresh reads major ${TMF_SCHEMA_MAJOR}. ` +
+        `A major bump means a field was renamed or removed: reconcile src/lib/tmf/types.ts ` +
+        `and the Buybacks view against the dataset's README before raising TMF_SCHEMA_MAJOR.`,
+    );
+  }
+
+  // Copied through as published — quantized to cents upstream, and re-rounding
+  // here would only invent a second opinion about figures we do not own. The
+  // load-time validator is what checks every field arrived typed as expected.
+  return doc;
+}
+
 // ------------------------------------------------------- Prime payments (prime.json)
 
 function generatePrime() {
@@ -1080,7 +1129,7 @@ function writeJson(name, value) {
   console.log(`[generate-data] wrote ${path.relative(ROOT, out(name))}`);
 }
 
-const DATASETS = ["dr", "ssr", "sky-total", "prime"];
+const DATASETS = ["dr", "ssr", "sky-total", "tmf", "prime"];
 
 /**
  * `--only=dr,ssr` restricts the run to those datasets; no flag builds all four.
@@ -1125,7 +1174,8 @@ function main() {
   const drDir = wants("dr")
     ? syncRepo("settle-dr-dune", [DR_WORKBOOK.join("/"), DR_RATES_PY.join("/")], drCommit)
     : null;
-  const reportsDir = wants("ssr") || wants("sky-total") ? syncRepo("settlement-reports") : null;
+  const reportsDir =
+    wants("ssr") || wants("sky-total") || wants("tmf") ? syncRepo("settlement-reports") : null;
 
   // Build every selected dataset before writing any, so a parse failure never
   // leaves one regenerated file paired with a stale one.
@@ -1133,6 +1183,7 @@ function main() {
   if (wants("dr")) built.push(["dr", generateDr(drDir, cycleDir)]);
   if (wants("ssr")) built.push(["ssr", generateSsr(reportsDir)]);
   if (wants("sky-total")) built.push(["sky-total", generateSkyTotal(reportsDir)]);
+  if (wants("tmf")) built.push(["tmf", generateTmf(reportsDir)]);
   if (wants("prime")) built.push(["prime", generatePrime()]);
   for (const [name, value] of built) writeJson(name, value);
 }

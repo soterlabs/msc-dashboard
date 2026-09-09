@@ -43,6 +43,7 @@ days, silently, because both environments kept serving their last good build.
 | `pnpm refresh` | rebuild all datasets from source. Needs network and access to the private repos. |
 | `pnpm refresh -- --only=dr,ssr` | rebuild just those, cloning only the repos they need. |
 | `pnpm refresh:sky-total` | rebuild `sky-total.json` from `settlement-reports` only. Needs network. |
+| `pnpm refresh:tmf` | rebuild `tmf.json` (Smart Burn Engine) from `settlement-reports` only. Needs network. |
 | `pnpm refresh:prime` | rebuild `prime.json` from the local CSVs only. Offline. |
 | `pnpm fetch-prime-payments` | pull new payments from Dune into `data/prime/payments.csv`. Needs `DUNE_API_KEY`. |
 | `pnpm test` | validator tests (`node:test`, nothing to install) |
@@ -59,18 +60,19 @@ parsed before any file is replaced.
 
 ## Which tabs are shown
 
-Two tabs sit behind feature flags and are **hidden unless switched on**
+Three tabs sit behind feature flags and are **hidden unless switched on**
 (`src/lib/flags.ts`, see `.env.example`):
 
 | Variable | Tab |
 | --- | --- |
 | `NEXT_PUBLIC_SHOW_SKY_TOTAL_NET_REVENUE` | Sky Total Net Revenue |
+| `NEXT_PUBLIC_SHOW_BUYBACKS` | Buybacks & Burn |
 | `NEXT_PUBLIC_SHOW_PRIME_PAYMENTS` | Prime Payments |
 
 Set either to `true` (or `1`) to show its tab; anything else, unset included,
-hides it. Hidden means hidden, not merely unlinked: `src/app/page.tsx` skips
-`loadSkyTotal()` / `loadPrime()` for a flagged-off tab, so those numbers are not
-in the page payload either.
+hides it. Hidden means hidden, not merely unlinked: a flagged-off tab's route
+404s and its loader is never called, so those numbers reach neither the page nor
+the payload.
 
 The values are inlined at **build** time (they must be, to reach a client
 component), so flipping one on Railway takes a redeploy, not a restart.
@@ -85,7 +87,7 @@ data/
     payments.csv            one row per on-chain payment to a prime
     wallets.csv             address → name + category
   generated/              machine-written, committed — see its README
-    dr.json  ssr.json  sky-total.json  prime.json
+    dr.json  ssr.json  sky-total.json  tmf.json  prime.json
 ```
 
 Sources of truth:
@@ -97,6 +99,7 @@ Sources of truth:
 | | `data/dr/l2-addresses.csv` in this repo |
 | `ssr.json` | `soterlabs/settlement-reports` → `reports/<partner>/<month>/` |
 | `sky-total.json` | `soterlabs/settlement-reports` → `reports/sky_total/<month>/summary.md` |
+| `tmf.json` | `soterlabs/settlement-reports` → `reports/tmf/data/sbe_history.json` |
 | `prime.json` | `data/prime/*.csv` in this repo, fed by a Dune query |
 
 `settlement-reports` is `settlement-cycle`'s publish target: `reports/<partner>/
@@ -168,6 +171,7 @@ Every view has one, so it can be sent to someone:
 | `/supply-side-revenues/grove` | Grove, its latest settlement |
 | `/supply-side-revenues/grove/2026-08` | Grove, August |
 | `/sky-total/2026-08` | that month's waterfall; bare `/sky-total` is the latest |
+| `/buybacks` | buybacks and burn, monthly; `/quarterly` and `/annual` regroup it |
 | `/prime-payments` | the payments ledger |
 
 `src/lib/routes.ts` is the one place these are spelled: the route segments, the

@@ -20,6 +20,7 @@
 import type { PrimeDataset, PrimeKind, PrimeSource, PrimeWallet } from "./prime/types";
 import type { SkyTotalBasis, SkyTotalDataset } from "./sky-total/types";
 import type { SsrDataset, SsrPartner } from "./ssr/types";
+import type { TmfDataset, TmfGranularity } from "./tmf/types";
 import type { DrDataset } from "./dr/types";
 
 type Problems = string[];
@@ -389,6 +390,138 @@ export function validateSkyTotal(data: unknown): SkyTotalDataset {
 
   finish("sky-total", "sky-total/types", p);
   return data as unknown as SkyTotalDataset;
+}
+
+/* ------------------------------------------------------------------ TMF */
+
+/**
+ * The major version this build's types and views were written against.
+ *
+ * The refresh checks this too, and on purpose: that one stops a bad document
+ * being committed, this one stops a committed document being served if the
+ * check ever gets bypassed — `pnpm refresh` writing the file and `pnpm build`
+ * reading it are separate acts, hours or days apart.
+ */
+const TMF_SCHEMA_MAJOR = 1;
+
+/**
+ * Mirrors TMF_GRANULARITIES in tmf/types.ts. Duplicated rather than imported
+ * for the same reason PRIME_KINDS below is: this module is loaded by the test
+ * runner's type-stripping, which resolves type-only imports away but cannot
+ * follow a runtime one to an extensionless .ts path.
+ */
+const TMF_GRANULARITIES: readonly TmfGranularity[] = ["monthly", "quarterly", "annual"];
+
+/** Numbers every period row carries, whatever the granularity. */
+const TMF_PERIOD_NUMBERS = [
+  "kicks",
+  "usds_buyback",
+  "usds_to_stakers",
+  "usds_total",
+  "sky_bought",
+  "sky_burn_protocol",
+  "sky_burn_other",
+  "burn_events",
+];
+
+function tmfPeriod(p: Problems, at: string, v: unknown) {
+  if (!isObj(v)) {
+    p.push(`${at} should be an object, got ${show(v)}`);
+    return;
+  }
+  str(p, `${at}.period`, v.period);
+  for (const f of TMF_PERIOD_NUMBERS) num(p, `${at}.${f}`, v[f]);
+  // Null where there was nothing to price or to timestamp — a period can hold
+  // burns and no kicks. Zero would be a figure; these are the absence of one.
+  num(p, `${at}.sky_avg_price`, v.sky_avg_price, true);
+  str(p, `${at}.first_ts`, v.first_ts, true);
+  str(p, `${at}.last_ts`, v.last_ts, true);
+}
+
+function stringMap(p: Problems, at: string, v: unknown) {
+  if (!isObj(v)) {
+    p.push(`${at} should be an object of string → string, got ${show(v)}`);
+    return;
+  }
+  for (const [k, value] of Object.entries(v)) str(p, `${at}.${k}`, value);
+}
+
+export function validateTmf(data: unknown): TmfDataset {
+  if (!isObj(data)) throw new Error("data/generated/tmf.json should be an object");
+  const p: Problems = [];
+
+  str(p, "schema_version", data.schema_version);
+  str(p, "generated_at", data.generated_at);
+
+  if (isObj(data.source)) {
+    const source = data.source;
+    str(p, "source.chain", source.chain);
+    num(p, "source.from_block", source.from_block);
+    num(p, "source.to_block", source.to_block);
+    str(p, "source.to_ts", source.to_ts);
+    stringMap(p, "source.contracts", source.contracts);
+    stringMap(p, "source.events", source.events);
+  } else {
+    p.push(`source should be an object, got ${show(data.source)}`);
+  }
+
+  stringMap(p, "definitions", data.definitions);
+  stringList(p, data, "notes");
+
+  tmfPeriod(p, "totals", data.totals);
+
+  if (isObj(data.latest_kick)) {
+    const k = data.latest_kick;
+    str(p, "latest_kick.ts", k.ts);
+    str(p, "latest_kick.tx", k.tx);
+    for (const f of [
+      "block",
+      "usds_buyback",
+      "usds_to_stakers",
+      "usds_total",
+      "sky_bought",
+      "splitter_burn",
+      "splitter_hop",
+    ]) {
+      num(p, `latest_kick.${f}`, k[f]);
+    }
+  } else {
+    p.push(`latest_kick should be an object, got ${show(data.latest_kick)}`);
+  }
+
+  if (isObj(data.periods)) {
+    for (const g of TMF_GRANULARITIES) {
+      list(p, data.periods, g, "periods").forEach((row, i) =>
+        tmfPeriod(p, `periods.${g}[${i}]`, row),
+      );
+    }
+  } else {
+    p.push(`periods should be an object, got ${show(data.periods)}`);
+  }
+
+  rowsOf(p, data, "parameter_changes").forEach((c, i) => {
+    const at = `parameter_changes[${i}]`;
+    num(p, `${at}.block`, c.block);
+    for (const f of ["ts", "tx", "contract", "address", "what", "value"]) {
+      str(p, `${at}.${f}`, c[f]);
+    }
+  });
+
+  finish("tmf", "tmf/types", p);
+
+  // After the field check, not before: a document whose shape already failed
+  // would report the version as its only problem and hide the rest.
+  const version = String(data.schema_version ?? "");
+  const major = Number(version.split(".")[0]);
+  if (major !== TMF_SCHEMA_MAJOR) {
+    throw new Error(
+      `data/generated/tmf.json has schema_version ${version || "(missing)"}, ` +
+        `and this build reads major ${TMF_SCHEMA_MAJOR}. Rerun \`pnpm refresh -- --only=tmf\` ` +
+        `and reconcile src/lib/tmf/types.ts with the dataset's README.`,
+    );
+  }
+
+  return data as unknown as TmfDataset;
 }
 
 /* ---------------------------------------------------------------- Prime */

@@ -20,6 +20,8 @@ export interface Flags {
   primePayments: boolean;
   /** "Sky Total Net Revenue" — consolidated Sky net revenue (MSC + non-MSC). */
   skyTotalNetRevenue: boolean;
+  /** "Buybacks & Burn" — the Smart Burn Engine's buyback, dividend and burn legs. */
+  buybacks: boolean;
 }
 
 /** Anything other than "true"/"1" (unset included) leaves the tab hidden. */
@@ -31,4 +33,5 @@ function on(value: string | undefined): boolean {
 export const FLAGS: Flags = {
   primePayments: on(process.env.NEXT_PUBLIC_SHOW_PRIME_PAYMENTS),
   skyTotalNetRevenue: on(process.env.NEXT_PUBLIC_SHOW_SKY_TOTAL_NET_REVENUE),
+  buybacks: on(process.env.NEXT_PUBLIC_SHOW_BUYBACKS),
 };
