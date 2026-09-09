@@ -41,11 +41,13 @@ import {
   Dash,
   FilterGroup,
   FilterItem,
+  LegendItem,
   PageHeader,
   Panel,
   Prose,
   SeriesFilterItem,
   StatCard,
+  Swatch,
   TableBody,
   TableHeader,
   TableRow,
@@ -68,6 +70,14 @@ const LABELS = {
   sky_avg_price: "Avg price (USDS/SKY)",
   sky_burn_protocol: "SKY burned (protocol)",
 };
+
+/**
+ * The sink third parties send SKY to. Not published in the dataset — it names
+ * it as "0x…dEaD" in prose — so it is taken from the `sink` column of
+ * `sky_burns.csv` beside it, where every non-protocol burn lands. The protocol
+ * burn used the zero address instead, via `SKY.burn()`.
+ */
+const DEAD_ADDRESS = "0x000000000000000000000000000000000000dEaD";
 
 const GRANULARITY_LABEL: Record<TmfGranularity, string> = {
   monthly: "Monthly",
@@ -138,12 +148,17 @@ export function Buybacks({ granularity }: { granularity: TmfGranularity }) {
              not a protocol act and never a headline, but hiding it entirely
              would leave the on-chain burn address unexplained. */
           note={
-            totals.sky_burn_other > 0
-              ? /* Exact, not whole units: this figure is single digits, and
-                   rounding 4.82 to "5" would overstate a rounding error as a
-                   burn. The headline SKY figures are whole units as specified. */
-                `Plus ${totals.sky_burn_other.toFixed(2)} SKY sent to 0x…dEaD by third parties`
-              : "SKY sent to a burn sink by the Pause Proxy"
+            totals.sky_burn_other > 0 ? (
+              <span>
+                {/* Exact, not whole units: this figure is single digits, and
+                    rounding 4.82 to "5" would overstate a rounding error as a
+                    burn. The headline SKY figures are whole units as specified. */}
+                Plus {totals.sky_burn_other.toFixed(2)} SKY sent to{" "}
+                <BurnSinkLink chain={source.chain} /> by third parties
+              </span>
+            ) : (
+              "SKY sent to a burn sink by the Pause Proxy"
+            )
           }
         />
       </div>
@@ -187,6 +202,19 @@ export function Buybacks({ granularity }: { granularity: TmfGranularity }) {
           </div>
         }
       >
+        {/* The stack is two series of the same unit, so nothing on the bar says
+            which half is which. The hover card repeats these swatches against
+            the figures. */}
+        <div className="mb-4 flex flex-wrap gap-4">
+          <LegendItem color="var(--chart-4)">{LABELS.usds_buyback}</LegendItem>
+          <LegendItem color="var(--chart-2)">{LABELS.usds_to_stakers}</LegendItem>
+          {showBurn && (
+            <LegendItem color="var(--destructive)">
+              {LABELS.sky_burn_protocol}
+            </LegendItem>
+          )}
+        </div>
+
         <div className="scroll-thin -mx-1 overflow-x-auto px-1">
           <ChartContainer
             config={chartConfig}
@@ -221,7 +249,10 @@ export function Buybacks({ granularity }: { granularity: TmfGranularity }) {
                   tickFormatter={(v: number) => formatCompactTokens(v)}
                 />
               )}
-              <ChartTooltip cursor={false} content={<PeriodTooltip />} />
+              <ChartTooltip
+                cursor={false}
+                content={<PeriodTooltip showBurn={showBurn} />}
+              />
               <RBar
                 yAxisId="usds"
                 dataKey="usds_buyback"
@@ -281,38 +312,89 @@ export function Buybacks({ granularity }: { granularity: TmfGranularity }) {
   );
 }
 
-/** Every figure behind a bar, since the stack only shows two of them. */
+/**
+ * The burn sink, linked. Shown abbreviated because the full 40 characters would
+ * swamp the sentence, with the whole address on the link and in its title so it
+ * can be read and copied without leaving the page.
+ */
+function BurnSinkLink({ chain }: { chain: string }) {
+  const url = explorerUrl(chain, DEAD_ADDRESS);
+  if (!url) return <span className="font-mono text-xs">0x…dEaD</span>;
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noreferrer"
+      title={DEAD_ADDRESS}
+      className="font-mono text-xs underline decoration-dotted underline-offset-2 hover:text-foreground"
+    >
+      0x…dEaD
+    </a>
+  );
+}
+
+/**
+ * Every figure behind a bar, since the stack only shows two of them — and the
+ * legend, because this card is where a reader looks when they want to know
+ * which colour is which. A row carries a swatch only if that series is drawn:
+ * the derived figures (total, kicks, price) have no colour on the chart, and
+ * giving them one would invent a series that is not there.
+ */
 function PeriodTooltip({
   active,
   payload,
+  showBurn,
 }: {
   active?: boolean;
   payload?: { payload?: TmfPeriod }[];
+  showBurn?: boolean;
 }) {
   const row = active ? payload?.[0]?.payload : undefined;
   if (!row) return null;
-  const lines: [string, string][] = [
-    [LABELS.usds_buyback, formatTokens(row.usds_buyback)],
-    [LABELS.usds_to_stakers, formatTokens(row.usds_to_stakers)],
-    [LABELS.usds_total, formatTokens(row.usds_total)],
-    ["Kicks", formatTokens(row.kicks)],
-    [LABELS.sky_bought, formatTokens(row.sky_bought)],
-    [LABELS.sky_avg_price, formatPrice6(row.sky_avg_price)],
+
+  const lines: { label: string; value: string; color?: string }[] = [
+    {
+      label: LABELS.usds_buyback,
+      value: formatTokens(row.usds_buyback),
+      color: "var(--chart-4)",
+    },
+    {
+      label: LABELS.usds_to_stakers,
+      value: formatTokens(row.usds_to_stakers),
+      color: "var(--chart-2)",
+    },
+    { label: LABELS.usds_total, value: formatTokens(row.usds_total) },
+    { label: "Kicks", value: formatTokens(row.kicks) },
+    { label: LABELS.sky_bought, value: formatTokens(row.sky_bought) },
+    { label: LABELS.sky_avg_price, value: formatPrice6(row.sky_avg_price) },
   ];
   if (row.sky_burn_protocol > 0) {
-    lines.push([LABELS.sky_burn_protocol, formatTokens(row.sky_burn_protocol)]);
+    lines.push({
+      label: LABELS.sky_burn_protocol,
+      value: formatTokens(row.sky_burn_protocol),
+      color: showBurn ? "var(--destructive)" : undefined,
+    });
   }
+
   return (
     <div className="rounded-lg border bg-popover px-3 py-2 text-xs shadow-lg">
       <p className="mb-1.5 font-medium">{row.period}</p>
       <dl className="grid gap-1">
-        {lines.map(([label, value]) => (
+        {lines.map(({ label, value, color }) => (
           <div key={label} className="flex items-center justify-between gap-4">
-            <dt className="text-muted-foreground">{label}</dt>
+            <dt className="flex items-center gap-1.5 text-muted-foreground">
+              {/* Aligns the labels that have no swatch with those that do, so
+                  the figures stay in one column. */}
+              {color ? <Swatch color={color} /> : <span className="size-2.5" />}
+              {label}
+            </dt>
             <dd className="font-medium tabular-nums">{value}</dd>
           </div>
         ))}
       </dl>
+      <p className="mt-2 border-t pt-1.5 text-[11px] text-muted-foreground">
+        USDS, except SKY figures
+      </p>
     </div>
   );
 }
