@@ -19,6 +19,7 @@ import * as React from "react";
 import type { PrimeDataset } from "@/lib/prime/types";
 import type { SkyTotalDataset } from "@/lib/sky-total/types";
 import type { SsrDataset } from "@/lib/ssr/types";
+import type { TmfDataset } from "@/lib/tmf/types";
 import type { DrDataset } from "@/lib/dr/types";
 
 /**
@@ -49,4 +50,5 @@ function datasetContext<T>(name: string) {
 export const [DrProvider, useDr] = datasetContext<DrDataset>("Dr");
 export const [SsrProvider, useSsr] = datasetContext<SsrDataset>("Ssr");
 export const [SkyTotalProvider, useSkyTotal] = datasetContext<SkyTotalDataset>("SkyTotal");
+export const [TmfProvider, useTmf] = datasetContext<TmfDataset>("Tmf");
 export const [PrimeProvider, usePrime] = datasetContext<PrimeDataset>("Prime");

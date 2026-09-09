@@ -7,6 +7,7 @@ import type { Icon } from "@phosphor-icons/react";
 import {
   BankIcon,
   CoinsIcon,
+  FireIcon,
   ScrollIcon,
   TrendUpIcon,
 } from "@phosphor-icons/react";
@@ -47,6 +48,7 @@ const ICONS: Record<Section, Icon> = {
   dr: CoinsIcon,
   ssr: TrendUpIcon,
   "sky-total": BankIcon,
+  buybacks: FireIcon,
   prime: ScrollIcon,
 };
 

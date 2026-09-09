@@ -145,6 +145,33 @@ export function dayLong(ymd: string): string {
   return name ? `${Number(d)} ${name} ${y}` : ymd;
 }
 
+/**
+ * A SKY price, six decimals: "0.062997". SKY trades in cents of a cent, so the
+ * usual two would round every month in the series to the same figure.
+ */
+export function formatPrice6(value: number | null | undefined): string {
+  if (value == null) return "—";
+  return value.toFixed(6);
+}
+
+/**
+ * An ISO-8601 instant as "9 Sep 2026 11:56 UTC".
+ *
+ * Always UTC, and labelled: these are on-chain times, and the same kick shown
+ * in the reader's local zone would not match the block explorer they check it
+ * against.
+ */
+export function formatUtc(iso: string | null | undefined, withTime = true): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const date = `${d.getUTCDate()} ${MONTH_NAMES[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+  if (!withTime) return date;
+  const hh = String(d.getUTCHours()).padStart(2, "0");
+  const mm = String(d.getUTCMinutes()).padStart(2, "0");
+  return `${date} ${hh}:${mm} UTC`;
+}
+
 /** Shorten an EVM address: 0x1234…cdef. */
 export function shortAddress(addr: string): string {
   if (addr.length <= 12) return addr;

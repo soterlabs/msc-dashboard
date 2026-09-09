@@ -10,6 +10,7 @@
     "dev": "next dev",
     "refresh": "node scripts/generate-data.mjs",
     "refresh:sky-total": "node scripts/generate-data.mjs --only=sky-total",
+    "refresh:tmf": "node scripts/generate-data.mjs --only=tmf",
     "refresh:prime": "node scripts/generate-data.mjs --only=prime",
     "fetch-prime-payments": "node scripts/fetch-prime-payments.mjs",
     "fetch-core-spells": "node scripts/fetch-core-spells.mjs",

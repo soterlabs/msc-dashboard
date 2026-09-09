@@ -19,7 +19,13 @@ import * as path from "node:path";
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { validateDr, validatePrime, validateSkyTotal, validateSsr } from "./dataset-schema.ts";
+import {
+  validateDr,
+  validatePrime,
+  validateSkyTotal,
+  validateSsr,
+  validateTmf,
+} from "./dataset-schema.ts";
 
 const DIR = path.join(import.meta.dirname, "..", "..", "data", "generated");
 
@@ -50,7 +56,106 @@ test("the committed datasets match their types", () => {
   assert.ok(validateDr(read("dr")).summaryGroups.length > 0);
   assert.ok(validateSsr(read("ssr")).reports.length > 0);
   assert.ok(validateSkyTotal(read("sky-total")).reports.length > 0);
+  assert.ok(validateTmf(read("tmf")).periods.monthly.length > 0);
   assert.ok(validatePrime(read("prime")).payments.length > 0);
+});
+
+/* -------------------------------------------------------------------- TMF */
+
+// This dataset is copied through from upstream rather than computed here, so
+// the validator is the only thing standing between a field upstream renamed and
+// a view rendering undefined. The version check is the other half of that.
+
+test("tmf: a stringified figure is rejected", () => {
+  const tmf = fixture("tmf");
+  tmf.periods.monthly[0].usds_buyback = "367500";
+  rejects(validateTmf, tmf, "periods.monthly[0].usds_buyback");
+});
+
+test("tmf: a burn-only period is accepted with its nulls", () => {
+  const tmf = fixture("tmf");
+  // No such month exists in the data yet — a burn with no kick that period —
+  // but the dataset's README says it can, so the shape has to be allowed:
+  // null price and null timestamps, with the burn itself still a number.
+  tmf.periods.monthly.push({
+    period: "2026-10",
+    kicks: 0,
+    usds_buyback: 0,
+    usds_to_stakers: 0,
+    usds_total: 0,
+    sky_bought: 0,
+    sky_avg_price: null,
+    sky_burn_protocol: 1234.5,
+    sky_burn_other: 0,
+    burn_events: 1,
+    first_ts: null,
+    last_ts: null,
+  });
+  const out = validateTmf(tmf);
+  const added = out.periods.monthly.at(-1)!;
+  assert.equal(added.sky_avg_price, null);
+  assert.equal(added.first_ts, null);
+  assert.equal(added.sky_burn_protocol, 1234.5);
+});
+
+test("tmf: a null where the type is not nullable is rejected", () => {
+  for (const field of ["kicks", "usds_total", "sky_burn_protocol"] as const) {
+    const tmf = fixture("tmf");
+    tmf.periods.monthly[0][field] = null;
+    rejects(validateTmf, tmf, `periods.monthly[0].${field}`);
+  }
+});
+
+test("tmf: a period row that is not an object is rejected", () => {
+  const tmf = fixture("tmf");
+  tmf.periods.quarterly[0] = "2025-Q1";
+  rejects(validateTmf, tmf, "periods.quarterly[0]");
+});
+
+test("tmf: a missing granularity is rejected", () => {
+  const tmf = fixture("tmf");
+  delete tmf.periods.annual;
+  rejects(validateTmf, tmf, "periods.annual");
+});
+
+test("tmf: the totals row is typed like any other period", () => {
+  const tmf = fixture("tmf");
+  tmf.totals.sky_bought = "1978233157.44";
+  rejects(validateTmf, tmf, "totals.sky_bought");
+});
+
+test("tmf: latest_kick and parameter_changes are checked", () => {
+  const kick = fixture("tmf");
+  kick.latest_kick.splitter_hop = "3748";
+  rejects(validateTmf, kick, "latest_kick.splitter_hop");
+
+  const change = fixture("tmf");
+  // 1.1.0 added `address` — the legacy and live Flapper share a chainlog role,
+  // so losing it would make two contracts indistinguishable on screen.
+  delete change.parameter_changes[0].address;
+  rejects(validateTmf, change, "parameter_changes[0].address");
+});
+
+// Upstream bumps the major on any field rename or removal, so this is the one
+// signal that the shape changed under us. It must fail the build, not warn.
+test("tmf: a major schema version this build does not read is rejected", () => {
+  const tmf = fixture("tmf");
+  tmf.schema_version = "2.0.0";
+  assert.throws(
+    () => validateTmf(tmf),
+    (e: unknown) => {
+      assert.ok(e instanceof Error);
+      assert.match(e.message, /schema_version 2\.0\.0/);
+      assert.match(e.message, /major 1/);
+      return true;
+    },
+  );
+});
+
+test("tmf: a minor schema bump is accepted", () => {
+  const tmf = fixture("tmf");
+  tmf.schema_version = "1.9.3";
+  assert.ok(validateTmf(tmf));
 });
 
 test("sky-total: a stringified number is rejected", () => {
