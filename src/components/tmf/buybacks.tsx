@@ -69,6 +69,14 @@ const LABELS = {
   sky_burn_protocol: "SKY burned (protocol)",
 };
 
+/**
+ * The sink third parties send SKY to. Not published in the dataset — it names
+ * it as "0x…dEaD" in prose — so it is taken from the `sink` column of
+ * `sky_burns.csv` beside it, where every non-protocol burn lands. The protocol
+ * burn used the zero address instead, via `SKY.burn()`.
+ */
+const DEAD_ADDRESS = "0x000000000000000000000000000000000000dEaD";
+
 const GRANULARITY_LABEL: Record<TmfGranularity, string> = {
   monthly: "Monthly",
   quarterly: "Quarterly",
@@ -138,12 +146,17 @@ export function Buybacks({ granularity }: { granularity: TmfGranularity }) {
              not a protocol act and never a headline, but hiding it entirely
              would leave the on-chain burn address unexplained. */
           note={
-            totals.sky_burn_other > 0
-              ? /* Exact, not whole units: this figure is single digits, and
-                   rounding 4.82 to "5" would overstate a rounding error as a
-                   burn. The headline SKY figures are whole units as specified. */
-                `Plus ${totals.sky_burn_other.toFixed(2)} SKY sent to 0x…dEaD by third parties`
-              : "SKY sent to a burn sink by the Pause Proxy"
+            totals.sky_burn_other > 0 ? (
+              <span>
+                {/* Exact, not whole units: this figure is single digits, and
+                    rounding 4.82 to "5" would overstate a rounding error as a
+                    burn. The headline SKY figures are whole units as specified. */}
+                Plus {totals.sky_burn_other.toFixed(2)} SKY sent to{" "}
+                <BurnSinkLink chain={source.chain} /> by third parties
+              </span>
+            ) : (
+              "SKY sent to a burn sink by the Pause Proxy"
+            )
           }
         />
       </div>
@@ -278,6 +291,27 @@ export function Buybacks({ granularity }: { granularity: TmfGranularity }) {
         schema {tmf.schema_version} · generated {formatUtc(tmf.generated_at)}
       </p>
     </div>
+  );
+}
+
+/**
+ * The burn sink, linked. Shown abbreviated because the full 40 characters would
+ * swamp the sentence, with the whole address on the link and in its title so it
+ * can be read and copied without leaving the page.
+ */
+function BurnSinkLink({ chain }: { chain: string }) {
+  const url = explorerUrl(chain, DEAD_ADDRESS);
+  if (!url) return <span className="font-mono text-xs">0x…dEaD</span>;
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noreferrer"
+      title={DEAD_ADDRESS}
+      className="font-mono text-xs underline decoration-dotted underline-offset-2 hover:text-foreground"
+    >
+      0x…dEaD
+    </a>
   );
 }
 
