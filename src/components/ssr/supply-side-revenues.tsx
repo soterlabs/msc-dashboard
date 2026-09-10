@@ -74,7 +74,7 @@ import {
 } from "../kit";
 
 /**
- * `partner` and `month` come from the URL — /supply-side-revenues/grove/2026-08
+ * `partner` and `month` come from the URL — /settlement-revenues/grove/2026-08
  * is Grove's August settlement, and that link means the same thing to whoever
  * it is sent to. A bare partner path shows its latest month.
  */
@@ -109,7 +109,7 @@ export function SupplySideRevenues({
         />
       ) : (
         <PageHeader
-          title="Supply side revenues"
+          title="Settlement revenues"
           description="Settlement reports"
           /* "primes" is the ranked bar below and "sky rev" is the table's own
              aggregate row; only these two are not already on the page */
@@ -369,7 +369,7 @@ function PartnerBreakdown({
   // Only the months this prime settled — Osero has two, and a picker offering
   // the other six would produce links that 404.
   const months = reportsFor(ssr, partner).map((r) => r.month);
-  // A bare /supply-side-revenues/grove means "the latest", so it keeps working
+  // A bare /settlement-revenues/grove means "the latest", so it keeps working
   // as months are added; a pinned month stays pinned.
   const month = monthFromUrl ?? months[months.length - 1];
   const [onlyEarning, setOnlyEarning] = React.useState(true);

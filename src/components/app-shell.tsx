@@ -58,7 +58,7 @@ const ICONS: Record<Section, Icon> = {
  *
  * It holds no section state any more — the URL is the state, so this reads the
  * pathname and the nav is a list of links. That is what makes a view
- * shareable: /supply-side-revenues/grove/2026-08 opens on Grove's August
+ * shareable: /settlement-revenues/grove/2026-08 opens on Grove's August
  * settlement instead of on whatever the last click left behind.
  */
 export function AppShell({ children }: { children: React.ReactNode }) {

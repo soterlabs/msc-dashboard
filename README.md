@@ -167,9 +167,9 @@ Every view has one, so it can be sent to someone:
 | --- | --- |
 | `/distribution-rewards` | summary; `/refcodes` and `/rates` are the other tabs |
 | `/distribution-rewards/refcodes/128` | that code's token history, open |
-| `/supply-side-revenues` | all primes |
-| `/supply-side-revenues/grove` | Grove, its latest settlement |
-| `/supply-side-revenues/grove/2026-08` | Grove, August |
+| `/settlement-revenues` | all primes |
+| `/settlement-revenues/grove` | Grove, its latest settlement |
+| `/settlement-revenues/grove/2026-08` | Grove, August |
 | `/sky-total/2026-08` | that month's waterfall; bare `/sky-total` is the latest |
 | `/buybacks` | buybacks and burn, monthly; `/quarterly` and `/annual` regroup it |
 | `/prime-payments` | the payments ledger |
@@ -182,8 +182,9 @@ twice is a 404 nobody notices until they share the link.
 not the filters, sort or search, which are how a page is being read rather than
 which page it is, and would otherwise rewrite history on every keystroke.
 
-**A month is optional and pinned.** `/supply-side-revenues/grove` keeps working
-as months are added; `/supply-side-revenues/grove/2026-08` keeps showing August.
+**A month is optional and pinned.** `/settlement-revenues/grove` keeps working
+as months are added; `/settlement-revenues/grove/2026-08` keeps showing August.
+The former `/supply-side-revenues/…` paths redirect here (`next.config.ts`).
 A month a prime never settled 404s — Osero has no January, and a link claiming
 otherwise should say so rather than quietly showing different figures.
 

@@ -1,5 +1,9 @@
 /**
- * Domain metadata + derived selectors for the Supply Side Revenues view.
+ * Domain metadata + derived selectors for the Settlement Revenues view.
+ *
+ * The dataset, its types and this module keep the `ssr` name: renaming the
+ * domain would churn the generated file and the refresh that writes it, for a
+ * label change.
  *
  * Every selector takes the dataset as its first argument rather than importing
  * it: the data is loaded on the server (src/lib/load.ts) and passed in, so this
