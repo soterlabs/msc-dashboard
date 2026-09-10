@@ -31,6 +31,19 @@ const DIR = path.join(import.meta.dirname, "..", "..", "data", "generated");
 
 const read = (name: string) => JSON.parse(fs.readFileSync(path.join(DIR, `${name}.json`), "utf8"));
 
+/** The shape these venue assertions need, without importing the whole type. */
+interface SsrReportish {
+  partner: string;
+  month: string;
+  venues: {
+    id: string;
+    actualRev: number;
+    revenue: number;
+    sdRevenue: number;
+    sdShare: number;
+  }[];
+}
+
 /** Deep clone so each case starts from pristine committed data. */
 const fixture = (name: string) => structuredClone(read(name));
 
@@ -58,6 +71,41 @@ test("the committed datasets match their types", () => {
   assert.ok(validateSkyTotal(read("sky-total")).reports.length > 0);
   assert.ok(validateTmf(read("tmf")).periods.monthly.length > 0);
   assert.ok(validatePrime(read("prime")).payments.length > 0);
+});
+
+/* ------------------------------------------------------- SSR venue rows */
+
+// The per-venue table was read by position until a column appeared in the
+// middle of it and shifted every field after `value_eom` — for one report, in
+// data that shipped. The refresh checks these on parse; asserting them on the
+// committed file too means a shifted dataset fails here as well, which is the
+// gate that runs when nobody is refreshing.
+
+test("ssr: every venue's sd_share is a share", () => {
+  const ssr = read("ssr");
+  const bad = ssr.reports.flatMap((r: SsrReportish) =>
+    r.venues
+      .filter((v) => v.sdShare < 0 || v.sdShare > 1)
+      .map((v) => `${r.partner}/${r.month} ${v.id}: ${v.sdShare}`),
+  );
+  assert.deepEqual(bad, [], `sd_share outside 0–1:\n${bad.join("\n")}`);
+});
+
+test("ssr: sd_revenue is actual_rev × sd_share", () => {
+  const ssr = read("ssr");
+  const bad = ssr.reports.flatMap((r: SsrReportish) =>
+    r.venues
+      .filter((v) => {
+        // sd_share is published to 4 dp, so the product carries its rounding.
+        const tolerance = Math.max(0.02, Math.abs(v.actualRev) * 1e-4);
+        return Math.abs(v.actualRev * v.sdShare - v.sdRevenue) > tolerance;
+      })
+      .map(
+        (v) =>
+          `${r.partner}/${r.month} ${v.id}: ${v.actualRev} × ${v.sdShare} ≠ ${v.sdRevenue}`,
+      ),
+  );
+  assert.deepEqual(bad, [], `sd_revenue does not reconcile:\n${bad.join("\n")}`);
 });
 
 /* -------------------------------------------------------------------- TMF */

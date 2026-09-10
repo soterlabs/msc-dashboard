@@ -516,7 +516,7 @@ function PartnerBreakdown({
         <Panel
           title="Per-venue breakdown"
           description={`${monthLong(month)} · ${shownVenues.length} venues · negative inflow is an outflow`}
-          hint="Revenue is the prime's share of what the venue earned, after the Sky-direct carve-out — a venue whose yield goes wholly to Sky shows nothing here and appears in the Sky Direct section below. The filter hides exactly those."
+          hint="Revenue is what the prime keeps: what the venue earned less the Sky-direct carve-out, plus external rewards (Merkl drops, yield mints) that are booked wholly to the prime. So it can be nothing on a venue earning millions for Sky, or more than the venue's own yield. Hover a figure for the split."
           action={
             <FilterToggle
               pressed={onlyEarning}
@@ -604,17 +604,30 @@ function PartnerBreakdown({
 }
 
 /**
- * The exact figure, and where the rest of it went.
+ * The exact figure, and how it was arrived at.
  *
- * `revenue` is what the prime keeps: the venue's `actual_rev` less the
- * Sky-direct portion. For a venue at 100% sd_share that is zero against
- * millions earned — true, and misleading without saying so, since the column
- * would otherwise read as "this venue makes nothing".
+ * The settlement computes it as `(actual_rev − sd_revenue) + external_revenue`
+ * (settlement-cycle, prime_agent_revenue.py). Both adjustments are worth
+ * naming, because each breaks the reading a bare figure invites: the carve-out
+ * leaves a venue earning millions for Sky showing nothing, and external
+ * rewards — booked wholly to the prime and not a column of this table — leave
+ * a venue showing more than its own yield.
  */
 function venueRevenueTitle(v: SsrVenue): string {
   const exact = formatUSD2(v.revenue);
-  if (v.sdRevenue === 0) return exact;
-  return `${exact} to the prime · ${formatUSD2(v.sdRevenue)} to Sky Direct (${formatRatePercent(v.sdShare, 0)} of ${formatUSD2(v.actualRev)})`;
+  const external = v.revenue - (v.actualRev - v.sdRevenue);
+  const parts: string[] = [];
+  if (v.sdRevenue !== 0) {
+    parts.push(
+      `${formatUSD2(v.sdRevenue)} of the venue's ${formatUSD2(v.actualRev)} went to Sky Direct (${formatRatePercent(v.sdShare, 0)})`,
+    );
+  }
+  // Not derivable from the table's own columns, so it is stated as a residual
+  // rather than presented as one of them.
+  if (Math.abs(external) > 0.02) {
+    parts.push(`includes ${formatUSD2(external)} of external rewards`);
+  }
+  return parts.length ? `${exact} — ${parts.join("; ")}` : exact;
 }
 
 /* ------------------------------------------------------------- sections */
