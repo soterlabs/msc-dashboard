@@ -63,6 +63,7 @@ const SSR_EXCLUDED_PARTNERS = new Set(["skybase"]);
 const SSR_NON_PARTNER_DIRS = new Set([
   "non_msc", // Sky protocol P&L outside the prime-agent (MSC) perimeter
   "sky_total", // consolidated Sky net revenue: the primes plus non-MSC
+  "tmf", // Smart Burn Engine history — a data/ folder, not a settlement report
 ]);
 /** Known partners — a new one needs SSR_PARTNER_META (label/color) added by hand. */
 const SSR_KNOWN_PARTNERS = new Set(["grove", "keel", "obex", "osero", "spark"]);
@@ -494,6 +495,23 @@ const SKY_KEYS = {
 };
 const HEADLINE_FIELDS = [...new Set([...Object.values(PRIME_KEYS), ...Object.values(SKY_KEYS)])];
 
+/**
+ * Per-venue table columns → SsrVenue fields, with how each is read.
+ *
+ * `sd_share` is the only percentage; everything else is money. A column the
+ * report adds beside these is ignored, which is the point — see the read below.
+ */
+const VENUE_COLUMNS = [
+  ["value_som", "valueSom", (v) => money(v) ?? 0],
+  ["value_eom", "valueEom", (v) => money(v) ?? 0],
+  ["period_inflow", "periodInflow", (v) => money(v) ?? 0],
+  ["actual_rev", "actualRev", (v) => money(v) ?? 0],
+  ["revenue", "revenue", (v) => money(v) ?? 0],
+  ["sd_revenue", "sdRevenue", (v) => money(v) ?? 0],
+  ["sd_share", "sdShare", (v) => pct(v)],
+  ["spread_reimb", "spreadReimb", (v) => money(v) ?? 0],
+];
+
 function parseSummaryMd(md) {
   const periodDays = Number(md.match(/\((\d+) days\)/)?.[1] ?? 0);
 
@@ -519,25 +537,34 @@ function parseSummaryMd(md) {
         if (code === "Total") continue;
         refCodes.push({ refCode: code, dr: money(r[1]), notes: r[2] ?? "" });
       }
-    } else if (t.header[0] === "Venue" && t.header.length === 4) {
-      // "Off-protocol holdings" / "Position-only venues" — excluded from revenue.
+    } else if (t.header[0] === "Venue" && !t.header.includes("revenue")) {
+      // "Off-protocol holdings" / "Position-only venues" — positions carried at
+      // value with no revenue columns at all.
       for (const r of t.rows) {
         excludedVenues.push({ id: r[0], label: r[1], valueSom: money(r[2]) ?? 0, valueEom: money(r[3]) ?? 0 });
       }
     } else if (t.header[0] === "Venue") {
+      // BY NAME, not position. The per-venue table gained a `tw_avg_value`
+      // column in the 2026-08 reports, and reading by index silently shifted
+      // every field after it: the dashboard showed the time-weighted average
+      // NAV as "inflow" and actual_rev as the prime's revenue, while sd_share
+      // held a dollar amount divided by 100. Nothing failed, because the
+      // shifted fields were not on screen. A column added upstream is now
+      // ignored; one removed fails the refresh naming it.
+      const at = Object.fromEntries(t.header.map((h, i) => [h, i]));
+      const missing = VENUE_COLUMNS.map(([column]) => column).filter((c) => !(c in at));
+      if (missing.length) {
+        throw new Error(
+          `per-venue table is missing column${missing.length > 1 ? "s" : ""} ` +
+            `${missing.join(", ")} — header: ${t.header.join(", ")}`,
+        );
+      }
       for (const r of t.rows) {
-        venues.push({
-          id: r[0],
-          label: r[1],
-          valueSom: money(r[2]) ?? 0,
-          valueEom: money(r[3]) ?? 0,
-          periodInflow: money(r[4]) ?? 0,
-          actualRev: money(r[5]) ?? 0,
-          revenue: money(r[6]) ?? 0,
-          sdRevenue: money(r[7]) ?? 0,
-          sdShare: pct(r[8]),
-          spreadReimb: money(r[9]) ?? 0,
-        });
+        const venue = { id: r[0], label: r[1] };
+        for (const [column, field, parse] of VENUE_COLUMNS) {
+          venue[field] = parse(r[at[column]]);
+        }
+        venues.push(venue);
       }
     }
   }

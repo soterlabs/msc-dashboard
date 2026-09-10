@@ -37,6 +37,7 @@ import {
 } from "@/lib/ssr/domain";
 import type {
   SsrExcludedVenue,
+  SsrVenue,
   SsrPartner,
   SsrRateBuild,
   SsrRefCode,
@@ -46,6 +47,7 @@ import {
   formatCompactUSD,
   formatRatePercent,
   formatUSD,
+  formatUSD2,
   monthLong,
   monthRangeLabel,
 } from "@/lib/format";
@@ -514,6 +516,7 @@ function PartnerBreakdown({
         <Panel
           title="Per-venue breakdown"
           description={`${monthLong(month)} · ${shownVenues.length} venues · negative inflow is an outflow`}
+          hint="Revenue is the prime's share of what the venue earned, after the Sky-direct carve-out — a venue whose yield goes wholly to Sky shows nothing here and appears in the Sky Direct section below. The filter hides exactly those."
           action={
             <FilterToggle
               pressed={onlyEarning}
@@ -531,6 +534,7 @@ function PartnerBreakdown({
                 <Th className="min-w-[260px]">Deployment</Th>
                 <Th numeric>NAV · eom</Th>
                 <Th numeric>Inflow</Th>
+                <Th numeric>Revenue</Th>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -561,14 +565,20 @@ function PartnerBreakdown({
                       </span>
                     )}
                   </Td>
+                  {/* Compact like its neighbours, exact on the title: this is
+                      the column the reader came for, and $469K hides the cents
+                      that reconcile against the report. */}
+                  <Td numeric title={venueRevenueTitle(v)}>
+                    {v.revenue === 0 ? <Dash /> : formatCompactUSD(v.revenue)}
+                  </Td>
                 </TableRow>
               ))}
             </TableBody>
           </DataTable>
           <TotalRow
             className="border-t pt-4"
-            label={`Total NAV · ${formatUSD(shownVenues.reduce((a, v) => a + v.valueEom, 0))}`}
-            value={`Total inflows · ${formatUSD(shownVenues.reduce((a, v) => a + v.periodInflow, 0))}`}
+            label={`Total NAV · ${formatUSD(shownVenues.reduce((a, v) => a + v.valueEom, 0))} · inflows ${formatUSD(shownVenues.reduce((a, v) => a + v.periodInflow, 0))}`}
+            value={`Total revenue · ${formatUSD(shownVenues.reduce((a, v) => a + v.revenue, 0))}`}
           />
         </Panel>
       )}
@@ -591,6 +601,20 @@ function PartnerBreakdown({
       ) : null}
     </div>
   );
+}
+
+/**
+ * The exact figure, and where the rest of it went.
+ *
+ * `revenue` is what the prime keeps: the venue's `actual_rev` less the
+ * Sky-direct portion. For a venue at 100% sd_share that is zero against
+ * millions earned — true, and misleading without saying so, since the column
+ * would otherwise read as "this venue makes nothing".
+ */
+function venueRevenueTitle(v: SsrVenue): string {
+  const exact = formatUSD2(v.revenue);
+  if (v.sdRevenue === 0) return exact;
+  return `${exact} to the prime · ${formatUSD2(v.sdRevenue)} to Sky Direct (${formatRatePercent(v.sdShare, 0)} of ${formatUSD2(v.actualRev)})`;
 }
 
 /* ------------------------------------------------------------- sections */
