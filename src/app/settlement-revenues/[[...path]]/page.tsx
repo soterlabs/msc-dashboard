@@ -8,9 +8,9 @@ import { isMonthSegment } from "@/lib/routes";
 import type { SsrPartner } from "@/lib/ssr/types";
 
 /**
- * /supply-side-revenues                   → all primes
- * /supply-side-revenues/grove             → Grove, its latest settlement
- * /supply-side-revenues/grove/2026-08     → Grove, August
+ * /settlement-revenues                   → all primes
+ * /settlement-revenues/grove             → Grove, its latest settlement
+ * /settlement-revenues/grove/2026-08     → Grove, August
  *
  * The month is optional so a link to a prime keeps working as months are added,
  * and pinned so a link to a settlement keeps showing that settlement.
