@@ -83,7 +83,13 @@ const slugOf = (key: Section) => SECTIONS.find((s) => s.key === key)!.slug;
 
 /** The section landing pages, and every drill-down inside them. */
 export const paths = {
-  home: `/${slugOf("dr")}`,
+  /**
+   * Where `/` lands: whatever the nav lists first, rather than a section named
+   * here. Reordering SECTIONS then moves the landing page with it, instead of
+   * leaving the root pointing at the second item — and a section hidden by its
+   * flag can never become the destination, because it is not in the list.
+   */
+  home: `/${(VISIBLE_SECTIONS[0] ?? SECTIONS[0]).slug}`,
 
   dr: (tab?: DrTab) => (tab && tab !== "summary" ? `/${slugOf("dr")}/${tab}` : `/${slugOf("dr")}`),
   /** A single ref code's history, inside the ledger. */
