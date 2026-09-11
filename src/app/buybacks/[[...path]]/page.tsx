@@ -44,7 +44,12 @@ export default async function Page({
 
   return (
     <TmfProvider value={tmf.data}>
-      <Buybacks granularity={granularity} source={tmf.source} />
+      <Buybacks
+        granularity={granularity}
+        source={tmf.source}
+        daily={tmf.daily}
+        last24h={tmf.last24h}
+      />
     </TmfProvider>
   );
 }

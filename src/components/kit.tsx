@@ -146,16 +146,32 @@ export function MetaStat({ label, value }: Meta) {
  * card title, footnote below.
  * `@container/card` lets the figure grow once the tile itself has room.
  */
+/** A figure carried under a headline, with the series colour it belongs to. */
+export interface StatRowItem {
+  label: string;
+  value: string;
+  unit?: string;
+  /** A `var(--…)` colour when the row is one of a chart's series. */
+  color?: string;
+}
+
 export function StatCard({
   label,
   value,
   unit,
   note,
+  rows,
 }: {
   label: React.ReactNode;
   value: React.ReactNode;
   unit?: string;
   note?: React.ReactNode;
+  /**
+   * Components of the headline, ruled off below it. For a figure that is a sum
+   * of two others, one card carrying all three says what three cards side by
+   * side cannot: which is the total and which are its parts.
+   */
+  rows?: StatRowItem[];
 }) {
   return (
     <Card className="@container/card">
@@ -170,9 +186,29 @@ export function StatCard({
           ) : null}
         </CardTitle>
       </CardHeader>
-      {note ? (
-        <CardFooter className="text-sm text-muted-foreground">
-          {note}
+      {note || rows?.length ? (
+        <CardFooter className="flex-col items-stretch gap-0 text-sm text-muted-foreground">
+          {note ? <div>{note}</div> : null}
+          {rows?.length ? (
+            <dl className={cn("grid gap-2", note && "mt-4 border-t pt-4")}>
+              {rows.map((row) => (
+                <div key={row.label} className="flex items-center justify-between gap-4">
+                  <dt className="flex items-center gap-2">
+                    {row.color ? <Swatch color={row.color} /> : null}
+                    {row.label}
+                  </dt>
+                  <dd className="font-medium tabular-nums text-foreground">
+                    {row.value}
+                    {row.unit ? (
+                      <span className="ml-1 text-xs font-normal text-muted-foreground">
+                        {row.unit}
+                      </span>
+                    ) : null}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          ) : null}
         </CardFooter>
       ) : null}
     </Card>

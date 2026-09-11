@@ -17,7 +17,7 @@
  * outage — from taking the page down.
  */
 import { validateTmf } from "../dataset-schema.ts";
-import type { TmfDataset } from "./types";
+import { TMF_DAILY_WINDOW_DAYS, type TmfDataset, type TmfKick } from "./types.ts";
 
 const DEFAULT_API_URL = "https://settle-api-production.up.railway.app";
 
@@ -51,7 +51,10 @@ export async function fetchTmf(): Promise<TmfDataset | null> {
       headers: { accept: "application/json" },
     });
     if (!response.ok) {
-      return warn(`${url} responded ${response.status} ${response.statusText}`);
+      return warn(
+        `${url} responded ${response.status} ${response.statusText}`,
+        HISTORY_FALLBACK,
+      );
     }
     // Validated before it is trusted — a 200 carrying a renamed field is the
     // failure this guards, and it looks identical to success until rendered.
@@ -62,15 +65,84 @@ export async function fetchTmf(): Promise<TmfDataset | null> {
       remedy: "check the API's schema_version against src/lib/tmf/types.ts",
     });
   } catch (e) {
-    return warn(`${url} — ${(e as Error).message}`);
+    return warn(`${url} — ${(e as Error).message}`, HISTORY_FALLBACK);
   }
 }
 
+const HISTORY_FALLBACK = "live history unavailable, falling back to the committed snapshot";
+const KICKS_FALLBACK = "per-kick data unavailable, the daily series will be omitted";
+
 /**
- * A warning, not a throw: the caller has a snapshot to fall back to, and the
- * build has to survive having no network at all.
+ * Per-kick rows since `since`, for the daily series the published document does
+ * not carry.
+ *
+ * Separate from the history fetch on purpose: this one is allowed to fail on
+ * its own. The tab's figures all come from the document, and losing this costs
+ * the daily granularity and the 24-hour card — not the page.
+ *
+ * Amounts arrive as decimal strings and are parsed here; a row that does not
+ * parse to finite numbers is dropped rather than poisoning a sum with NaN.
  */
-function warn(reason: string): null {
-  console.warn(`[tmf] live fetch failed, falling back to the snapshot: ${reason}`);
+export async function fetchTmfKicks(since: Date): Promise<TmfKick[] | null> {
+  const url = `${SETTLE_API_URL}/v1/tmf/kicks?from=${since.toISOString()}&limit=5000`;
+  try {
+    const response = await fetch(url, {
+      next: { revalidate: 3600 },
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+      headers: { accept: "application/json" },
+    });
+    if (!response.ok) {
+      return warn(
+        `${url} responded ${response.status} ${response.statusText}`,
+        KICKS_FALLBACK,
+      );
+    }
+    const body = await response.json();
+    if (!Array.isArray(body?.kicks)) {
+      return warn(`${url} — no kicks array in the response`, KICKS_FALLBACK);
+    }
+    const kicks: TmfKick[] = [];
+    for (const k of body.kicks) {
+      const row = {
+        ts: String(k?.ts ?? ""),
+        usds_total: Number(k?.usds_total),
+        usds_buyback: Number(k?.usds_buyback),
+        usds_to_stakers: Number(k?.usds_to_stakers),
+        sky_bought: Number(k?.sky_bought),
+      };
+      const finite =
+        Number.isFinite(row.usds_total) &&
+        Number.isFinite(row.usds_buyback) &&
+        Number.isFinite(row.usds_to_stakers) &&
+        Number.isFinite(row.sky_bought);
+      if (row.ts && finite) kicks.push(row);
+    }
+    if (kicks.length !== body.kicks.length) {
+      console.warn(
+        `[tmf] ${body.kicks.length - kicks.length} kick row(s) did not parse and were dropped`,
+      );
+    }
+    return kicks;
+  } catch (e) {
+    return warn(`${url} — ${(e as Error).message}`, KICKS_FALLBACK);
+  }
+}
+
+/** The start of the daily window, as of `now`. */
+export function dailyWindowStart(now: Date): Date {
+  return new Date(now.getTime() - TMF_DAILY_WINDOW_DAYS * 86_400_000);
+}
+
+/**
+ * A warning, not a throw: the caller has something to fall back to, and the
+ * build has to survive having no network at all.
+ *
+ * The consequence is spelled out per caller. The history document falls back
+ * to a committed snapshot; the kick rows have none — they are the only source
+ * of the daily series — so saying "falling back to the snapshot" there would
+ * send a reader looking for a file that has nothing to do with it.
+ */
+function warn(reason: string, consequence: string): null {
+  console.warn(`[tmf] ${consequence}: ${reason}`);
   return null;
 }
