@@ -30,8 +30,9 @@ import {
 import type { PrimeDataset } from "./prime/types";
 import type { SkyTotalDataset } from "./sky-total/types";
 import type { SsrDataset } from "./ssr/types";
-import { fetchTmf } from "./tmf/api.ts";
-import type { TmfDataset, TmfLoad } from "./tmf/types";
+import { dailyWindowStart, fetchTmf, fetchTmfKicks } from "./tmf/api.ts";
+import { aggregateKicks, dailyPeriods } from "./tmf/domain.ts";
+import type { TmfDataset, TmfKick, TmfLoad } from "./tmf/types";
 import type { DrDataset } from "./dr/types";
 
 /**
@@ -92,7 +93,17 @@ export const loadSkyTotal = cache((): SkyTotalDataset => readGenerated("sky-tota
  * snapshot committed three weeks ago look identical on screen, and only one of
  * them is current.
  */
-export const loadTmf = cache(async (): Promise<TmfLoad> => resolveTmf(await fetchTmf()));
+export const loadTmf = cache(async (): Promise<TmfLoad> => {
+  const now = new Date();
+  // Both in flight together: the kick rows are only needed for the daily
+  // series, so waiting for one before starting the other would add a round
+  // trip to every render for no ordering reason.
+  const [live, kicks] = await Promise.all([
+    fetchTmf(),
+    fetchTmfKicks(dailyWindowStart(now)),
+  ]);
+  return resolveTmf(live, kicks, now);
+});
 
 /**
  * Picks the tier, given whatever the live fetch returned.
@@ -101,7 +112,11 @@ export const loadTmf = cache(async (): Promise<TmfLoad> => resolveTmf(await fetc
  * wants a request context, and the branches worth asserting have nothing to do
  * with React.
  */
-export function resolveTmf(live: TmfDataset | null): TmfLoad {
+export function resolveTmf(
+  live: TmfDataset | null,
+  kicks: TmfKick[] | null = null,
+  now: Date = new Date(),
+): TmfLoad {
   // Read and validated ALWAYS, even when the live document is good and will be
   // the one rendered. Reading it only in the fallback branch meant a corrupt or
   // missing snapshot built green and passed deploy, then threw the first time
@@ -110,10 +125,23 @@ export function resolveTmf(live: TmfDataset | null): TmfLoad {
   // the rest of this file's guarantees already live.
   const snapshot = readGenerated("tmf", validateTmf);
 
+  // Derived independently of which tier won: these rows come from the per-kick
+  // endpoint, so they are available even when the history document is the
+  // snapshot, and absent when only the kicks call failed.
+  const daily = kicks ? dailyPeriods(kicks) : [];
+  const since = new Date(now.getTime() - 86_400_000).toISOString();
+  const last24h = kicks
+    ? aggregateKicks(
+        kicks.filter((k) => k.ts >= since),
+        "last 24 hours",
+      )
+    : null;
+
+  const base = { daily, last24h, fetchedAt: now.toISOString() };
   if (live && usable(live, snapshot)) {
-    return { data: live, source: "api", fetchedAt: new Date().toISOString() };
+    return { ...base, data: live, source: "api" };
   }
-  return { data: snapshot, source: "snapshot", fetchedAt: new Date().toISOString() };
+  return { ...base, data: snapshot, source: "snapshot" };
 }
 
 /**

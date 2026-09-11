@@ -100,8 +100,33 @@ export interface TmfRun {
   settle_version: string;
 }
 
-export const TMF_GRANULARITIES = ["monthly", "quarterly", "annual"] as const;
+/**
+ * One Splitter kick, from /v1/tmf/kicks. Amounts arrive as decimal strings —
+ * the endpoint keeps full precision where the aggregates are quantized — so
+ * they are parsed on the way in.
+ */
+export interface TmfKick {
+  ts: string;
+  usds_total: number;
+  usds_buyback: number;
+  usds_to_stakers: number;
+  sky_bought: number;
+}
+
+/**
+ * Granularities the tab offers. `daily` is not in the published document:
+ * it is aggregated from the per-kick endpoint over a recent window, so it
+ * covers less history than the others and says so on screen.
+ */
+export const TMF_GRANULARITIES = ["daily", "monthly", "quarterly", "annual"] as const;
 export type TmfGranularity = (typeof TMF_GRANULARITIES)[number];
+
+/** Granularities the history document publishes itself. */
+export const TMF_DOCUMENT_GRANULARITIES = ["monthly", "quarterly", "annual"] as const;
+export type TmfDocumentGranularity = (typeof TMF_DOCUMENT_GRANULARITIES)[number];
+
+/** How far back the daily series reaches, in days. */
+export const TMF_DAILY_WINDOW_DAYS = 90;
 
 export interface TmfDataset {
   schema_version: TmfSchemaVersion;
@@ -113,7 +138,7 @@ export interface TmfDataset {
   notes: string[];
   totals: TmfPeriod;
   latest_kick: TmfLatestKick;
-  periods: Record<TmfGranularity, TmfPeriod[]>;
+  periods: Record<TmfDocumentGranularity, TmfPeriod[]>;
   parameter_changes: TmfParameterChange[];
   /** Set by the API, absent from the committed snapshot. */
   run?: TmfRun;
@@ -129,4 +154,12 @@ export interface TmfLoad {
   source: "api" | "snapshot";
   /** ISO-8601, when this process read it. */
   fetchedAt: string;
+  /**
+   * Daily rows aggregated from the per-kick endpoint, newest last. Empty when
+   * that call failed — the tab then drops the daily option rather than showing
+   * an empty chart.
+   */
+  daily: TmfPeriod[];
+  /** The last 24 hours, or null when the per-kick endpoint was unreachable. */
+  last24h: TmfPeriod | null;
 }

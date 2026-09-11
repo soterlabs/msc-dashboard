@@ -57,6 +57,13 @@ failure — unreachable, non-200, timeout, a field renamed upstream — logs a
 warning and falls back to `data/generated/tmf.json`. **A build with no network
 therefore still succeeds**, rendering the snapshot.
 
+The tab's **daily** granularity and its last-24-hours card are aggregated from
+that API's per-kick endpoint, not from the history document — which publishes
+monthly, quarterly and annual only. Daily therefore covers a rolling 90-day
+window rather than the whole series, and says so on the chart. If that call
+fails the daily option disappears and the card reads "—"; the rest of the tab
+is unaffected, because every other figure comes from the document.
+
 The tab says which one it is showing: "data through … · run N" when live, and a
 badge reading "showing the last published snapshot — live data unavailable"
 when it fell back. A stale figure that looks live is the failure worth

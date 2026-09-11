@@ -13,7 +13,6 @@ import {
   Bar as RBar,
   CartesianGrid,
   ComposedChart,
-  Line,
   XAxis,
   YAxis,
 } from "recharts";
@@ -26,9 +25,12 @@ import {
 } from "@/lib/format";
 import { explorerUrl, txUrl } from "@/lib/links";
 import { paths } from "@/lib/routes";
+import { fillGaps } from "@/lib/tmf/domain";
 import { Badge } from "@/components/ui/badge";
 import {
+  TMF_DAILY_WINDOW_DAYS,
   TMF_GRANULARITIES,
+  type TmfDocumentGranularity,
   type TmfGranularity,
   type TmfRun,
   type TmfParameterChange,
@@ -47,7 +49,6 @@ import {
   PageHeader,
   Panel,
   Prose,
-  SeriesFilterItem,
   StatCard,
   Swatch,
   TableBody,
@@ -102,7 +103,7 @@ function Provenance({
       {tier === "snapshot" ? (
         <Badge variant="outline" className="gap-1.5 border-destructive/40 text-destructive">
           <WarningIcon aria-hidden className="size-3" />
-          Showing the last published snapshot — live data unavailable
+          Totals from the last published snapshot — live history unavailable
         </Badge>
       ) : run ? (
         /* The run's own finish time, not when this page rendered. The fetch is
@@ -124,6 +125,7 @@ function Provenance({
 const DEAD_ADDRESS = "0x000000000000000000000000000000000000dEaD";
 
 const GRANULARITY_LABEL: Record<TmfGranularity, string> = {
+  daily: "Daily",
   monthly: "Monthly",
   quarterly: "Quarterly",
   annual: "Annual",
@@ -138,10 +140,15 @@ const chartConfig = {
 export function Buybacks({
   granularity,
   source,
+  daily,
+  last24h,
 }: {
   granularity: TmfGranularity;
   /** Which tier the figures came from; see src/lib/load.ts. */
   source: "api" | "snapshot";
+  /** Aggregated from the per-kick endpoint; empty when it was unreachable. */
+  daily: TmfPeriod[];
+  last24h: TmfPeriod | null;
 }) {
   const tmf = useTmf();
   const router = useRouter();
@@ -149,16 +156,27 @@ export function Buybacks({
 
   // Newest first: the question a reader arrives with is what happened lately,
   // and the chart below reads the other way because time runs left to right.
-  const rows = React.useMemo(
-    () => [...tmf.periods[granularity]].sort((a, b) => (a.period < b.period ? 1 : -1)),
-    [tmf, granularity],
-  );
-  const series = React.useMemo(() => [...rows].reverse(), [rows]);
+  // Gap-filled before anything is drawn: upstream publishes a period only when
+  // something happened in it, so the raw series jumps from Nov 2024 to Feb 2025
+  // and a bar chart draws those adjacent — reading as "consecutive months"
+  // rather than "the engine was idle for two".
+  const series = React.useMemo(() => {
+    const raw = granularity === "daily" ? daily : tmf.periods[granularity];
+    return fillGaps(raw, granularity);
+  }, [tmf, granularity, daily]);
+  const rows = React.useMemo(() => [...series].reverse(), [series]);
 
-  // Off by default: the burn series is zero in every period but one, so a line
-  // flat on the axis would only invite the reading that nothing is happening.
-  const [showBurn, setShowBurn] = React.useState(false);
-  const anyBurn = series.some((r) => r.sky_burn_protocol > 0);
+  /* Burns come from the history document, which has no sub-monthly rows — a
+     daily series built from kick events carries none by construction. Driving
+     the burn panel off the selected granularity therefore made it vanish on
+     Daily, which reads as "no SKY has been burned" rather than "not available
+     at this granularity". It falls back to the monthly series instead. */
+  const burnGranularity: TmfGranularity = granularity === "daily" ? "monthly" : granularity;
+  const burnSeries = React.useMemo(
+    () => fillGaps(tmf.periods[burnGranularity as TmfDocumentGranularity], burnGranularity),
+    [tmf, burnGranularity],
+  );
+  const anyBurn = burnSeries.some((r) => r.sky_burn_protocol > 0);
 
   return (
     <div className="flex flex-col gap-6">
@@ -172,46 +190,75 @@ export function Buybacks({
         ]}
       />
 
-      <div className="grid grid-cols-1 gap-4 @2xl/main:grid-cols-2 @5xl/main:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 @3xl/main:grid-cols-3">
+        {/* One card, not three: the two USDS legs are components of the total,
+            and side by side they read as three independent figures. */}
         <StatCard
           label={LABELS.usds_total}
           value={formatCompactTokens(totals.usds_total)}
           unit="USDS"
           note="Pulled from the surplus since the Splitter went live"
+          rows={[
+            {
+              label: LABELS.usds_buyback,
+              value: formatCompactTokens(totals.usds_buyback),
+              unit: "USDS",
+              color: "var(--chart-4)",
+            },
+            {
+              label: LABELS.usds_to_stakers,
+              value: formatCompactTokens(totals.usds_to_stakers),
+              unit: "USDS",
+              color: "var(--chart-2)",
+            },
+          ]}
         />
         <StatCard
-          label={LABELS.usds_buyback}
-          value={formatCompactTokens(totals.usds_buyback)}
-          unit="USDS"
-          note={`Bought ${formatCompactTokens(totals.sky_bought)} SKY at ${formatPrice6(totals.sky_avg_price)} average`}
-        />
-        <StatCard
-          label={LABELS.usds_to_stakers}
-          value={formatCompactTokens(totals.usds_to_stakers)}
-          unit="USDS"
-          note="The dividend leg — sent to the USDS staker farm"
-        />
-        <StatCard
-          label={LABELS.sky_burn_protocol}
-          value={formatCompactTokens(totals.sky_burn_protocol)}
+          label="Total SKY buyback"
+          value={formatCompactTokens(totals.sky_bought)}
           unit="SKY"
-          /* The "other" series is third parties sending SKY to 0x…dEaD. It is
-             not a protocol act and never a headline, but hiding it entirely
-             would leave the on-chain burn address unexplained. */
-          note={
-            totals.sky_burn_other > 0 ? (
-              <span>
-                {/* Exact, not whole units: this figure is single digits, and
-                    rounding 4.82 to "5" would overstate a rounding error as a
-                    burn. The headline SKY figures are whole units as specified. */}
-                Plus {totals.sky_burn_other.toFixed(2)} SKY sent to{" "}
-                <BurnSinkLink chain={sourceMeta.chain} /> by third parties
-              </span>
-            ) : (
-              "SKY sent to a burn sink by the Pause Proxy"
-            )
-          }
+          note="Bought on the open market by the Smart Burn Engine"
+          rows={[
+            {
+              label: "Average buyback price",
+              /* Three decimals on the headline card, as in the design. The
+                 table and the tooltip keep six, where the point is comparing
+                 one period's price against another's. */
+              value: totals.sky_avg_price?.toFixed(3) ?? "—",
+              unit: "USDS / SKY",
+            },
+          ]}
         />
+        {/* Aggregated from the per-kick endpoint, so it is the one card that
+            can be missing — the document itself has no sub-monthly figures. */}
+        {last24h ? (
+          <StatCard
+            label={`${LABELS.usds_total} · last 24 hours`}
+            value={formatCompactTokens(last24h.usds_total)}
+            unit="USDS"
+            note="Pulled from the surplus in the last 24 hours"
+            rows={[
+              {
+                label: LABELS.usds_buyback,
+                value: formatCompactTokens(last24h.usds_buyback),
+                unit: "USDS",
+                color: "var(--chart-4)",
+              },
+              {
+                label: LABELS.usds_to_stakers,
+                value: formatCompactTokens(last24h.usds_to_stakers),
+                unit: "USDS",
+                color: "var(--chart-2)",
+              },
+            ]}
+          />
+        ) : (
+          <StatCard
+            label={`${LABELS.usds_total} · last 24 hours`}
+            value="—"
+            note="Per-kick data unavailable — the totals above are unaffected"
+          />
+        )}
       </div>
 
       <Provenance
@@ -224,7 +271,11 @@ export function Buybacks({
       <Panel
         title="Buyback and dividends"
         hint={`${definitions.usds_total ?? ""} The stack is the USDS pulled from the surplus; the split is how much bought SKY and how much went back to stakers.`}
-        description={`${GRANULARITY_LABEL[granularity]} · USDS`}
+        description={
+          granularity === "daily"
+            ? `Daily · last ${TMF_DAILY_WINDOW_DAYS} days · USDS`
+            : `${GRANULARITY_LABEL[granularity]} · USDS`
+        }
         action={
           <div className="flex flex-wrap items-center gap-2">
             <FilterGroup
@@ -232,26 +283,15 @@ export function Buybacks({
               onValueChange={(v) => v[0] && router.push(paths.buybacks(v[0]))}
               aria-label="Granularity"
             >
-              {TMF_GRANULARITIES.map((g) => (
+              {/* Daily is aggregated from the per-kick endpoint, so it is
+                  offered only when that call succeeded — an empty chart behind
+                  a chip is worse than no chip. */}
+              {TMF_GRANULARITIES.filter((g) => g !== "daily" || daily.length > 0).map((g) => (
                 <FilterItem key={g} value={g}>
                   {GRANULARITY_LABEL[g]}
                 </FilterItem>
               ))}
             </FilterGroup>
-            {anyBurn && (
-              <FilterGroup
-                value={showBurn ? ["burn"] : []}
-                onValueChange={(v) => setShowBurn(v.includes("burn"))}
-                aria-label="Show SKY burned"
-              >
-                <SeriesFilterItem
-                  value="burn"
-                  style={{ "--series": "var(--destructive)" } as React.CSSProperties}
-                >
-                  SKY burned
-                </SeriesFilterItem>
-              </FilterGroup>
-            )}
           </div>
         }
       >
@@ -261,13 +301,18 @@ export function Buybacks({
         <div className="mb-4 flex flex-wrap gap-4">
           <LegendItem color="var(--chart-4)">{LABELS.usds_buyback}</LegendItem>
           <LegendItem color="var(--chart-2)">{LABELS.usds_to_stakers}</LegendItem>
-          {showBurn && (
-            <LegendItem color="var(--destructive)">
-              {LABELS.sky_burn_protocol}
-            </LegendItem>
-          )}
         </div>
 
+        {/* Reachable by URL even when the per-kick endpoint is down, since the
+            route is valid and only its data is missing. An empty plot would
+            read as "nothing was bought". */}
+        {series.length === 0 ? (
+          <p className="py-8 text-center text-sm text-muted-foreground">
+            {granularity === "daily"
+              ? "Daily figures are aggregated from the per-kick endpoint, which could not be reached. The other periods above are unaffected."
+              : `No ${GRANULARITY_LABEL[granularity].toLowerCase()} periods in this dataset.`}
+          </p>
+        ) : (
         <div className="scroll-thin -mx-1 overflow-x-auto px-1">
           <ChartContainer
             config={chartConfig}
@@ -291,21 +336,7 @@ export function Buybacks({
                 fontSize={12}
                 tickFormatter={(v: number) => formatCompactTokens(v)}
               />
-              {showBurn && (
-                <YAxis
-                  yAxisId="sky"
-                  orientation="right"
-                  tickLine={false}
-                  axisLine={false}
-                  width={52}
-                  fontSize={12}
-                  tickFormatter={(v: number) => formatCompactTokens(v)}
-                />
-              )}
-              <ChartTooltip
-                cursor={false}
-                content={<PeriodTooltip showBurn={showBurn} />}
-              />
+              <ChartTooltip cursor={false} content={<PeriodTooltip />} />
               <RBar
                 yAxisId="usds"
                 dataKey="usds_buyback"
@@ -322,20 +353,24 @@ export function Buybacks({
                 radius={[4, 4, 0, 0]}
                 maxBarSize={48}
               />
-              {showBurn && (
-                <Line
-                  yAxisId="sky"
-                  type="monotone"
-                  dataKey="sky_burn_protocol"
-                  stroke="var(--color-sky_burn_protocol)"
-                  strokeWidth={2}
-                  dot={false}
-                />
-              )}
             </ComposedChart>
           </ChartContainer>
         </div>
+        )}
       </Panel>
+
+      {anyBurn && (
+        <BurnChart
+          series={burnSeries}
+          granularity={burnGranularity}
+          chain={sourceMeta.chain}
+          note={
+            granularity === "daily"
+              ? "Burns are published monthly at the finest — the daily view above has none to show."
+              : undefined
+          }
+        />
+      )}
 
       <PeriodTable rows={rows} granularity={granularity} />
 
@@ -396,58 +431,186 @@ function BurnSinkLink({ chain }: { chain: string }) {
 function PeriodTooltip({
   active,
   payload,
-  showBurn,
 }: {
   active?: boolean;
   payload?: { payload?: TmfPeriod }[];
-  showBurn?: boolean;
 }) {
   const row = active ? payload?.[0]?.payload : undefined;
   if (!row) return null;
 
-  const lines: { label: string; value: string; color?: string }[] = [
-    {
-      label: LABELS.usds_buyback,
-      value: formatTokens(row.usds_buyback),
-      color: "var(--chart-4)",
-    },
-    {
-      label: LABELS.usds_to_stakers,
-      value: formatTokens(row.usds_to_stakers),
-      color: "var(--chart-2)",
-    },
-    { label: LABELS.usds_total, value: formatTokens(row.usds_total) },
-    { label: "Kicks", value: formatTokens(row.kicks) },
-    { label: LABELS.sky_bought, value: formatTokens(row.sky_bought) },
-    { label: LABELS.sky_avg_price, value: formatPrice6(row.sky_avg_price) },
-  ];
-  if (row.sky_burn_protocol > 0) {
-    lines.push({
-      label: LABELS.sky_burn_protocol,
-      value: formatTokens(row.sky_burn_protocol),
-      color: showBurn ? "var(--destructive)" : undefined,
-    });
-  }
-
+  /* The total leads, at size: it is the figure the bar's height actually
+     encodes, and it was previously the third of six rows in the same weight as
+     the rest. The two legs sit under it with their swatches, and the SKY
+     figures are demoted to a footer — they answer a different question, in a
+     different unit, and were competing with the headline. */
   return (
-    <div className="rounded-lg border bg-popover px-3 py-2 text-xs shadow-lg">
-      <p className="mb-1.5 font-medium">{row.period}</p>
-      <dl className="grid gap-1">
-        {lines.map(({ label, value, color }) => (
-          <div key={label} className="flex items-center justify-between gap-4">
-            <dt className="flex items-center gap-1.5 text-muted-foreground">
-              {/* Aligns the labels that have no swatch with those that do, so
-                  the figures stay in one column. */}
-              {color ? <Swatch color={color} /> : <span className="size-2.5" />}
-              {label}
-            </dt>
-            <dd className="font-medium tabular-nums">{value}</dd>
-          </div>
-        ))}
-      </dl>
-      <p className="mt-2 border-t pt-1.5 text-[11px] text-muted-foreground">
-        USDS, except SKY figures
+    <div className="min-w-[15rem] rounded-lg border bg-popover px-3 py-2 text-xs shadow-lg">
+      <p className="text-muted-foreground">{row.period}</p>
+      <p className="mt-0.5 text-base font-semibold tabular-nums">
+        {formatTokens(row.usds_total)}
+        <span className="ml-1 text-xs font-normal text-muted-foreground">USDS</span>
       </p>
+      <p className="text-[11px] text-muted-foreground">{LABELS.usds_total}</p>
+
+      <dl className="mt-2 grid gap-1 border-t pt-2">
+        <TooltipRow
+          color="var(--chart-4)"
+          label={LABELS.usds_buyback}
+          value={formatTokens(row.usds_buyback)}
+        />
+        <TooltipRow
+          color="var(--chart-2)"
+          label={LABELS.usds_to_stakers}
+          value={formatTokens(row.usds_to_stakers)}
+        />
+        {row.sky_burn_protocol > 0 && (
+          <TooltipRow
+            color="var(--destructive)"
+            label={LABELS.sky_burn_protocol}
+            value={`${formatTokens(row.sky_burn_protocol)} SKY`}
+          />
+        )}
+      </dl>
+
+      <dl className="mt-2 grid gap-1 border-t pt-2 text-[11px] text-muted-foreground">
+        <TooltipRow
+          muted
+          label={LABELS.sky_bought}
+          value={`${formatTokens(row.sky_bought)} SKY`}
+        />
+        <TooltipRow muted label={LABELS.sky_avg_price} value={formatPrice6(row.sky_avg_price)} />
+      </dl>
+    </div>
+  );
+}
+
+function TooltipRow({
+  color,
+  label,
+  value,
+  muted,
+}: {
+  color?: string;
+  label: string;
+  value: string;
+  muted?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <dt className="flex items-center gap-1.5 text-muted-foreground">
+        {color ? <Swatch color={color} /> : null}
+        {label}
+      </dt>
+      <dd className={cn("tabular-nums", muted ? "font-normal" : "font-medium text-foreground")}>
+        {value}
+      </dd>
+    </div>
+  );
+}
+
+/**
+ * SKY burned, on its own axes.
+ *
+ * It was a second line on the USDS chart, which put two units on one plot and
+ * asked the reader to notice that the right-hand axis counted SKY — a chart
+ * where 426M and 2.5M are the same unit until you look twice. Nothing is
+ * comparable across the two, so they are two charts.
+ */
+function BurnChart({
+  series,
+  granularity,
+  chain,
+  note,
+}: {
+  series: TmfPeriod[];
+  granularity: TmfGranularity;
+  chain: string;
+  /** Why this panel is on a different granularity than the one selected. */
+  note?: string;
+}) {
+  const anyOther = series.some((r) => r.sky_burn_other > 0);
+  return (
+    <Panel
+      title="SKY burned"
+      hint="SKY sent to a burn sink by the Pause Proxy — the true burn. Third-party sends are counted separately and are not a protocol act."
+      description={`${GRANULARITY_LABEL[granularity]} · SKY${note ? ` · ${note}` : ""}`}
+      footer={
+        anyOther ? (
+          <p className="text-xs text-muted-foreground">
+            Third-party sends to <BurnSinkLink chain={chain} /> are excluded from
+            the bars and shown in the tooltip.
+          </p>
+        ) : null
+      }
+    >
+      <div className="mb-4 flex flex-wrap gap-4">
+        <LegendItem color="var(--destructive)">{LABELS.sky_burn_protocol}</LegendItem>
+      </div>
+      <div className="scroll-thin -mx-1 overflow-x-auto px-1">
+        <ChartContainer
+          config={chartConfig}
+          className="aspect-auto h-56 w-full min-w-[34rem] @3xl/main:h-64"
+        >
+          <ComposedChart data={series} margin={{ top: 16, left: 4, right: 4 }}>
+            <CartesianGrid vertical={false} />
+            <XAxis
+              dataKey="period"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              fontSize={12}
+              interval="preserveStartEnd"
+            />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              width={52}
+              fontSize={12}
+              tickFormatter={(v: number) => formatCompactTokens(v)}
+            />
+            <ChartTooltip cursor={false} content={<BurnTooltip anyOther={anyOther} />} />
+            <RBar
+              dataKey="sky_burn_protocol"
+              fill="var(--color-sky_burn_protocol)"
+              radius={4}
+              maxBarSize={48}
+            />
+          </ComposedChart>
+        </ChartContainer>
+      </div>
+    </Panel>
+  );
+}
+
+function BurnTooltip({
+  active,
+  payload,
+  anyOther,
+}: {
+  active?: boolean;
+  payload?: { payload?: TmfPeriod }[];
+  anyOther?: boolean;
+}) {
+  const row = active ? payload?.[0]?.payload : undefined;
+  if (!row) return null;
+  return (
+    <div className="min-w-[13rem] rounded-lg border bg-popover px-3 py-2 text-xs shadow-lg">
+      <p className="text-muted-foreground">{row.period}</p>
+      <p className="mt-0.5 text-base font-semibold tabular-nums">
+        {formatTokens(row.sky_burn_protocol)}
+        <span className="ml-1 text-xs font-normal text-muted-foreground">SKY</span>
+      </p>
+      <p className="text-[11px] text-muted-foreground">{LABELS.sky_burn_protocol}</p>
+      {anyOther && (
+        <dl className="mt-2 grid gap-1 border-t pt-2 text-[11px] text-muted-foreground">
+          <TooltipRow
+            muted
+            label="Third-party sends to 0x…dEaD"
+            value={`${row.sky_burn_other.toFixed(2)} SKY`}
+          />
+          <TooltipRow muted label="Burn events" value={formatTokens(row.burn_events)} />
+        </dl>
+      )}
     </div>
   );
 }
@@ -459,11 +622,13 @@ function PeriodTable({
   rows: TmfPeriod[];
   granularity: TmfGranularity;
 }) {
+  // Gap filling means the row count is now a span, not a count of events.
+  const active = rows.filter((r) => r.kicks > 0 || r.burn_events > 0).length;
   return (
     <Panel
       title="By period"
-      hint="Newest first. A period appears only if it holds a kick or a burn."
-      description={`${rows.length} ${GRANULARITY_LABEL[granularity].toLowerCase()} periods`}
+      hint="Newest first. Periods with no kick and no burn are shown as zero rather than skipped, so the series reads continuously."
+      description={`${rows.length} ${GRANULARITY_LABEL[granularity].toLowerCase()} periods · ${active} with activity`}
       flush
     >
       <DataTable>
