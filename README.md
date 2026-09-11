@@ -34,6 +34,34 @@ Before this split, `prebuild` ran the refresh on every deploy. A new directory
 in the `settlement-reports` repo then broke five consecutive deploys over four
 days, silently, because both environments kept serving their last good build.
 
+## Two tiers
+
+Most of this dashboard is settled data: written by a refresh, committed, and
+read by an offline build. One dataset is not, because it has no monthly
+settlement to hang a refresh off — the buyback series moves daily.
+
+| Tier | Source | Freshness | Datasets |
+| --- | --- | --- | --- |
+| settled | committed JSON, offline build | monthly, in a reviewed PR | `dr`, `ssr`, `sky-total`, `prime` |
+| live | settle-api, fetched server-side with revalidation, falling back to the committed snapshot | daily | `tmf` (Buybacks & Burn) |
+
+**The settled tier is unchanged and stays that way.** Its loaders do not fetch;
+a build still reproduces from a checkout alone. The split below — refresh
+writes, build reads — describes it exactly as before.
+
+The live tier adds one thing and keeps everything else: `loadTmf()` asks
+settle-api first (`src/lib/tmf/api.ts`, revalidated hourly) and validates the
+response with the same `validateTmf` the committed file goes through, because a
+payload nobody reviewed in a pull request deserves more checking, not less. Any
+failure — unreachable, non-200, timeout, a field renamed upstream — logs a
+warning and falls back to `data/generated/tmf.json`. **A build with no network
+therefore still succeeds**, rendering the snapshot.
+
+The tab says which one it is showing: "data through … · run N" when live, and a
+badge reading "showing the last published snapshot — live data unavailable"
+when it fell back. A stale figure that looks live is the failure worth
+preventing; an outage that is visible is not.
+
 ## Commands
 
 | | |
