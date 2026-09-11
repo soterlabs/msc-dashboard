@@ -172,6 +172,28 @@ export function formatUtc(iso: string | null | undefined, withTime = true): stri
   return `${date} ${hh}:${mm} UTC`;
 }
 
+/**
+ * How long ago an instant was, coarsely: "17m ago", "1h 57m ago", "3d ago".
+ *
+ * Coarse on purpose — this answers "is this current?", and seconds of
+ * precision would invite reading a render timestamp as a data timestamp.
+ */
+export function formatAge(iso: string | null | undefined, now: Date = new Date()): string {
+  if (!iso) return "—";
+  const then = Date.parse(iso);
+  if (Number.isNaN(then)) return "—";
+  const minutes = Math.max(0, Math.round((now.getTime() - then) / 60_000));
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) {
+    const rest = minutes % 60;
+    return rest ? `${hours}h ${rest}m ago` : `${hours}h ago`;
+  }
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
 /** Shorten an EVM address: 0x1234…cdef. */
 export function shortAddress(addr: string): string {
   if (addr.length <= 12) return addr;
