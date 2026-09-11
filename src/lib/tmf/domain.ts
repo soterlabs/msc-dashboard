@@ -71,8 +71,6 @@ export function dailyPeriods(kicks: TmfKick[]): TmfPeriod[] {
 
 /* ------------------------------------------------------------------- gaps */
 
-const MONTHS_PER = { monthly: 1, quarterly: 3, annual: 12 } as const;
-
 /** "2026-03" → 2026*12+2; the inverse of `fromIndex`. */
 function toIndex(period: string, granularity: TmfGranularity): number {
   const year = Number(period.slice(0, 4));
@@ -116,12 +114,13 @@ export function fillGaps(rows: TmfPeriod[], granularity: TmfGranularity): TmfPer
     return out;
   }
 
-  const step = MONTHS_PER[granularity as keyof typeof MONTHS_PER] ? 1 : 1;
+  // Step 1, always: `toIndex` already counts in the granularity's own unit, so
+  // consecutive quarters differ by 1 there, not by 3 months.
   const out: TmfPeriod[] = [];
   const byIndex = new Map(ordered.map((r) => [toIndex(r.period, granularity), r]));
   const first = toIndex(ordered[0].period, granularity);
   const final = toIndex(ordered[ordered.length - 1].period, granularity);
-  for (let i = first; i <= final; i += step) {
+  for (let i = first; i <= final; i += 1) {
     out.push(byIndex.get(i) ?? zeroPeriod(fromIndex(i, granularity)));
   }
   return out;

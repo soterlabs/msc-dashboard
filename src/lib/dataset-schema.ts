@@ -20,7 +20,7 @@
 import type { PrimeDataset, PrimeKind, PrimeSource, PrimeWallet } from "./prime/types";
 import type { SkyTotalBasis, SkyTotalDataset } from "./sky-total/types";
 import type { SsrDataset, SsrPartner } from "./ssr/types";
-import type { TmfDataset, TmfGranularity } from "./tmf/types";
+import type { TmfDataset, TmfDocumentGranularity } from "./tmf/types";
 import type { DrDataset } from "./dr/types";
 
 type Problems = string[];
@@ -417,12 +417,22 @@ export function validateSkyTotal(data: unknown): SkyTotalDataset {
 const TMF_SCHEMA_MAJOR = 1;
 
 /**
- * Mirrors TMF_GRANULARITIES in tmf/types.ts. Duplicated rather than imported
- * for the same reason PRIME_KINDS below is: this module is loaded by the test
- * runner's type-stripping, which resolves type-only imports away but cannot
- * follow a runtime one to an extensionless .ts path.
+ * Mirrors TMF_DOCUMENT_GRANULARITIES in tmf/types.ts — the granularities the
+ * document actually publishes. NOT TMF_GRANULARITIES, which also carries
+ * "daily": that one is aggregated from the per-kick endpoint and appears in no
+ * document, so requiring `periods.daily` here would reject both the live
+ * response and the committed snapshot and take the tab down.
+ *
+ * Duplicated rather than imported for the same reason PRIME_KINDS below is:
+ * this module is loaded by the test runner's type-stripping, which resolves
+ * type-only imports away but cannot follow a runtime one to an extensionless
+ * .ts path.
  */
-const TMF_GRANULARITIES: readonly TmfGranularity[] = ["monthly", "quarterly", "annual"];
+const TMF_DOCUMENT_GRANULARITIES: readonly TmfDocumentGranularity[] = [
+  "monthly",
+  "quarterly",
+  "annual",
+];
 
 /** Numbers every period row carries, whatever the granularity. */
 const TMF_PERIOD_NUMBERS = [
@@ -506,7 +516,7 @@ export function validateTmf(
   }
 
   if (isObj(data.periods)) {
-    for (const g of TMF_GRANULARITIES) {
+    for (const g of TMF_DOCUMENT_GRANULARITIES) {
       list(p, data.periods, g, "periods").forEach((row, i) =>
         tmfPeriod(p, `periods.${g}[${i}]`, row),
       );

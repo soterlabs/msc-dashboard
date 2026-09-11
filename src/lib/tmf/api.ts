@@ -69,6 +69,24 @@ export async function fetchTmf(): Promise<TmfDataset | null> {
   }
 }
 
+/** Rows per request. The 90-day window is ~1k today; this is headroom, not a cap. */
+const KICK_LIMIT = 5000;
+
+/**
+ * A decimal amount, or null when it is not one.
+ *
+ * `Number()` is not enough on its own: it maps null and "" to 0, both of which
+ * pass `Number.isFinite`, so a row with a null leg would be summed as zero and
+ * quietly understate the series — the exact corruption the check exists to
+ * stop.
+ */
+function amount(v: unknown): number | null {
+  if (typeof v === "number") return Number.isFinite(v) ? v : null;
+  if (typeof v !== "string" || v.trim() === "") return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
 const HISTORY_FALLBACK = "live history unavailable, falling back to the committed snapshot";
 const KICKS_FALLBACK = "per-kick data unavailable, the daily series will be omitted";
 
@@ -84,7 +102,7 @@ const KICKS_FALLBACK = "per-kick data unavailable, the daily series will be omit
  * parse to finite numbers is dropped rather than poisoning a sum with NaN.
  */
 export async function fetchTmfKicks(since: Date): Promise<TmfKick[] | null> {
-  const url = `${SETTLE_API_URL}/v1/tmf/kicks?from=${since.toISOString()}&limit=5000`;
+  const url = `${SETTLE_API_URL}/v1/tmf/kicks?from=${since.toISOString()}&limit=${KICK_LIMIT}`;
   try {
     const response = await fetch(url, {
       next: { revalidate: 3600 },
@@ -104,22 +122,38 @@ export async function fetchTmfKicks(since: Date): Promise<TmfKick[] | null> {
     const kicks: TmfKick[] = [];
     for (const k of body.kicks) {
       const row = {
-        ts: String(k?.ts ?? ""),
-        usds_total: Number(k?.usds_total),
-        usds_buyback: Number(k?.usds_buyback),
-        usds_to_stakers: Number(k?.usds_to_stakers),
-        sky_bought: Number(k?.sky_bought),
+        ts: typeof k?.ts === "string" ? k.ts : "",
+        usds_total: amount(k?.usds_total),
+        usds_buyback: amount(k?.usds_buyback),
+        usds_to_stakers: amount(k?.usds_to_stakers),
+        sky_bought: amount(k?.sky_bought),
       };
-      const finite =
-        Number.isFinite(row.usds_total) &&
-        Number.isFinite(row.usds_buyback) &&
-        Number.isFinite(row.usds_to_stakers) &&
-        Number.isFinite(row.sky_bought);
-      if (row.ts && finite) kicks.push(row);
+      const parsed =
+        // A timestamp this code can actually order and bucket by. Both the
+        // 24-hour filter and the day bucketing are string operations, so a
+        // change of format upstream would silently regroup rows rather than
+        // fail; parsing it here turns that into a dropped row and a warning.
+        Number.isFinite(Date.parse(row.ts)) &&
+        row.usds_total !== null &&
+        row.usds_buyback !== null &&
+        row.usds_to_stakers !== null &&
+        row.sky_bought !== null;
+      if (parsed) {
+        kicks.push(row as TmfKick);
+      }
     }
     if (kicks.length !== body.kicks.length) {
       console.warn(
         `[tmf] ${body.kicks.length - kicks.length} kick row(s) did not parse and were dropped`,
+      );
+    }
+    // The window is bounded by a row count, so a faster kick cadence — `hop` is
+    // a governance parameter this very tab tracks — would quietly shorten it
+    // while the chart still captions itself "last 90 days".
+    if (body.kicks.length >= KICK_LIMIT) {
+      console.warn(
+        `[tmf] the per-kick response hit its ${KICK_LIMIT}-row limit, so the daily ` +
+          `series may not reach back the full ${TMF_DAILY_WINDOW_DAYS} days`,
       );
     }
     return kicks;
@@ -128,9 +162,20 @@ export async function fetchTmfKicks(since: Date): Promise<TmfKick[] | null> {
   }
 }
 
-/** The start of the daily window, as of `now`. */
+/**
+ * The start of the daily window, floored to the hour.
+ *
+ * Not `now − 90d` to the millisecond: that value is different on every render,
+ * so the URL is different, so the fetch cache key is different and
+ * `revalidate: 3600` could never hit — one prerender of five buyback paths made
+ * five upstream calls of up to 5000 rows each, and gave the five pages five
+ * slightly different windows. Flooring to the hour matches the revalidation
+ * period, so a render either reuses the hour's response or replaces it.
+ */
 export function dailyWindowStart(now: Date): Date {
-  return new Date(now.getTime() - TMF_DAILY_WINDOW_DAYS * 86_400_000);
+  const hour = new Date(now);
+  hour.setUTCMinutes(0, 0, 0);
+  return new Date(hour.getTime() - TMF_DAILY_WINDOW_DAYS * 86_400_000);
 }
 
 /**

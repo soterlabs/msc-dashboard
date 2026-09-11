@@ -30,6 +30,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   TMF_DAILY_WINDOW_DAYS,
   TMF_GRANULARITIES,
+  type TmfDocumentGranularity,
   type TmfGranularity,
   type TmfRun,
   type TmfParameterChange,
@@ -102,7 +103,7 @@ function Provenance({
       {tier === "snapshot" ? (
         <Badge variant="outline" className="gap-1.5 border-destructive/40 text-destructive">
           <WarningIcon aria-hidden className="size-3" />
-          Showing the last published snapshot — live data unavailable
+          Totals from the last published snapshot — live history unavailable
         </Badge>
       ) : run ? (
         /* The run's own finish time, not when this page rendered. The fetch is
@@ -165,7 +166,17 @@ export function Buybacks({
   }, [tmf, granularity, daily]);
   const rows = React.useMemo(() => [...series].reverse(), [series]);
 
-  const anyBurn = series.some((r) => r.sky_burn_protocol > 0);
+  /* Burns come from the history document, which has no sub-monthly rows — a
+     daily series built from kick events carries none by construction. Driving
+     the burn panel off the selected granularity therefore made it vanish on
+     Daily, which reads as "no SKY has been burned" rather than "not available
+     at this granularity". It falls back to the monthly series instead. */
+  const burnGranularity: TmfGranularity = granularity === "daily" ? "monthly" : granularity;
+  const burnSeries = React.useMemo(
+    () => fillGaps(tmf.periods[burnGranularity as TmfDocumentGranularity], burnGranularity),
+    [tmf, burnGranularity],
+  );
+  const anyBurn = burnSeries.some((r) => r.sky_burn_protocol > 0);
 
   return (
     <div className="flex flex-col gap-6">
@@ -297,8 +308,9 @@ export function Buybacks({
             read as "nothing was bought". */}
         {series.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">
-            Daily figures are aggregated from the per-kick endpoint, which could
-            not be reached. The other periods above are unaffected.
+            {granularity === "daily"
+              ? "Daily figures are aggregated from the per-kick endpoint, which could not be reached. The other periods above are unaffected."
+              : `No ${GRANULARITY_LABEL[granularity].toLowerCase()} periods in this dataset.`}
           </p>
         ) : (
         <div className="scroll-thin -mx-1 overflow-x-auto px-1">
@@ -348,7 +360,16 @@ export function Buybacks({
       </Panel>
 
       {anyBurn && (
-        <BurnChart series={series} granularity={granularity} chain={sourceMeta.chain} />
+        <BurnChart
+          series={burnSeries}
+          granularity={burnGranularity}
+          chain={sourceMeta.chain}
+          note={
+            granularity === "daily"
+              ? "Burns are published monthly at the finest — the daily view above has none to show."
+              : undefined
+          }
+        />
       )}
 
       <PeriodTable rows={rows} granularity={granularity} />
@@ -410,11 +431,9 @@ function BurnSinkLink({ chain }: { chain: string }) {
 function PeriodTooltip({
   active,
   payload,
-  showBurn,
 }: {
   active?: boolean;
   payload?: { payload?: TmfPeriod }[];
-  showBurn?: boolean;
 }) {
   const row = active ? payload?.[0]?.payload : undefined;
   if (!row) return null;
@@ -446,7 +465,7 @@ function PeriodTooltip({
         />
         {row.sky_burn_protocol > 0 && (
           <TooltipRow
-            color={showBurn ? "var(--destructive)" : undefined}
+            color="var(--destructive)"
             label={LABELS.sky_burn_protocol}
             value={`${formatTokens(row.sky_burn_protocol)} SKY`}
           />
@@ -501,17 +520,20 @@ function BurnChart({
   series,
   granularity,
   chain,
+  note,
 }: {
   series: TmfPeriod[];
   granularity: TmfGranularity;
   chain: string;
+  /** Why this panel is on a different granularity than the one selected. */
+  note?: string;
 }) {
   const anyOther = series.some((r) => r.sky_burn_other > 0);
   return (
     <Panel
       title="SKY burned"
       hint="SKY sent to a burn sink by the Pause Proxy — the true burn. Third-party sends are counted separately and are not a protocol act."
-      description={`${GRANULARITY_LABEL[granularity]} · SKY`}
+      description={`${GRANULARITY_LABEL[granularity]} · SKY${note ? ` · ${note}` : ""}`}
       footer={
         anyOther ? (
           <p className="text-xs text-muted-foreground">
@@ -600,11 +622,13 @@ function PeriodTable({
   rows: TmfPeriod[];
   granularity: TmfGranularity;
 }) {
+  // Gap filling means the row count is now a span, not a count of events.
+  const active = rows.filter((r) => r.kicks > 0 || r.burn_events > 0).length;
   return (
     <Panel
       title="By period"
-      hint="Newest first. A period appears only if it holds a kick or a burn."
-      description={`${rows.length} ${GRANULARITY_LABEL[granularity].toLowerCase()} periods`}
+      hint="Newest first. Periods with no kick and no burn are shown as zero rather than skipped, so the series reads continuously."
+      description={`${rows.length} ${GRANULARITY_LABEL[granularity].toLowerCase()} periods · ${active} with activity`}
       flush
     >
       <DataTable>
