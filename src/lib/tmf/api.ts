@@ -39,6 +39,17 @@ export const SETTLE_API_URL = configured ?? DEFAULT_API_URL;
 /** Long enough for a cold Railway container, short enough not to stall a build. */
 const TIMEOUT_MS = 5_000;
 
+/**
+ * Seconds the fetch cache holds a response.
+ *
+ * The upstream cron ticks hourly and the API serves its documents with
+ * `Cache-Control: public, max-age=300`, so five minutes bounds the page at
+ * that far behind the store while keeping upstream calls to at most one per
+ * five minutes per instance, whatever the traffic. Since the page renders per
+ * request, this is the knob that sets the call rate — not the page.
+ */
+const REVALIDATE_SECONDS = 300;
+
 export async function fetchTmf(): Promise<TmfDataset | null> {
   const url = `${SETTLE_API_URL}/v1/tmf/history`;
   try {
@@ -46,7 +57,7 @@ export async function fetchTmf(): Promise<TmfDataset | null> {
       // Next's own cache, not a module-level variable: revalidation then
       // belongs to the deployment rather than to however long this process
       // happens to live, and a build that prerenders many pages fetches once.
-      next: { revalidate: 3600 },
+      next: { revalidate: REVALIDATE_SECONDS },
       signal: AbortSignal.timeout(TIMEOUT_MS),
       headers: { accept: "application/json" },
     });
@@ -105,7 +116,7 @@ export async function fetchTmfKicks(since: Date): Promise<TmfKick[] | null> {
   const url = `${SETTLE_API_URL}/v1/tmf/kicks?from=${since.toISOString()}&limit=${KICK_LIMIT}`;
   try {
     const response = await fetch(url, {
-      next: { revalidate: 3600 },
+      next: { revalidate: REVALIDATE_SECONDS },
       signal: AbortSignal.timeout(TIMEOUT_MS),
       headers: { accept: "application/json" },
     });
@@ -166,11 +177,15 @@ export async function fetchTmfKicks(since: Date): Promise<TmfKick[] | null> {
  * The start of the daily window, floored to the hour.
  *
  * Not `now − 90d` to the millisecond: that value is different on every render,
- * so the URL is different, so the fetch cache key is different and
- * `revalidate: 3600` could never hit — one prerender of five buyback paths made
- * five upstream calls of up to 5000 rows each, and gave the five pages five
- * slightly different windows. Flooring to the hour matches the revalidation
- * period, so a render either reuses the hour's response or replaces it.
+ * so the URL is different, so the fetch cache key is different and the
+ * revalidation could never hit — one prerender of five buyback paths made five
+ * upstream calls of up to 5000 rows each, and gave the five pages five
+ * slightly different windows.
+ *
+ * Flooring keeps the key stable across the renders inside an hour. It no
+ * longer equals the revalidation period, which is shorter: within one hour
+ * that is at most a dozen refreshes of a single key, rather than a new key per
+ * render.
  */
 export function dailyWindowStart(now: Date): Date {
   const hour = new Date(now);

@@ -21,7 +21,7 @@ import test from "node:test";
 
 import { validateTmf } from "../src/lib/dataset-schema.ts";
 import { resolveTmf } from "../src/lib/load.ts";
-import { fetchTmf } from "../src/lib/tmf/api.ts";
+import { fetchTmf, fetchTmfKicks } from "../src/lib/tmf/api.ts";
 
 const fixture = () =>
   JSON.parse(
@@ -99,6 +99,24 @@ test("tmf api: a 200 carrying the wrong shape returns null", async () => {
     fetchTmf,
   );
   assert.equal(result, null);
+});
+
+test("tmf api: the fetch is cached to the source's cadence, not the page's", async () => {
+  // The page renders per request, so this number is what actually bounds the
+  // upstream call rate. The API serves max-age=300 and the cron ticks hourly.
+  let init;
+  await withFetch(async (_url, opts) => {
+    init = opts;
+    return new Response(JSON.stringify(fixture()), { status: 200 });
+  }, fetchTmf);
+  assert.equal(init.next.revalidate, 300);
+
+  let kicksInit;
+  await withFetch(async (_url, opts) => {
+    kicksInit = opts;
+    return new Response(JSON.stringify({ kicks: [] }), { status: 200 });
+  }, () => fetchTmfKicks(new Date()));
+  assert.equal(kicksInit.next.revalidate, 300);
 });
 
 test("tmf api: a good response comes back validated", async () => {

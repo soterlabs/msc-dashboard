@@ -43,19 +43,32 @@ settlement to hang a refresh off — the buyback series moves daily.
 | Tier | Source | Freshness | Datasets |
 | --- | --- | --- | --- |
 | settled | committed JSON, offline build | monthly, in a reviewed PR | `dr`, `ssr`, `sky-total`, `prime` |
-| live | settle-api, fetched server-side with revalidation, falling back to the committed snapshot | daily | `tmf` (Buybacks & Burn) |
+| live | settle-api, fetched server-side with revalidation, falling back to the committed snapshot | hourly | `tmf` (Buybacks & Burn) |
 
 **The settled tier is unchanged and stays that way.** Its loaders do not fetch;
 a build still reproduces from a checkout alone. The split below — refresh
 writes, build reads — describes it exactly as before.
 
 The live tier adds one thing and keeps everything else: `loadTmf()` asks
-settle-api first (`src/lib/tmf/api.ts`, revalidated hourly) and validates the
+settle-api first (`src/lib/tmf/api.ts`, revalidated every 5 minutes) and validates the
 response with the same `validateTmf` the committed file goes through, because a
 payload nobody reviewed in a pull request deserves more checking, not less. Any
 failure — unreachable, non-200, timeout, a field renamed upstream — logs a
 warning and falls back to `data/generated/tmf.json`. **A build with no network
 therefore still succeeds**, rendering the snapshot.
+
+Its route renders per request (`dynamic = "force-dynamic"`) rather than being
+prerendered: revalidation coming only from the fetches meant the first request
+after each window served the previous render, which on a source that ticks
+hourly showed a five-hour-old run. The fetch cache is what bounds the upstream
+call rate now — at most one call per five minutes per instance, whatever the
+traffic — and it is sized to the API's own `max-age=300`.
+
+Two lags are visible on that tab and only one is ever actionable. `source.to_ts`
+trails the clock by roughly 100 minutes because the extractor stops at the
+latest finalized block; the run's own timestamp trails it by the cron cadence.
+The provenance line shows the age of both, so "finality is behind" reads
+differently from "the pipeline is behind".
 
 The tab's **daily** granularity and its last-24-hours card are aggregated from
 that API's per-kick endpoint, not from the history document — which publishes

@@ -20,6 +20,7 @@ import {
   formatCompactTokens,
   formatPrice6,
   formatTokens,
+  formatAge,
   formatUtc,
   shortAddress,
 } from "@/lib/format";
@@ -45,6 +46,7 @@ import {
   Dash,
   FilterGroup,
   FilterItem,
+  Hint,
   LegendItem,
   PageHeader,
   Panel,
@@ -88,29 +90,39 @@ function Provenance({
   toBlock,
   run,
   tier,
+  now,
 }: {
   toTs: string;
   toBlock: number;
   run?: TmfRun;
   tier: "api" | "snapshot";
+  now: string;
 }) {
+  const at = new Date(now);
   return (
-    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+      {/* Two different lags, and only one of them is ever a problem.
+          `to_ts` trails the clock by ~100 minutes whatever the run does,
+          because the extractor stops at the latest finalized block; the run's
+          own age is the pipeline's. Showing both ages, labelled, is what lets
+          a reader tell "finality is behind" from "the pipeline is behind". */}
       <span>
-        Data through {formatUtc(toTs)} · block {formatTokens(toBlock)}
-        {run ? ` · run ${run.run_id}` : ""}
+        Data through {formatUtc(toTs)}{" "}
+        <span className="text-muted-foreground/70">({formatAge(toTs, at)})</span>
       </span>
+      <Hint label="The pipeline reads only finalized blocks — the chain's head minus a reorg margin — so this timestamp sits roughly 100 minutes behind the clock however recently the run completed. It is not a sign the data is stale." />
+      <span>· block {formatTokens(toBlock)}</span>
+      {run ? (
+        <span>
+          · run {run.run_id}, {formatUtc(run.finished_at)}{" "}
+          <span className="text-muted-foreground/70">({formatAge(run.finished_at, at)})</span>
+        </span>
+      ) : null}
       {tier === "snapshot" ? (
         <Badge variant="outline" className="gap-1.5 border-destructive/40 text-destructive">
           <WarningIcon aria-hidden className="size-3" />
           Totals from the last published snapshot — live history unavailable
         </Badge>
-      ) : run ? (
-        /* The run's own finish time, not when this page rendered. The fetch is
-           cached for an hour, so a render time would claim a freshness the
-           figures do not have — up to an hour out, and always in the flattering
-           direction. */
-        <span className="text-muted-foreground/70">· produced {formatUtc(run.finished_at)}</span>
       ) : null}
     </div>
   );
@@ -140,12 +152,15 @@ const chartConfig = {
 export function Buybacks({
   granularity,
   source,
+  fetchedAt,
   daily,
   last24h,
 }: {
   granularity: TmfGranularity;
   /** Which tier the figures came from; see src/lib/load.ts. */
   source: "api" | "snapshot";
+  /** When this render read the data — the clock the ages below are against. */
+  fetchedAt: string;
   /** Aggregated from the per-kick endpoint; empty when it was unreachable. */
   daily: TmfPeriod[];
   last24h: TmfPeriod | null;
@@ -266,6 +281,7 @@ export function Buybacks({
         toBlock={sourceMeta.to_block}
         run={tmf.run}
         tier={source}
+        now={fetchedAt}
       />
 
       <Panel
