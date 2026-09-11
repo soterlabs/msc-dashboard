@@ -40,13 +40,14 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    /* `dark` is the rendered default; the head script below rewrites it before
-     * first paint from the stored preference or the OS setting.
-     * suppressHydrationWarning covers the class that script may change. */
+    /* Light is the rendered default, and what a visitor gets until they choose
+     * otherwise. The head script below switches to dark before first paint for
+     * anyone who has — so no flash either way — and suppressHydrationWarning
+     * covers the class it may change. */
     <html
       lang="en"
       className={cn(
-        "dark h-full antialiased",
+        "h-full antialiased",
         sans.variable,
         mono.variable,
         brand.variable,
