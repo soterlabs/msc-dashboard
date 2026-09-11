@@ -120,16 +120,28 @@ function monthLabels(problems: Problems, v: unknown) {
   for (const [m, label] of Object.entries(v)) str(problems, `monthLabels.${m}`, label);
 }
 
-function finish(file: string, typesFile: string, problems: Problems) {
+/**
+ * `origin` names what was being validated and how to fix it. It is a parameter
+ * because tmf has two of them — the committed file and a live API response —
+ * and telling an operator to "rerun pnpm refresh" when the HTTP payload is the
+ * broken one sends them to fix a file that is fine.
+ */
+function finish(
+  file: string,
+  typesFile: string,
+  problems: Problems,
+  origin = `data/generated/${file}.json`,
+  remedy = "rerun `pnpm refresh`",
+) {
   if (!problems.length) return;
   const shown = problems.slice(0, 20);
   const more = problems.length - shown.length;
   throw new Error(
-    `data/generated/${file}.json does not match its TypeScript type ` +
+    `${origin} does not match its TypeScript type ` +
       `(${problems.length} problem${problems.length > 1 ? "s" : ""}):\n` +
       `  - ${shown.join("\n  - ")}` +
       (more > 0 ? `\n  …and ${more} more` : "") +
-      `\n\nThe generator and src/lib/${typesFile}.ts have drifted — rerun \`pnpm refresh\`.`,
+      `\n\nIt and src/lib/${typesFile}.ts have drifted — ${remedy}.`,
   );
 }
 
@@ -446,7 +458,11 @@ function stringMap(p: Problems, at: string, v: unknown) {
   for (const [k, value] of Object.entries(v)) str(p, `${at}.${k}`, value);
 }
 
-export function validateTmf(data: unknown): TmfDataset {
+export function validateTmf(
+  data: unknown,
+  /** What produced this document — the committed file unless told otherwise. */
+  origin?: { label: string; remedy: string },
+): TmfDataset {
   if (!isObj(data)) throw new Error("data/generated/tmf.json should be an object");
   const p: Problems = [];
 
@@ -507,7 +523,20 @@ export function validateTmf(data: unknown): TmfDataset {
     }
   });
 
-  finish("tmf", "tmf/types", p);
+  // Only the API carries `run`, so it is absent from the committed file — but
+  // when present it is rendered, and it is the one field a rename would show
+  // as "run undefined" instead of failing. Optional, never unchecked.
+  if (data.run !== undefined) {
+    if (!isObj(data.run)) {
+      p.push(`run should be an object or absent, got ${show(data.run)}`);
+    } else {
+      num(p, "run.run_id", data.run.run_id);
+      str(p, "run.finished_at", data.run.finished_at);
+      str(p, "run.settle_version", data.run.settle_version);
+    }
+  }
+
+  finish("tmf", "tmf/types", p, origin?.label, origin?.remedy);
 
   // After the field check, not before: a document whose shape already failed
   // would report the version as its only problem and hide the rest.

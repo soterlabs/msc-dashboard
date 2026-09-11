@@ -119,6 +119,48 @@ test("tmf tiers: a live document is served as the api tier", () => {
   assert.ok(Date.parse(fetchedAt) > 0);
 });
 
+test("tmf tiers: a document with no periods does not displace the snapshot", () => {
+  // Type-valid and substantively empty — a run that finished with an empty
+  // backfill. validateTmf passes it, so the tier check is what has to refuse.
+  const empty = fixture();
+  empty.periods = { monthly: [], quarterly: [], annual: [] };
+  assert.ok(validateTmf(empty), "still type-valid, which is the point");
+  assert.equal(resolveTmf(empty).source, "snapshot");
+});
+
+test("tmf tiers: a document behind the snapshot does not displace it", () => {
+  // The API is meant to run ahead of a file refreshed monthly, so a lower
+  // block height is an upstream regression, not fresher data.
+  const behind = fixture();
+  behind.source.to_block = 1;
+  assert.equal(resolveTmf(behind).source, "snapshot");
+});
+
+test("tmf: a malformed run is rejected rather than rendered as undefined", () => {
+  const renamed = fixture();
+  delete renamed.run.run_id;
+  renamed.run.id = 3;
+  assert.throws(() => validateTmf(renamed), /run\.run_id/);
+
+  const notAnObject = fixture();
+  notAnObject.run = "3";
+  assert.throws(() => validateTmf(notAnObject), /run should be an object/);
+});
+
+test("tmf: a bad API payload blames the API, not the committed file", () => {
+  const broken = fixture();
+  broken.totals.usds_total = "164857000";
+  assert.throws(
+    () => validateTmf(broken, { label: "the settle-api response", remedy: "check the API" }),
+    (e) => {
+      assert.match(e.message, /the settle-api response/);
+      assert.doesNotMatch(e.message, /data\/generated\/tmf\.json/);
+      assert.doesNotMatch(e.message, /pnpm refresh/);
+      return true;
+    },
+  );
+});
+
 test("tmf tiers: null falls back to the committed snapshot and says so", () => {
   const { data, source } = resolveTmf(null);
   assert.equal(source, "snapshot");

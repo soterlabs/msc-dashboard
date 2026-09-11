@@ -19,14 +19,22 @@
 import { validateTmf } from "../dataset-schema.ts";
 import type { TmfDataset } from "./types";
 
+const DEFAULT_API_URL = "https://settle-api-production.up.railway.app";
+
 /**
  * Defaulted so a checkout runs with no env at all. `SETTLE_API_URL` wins when
- * set, for pointing a local build at a different instance.
+ * set, for pointing a build at another instance.
+ *
+ * Empty strings are ignored, not accepted: an unset variable materialises as
+ * "" often enough (Railway, CI) and `??` would take it, leaving a relative
+ * `/v1/tmf/history` that fetch rejects — the live tier would be permanently
+ * off behind a generic warning.
  */
-export const SETTLE_API_URL =
-  process.env.SETTLE_API_URL ??
-  process.env.NEXT_PUBLIC_SETTLE_API_URL ??
-  "https://settle-api-production.up.railway.app";
+const configured = [process.env.SETTLE_API_URL, process.env.NEXT_PUBLIC_SETTLE_API_URL]
+  .map((v) => v?.trim())
+  .find((v) => v);
+
+export const SETTLE_API_URL = configured ?? DEFAULT_API_URL;
 
 /** Long enough for a cold Railway container, short enough not to stall a build. */
 const TIMEOUT_MS = 5_000;
@@ -47,7 +55,12 @@ export async function fetchTmf(): Promise<TmfDataset | null> {
     }
     // Validated before it is trusted — a 200 carrying a renamed field is the
     // failure this guards, and it looks identical to success until rendered.
-    return validateTmf(await response.json());
+    // Named as the API so a schema complaint does not send whoever is on call
+    // to fix a committed file that is fine.
+    return validateTmf(await response.json(), {
+      label: `the settle-api response from ${url}`,
+      remedy: "check the API's schema_version against src/lib/tmf/types.ts",
+    });
   } catch (e) {
     return warn(`${url} — ${(e as Error).message}`);
   }

@@ -87,13 +87,11 @@ function Provenance({
   toBlock,
   run,
   tier,
-  fetchedAt,
 }: {
   toTs: string;
   toBlock: number;
   run?: TmfRun;
   tier: "api" | "snapshot";
-  fetchedAt: string;
 }) {
   return (
     <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
@@ -106,9 +104,13 @@ function Provenance({
           <WarningIcon aria-hidden className="size-3" />
           Showing the last published snapshot — live data unavailable
         </Badge>
-      ) : (
-        <span className="text-muted-foreground/70">· read {formatUtc(fetchedAt)}</span>
-      )}
+      ) : run ? (
+        /* The run's own finish time, not when this page rendered. The fetch is
+           cached for an hour, so a render time would claim a freshness the
+           figures do not have — up to an hour out, and always in the flattering
+           direction. */
+        <span className="text-muted-foreground/70">· produced {formatUtc(run.finished_at)}</span>
+      ) : null}
     </div>
   );
 }
@@ -136,12 +138,10 @@ const chartConfig = {
 export function Buybacks({
   granularity,
   source,
-  fetchedAt,
 }: {
   granularity: TmfGranularity;
   /** Which tier the figures came from; see src/lib/load.ts. */
   source: "api" | "snapshot";
-  fetchedAt: string;
 }) {
   const tmf = useTmf();
   const router = useRouter();
@@ -219,7 +219,6 @@ export function Buybacks({
         toBlock={sourceMeta.to_block}
         run={tmf.run}
         tier={source}
-        fetchedAt={fetchedAt}
       />
 
       <Panel
