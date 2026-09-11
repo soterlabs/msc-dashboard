@@ -88,6 +88,18 @@ export interface TmfParameterChange {
   value: string;
 }
 
+/**
+ * The run that produced the document. Present only on the API's response —
+ * the committed snapshot is written from settlement-reports, which carries no
+ * run of its own — so the view treats it as optional and says "snapshot" when
+ * it is absent.
+ */
+export interface TmfRun {
+  run_id: number;
+  finished_at: string;
+  settle_version: string;
+}
+
 export const TMF_GRANULARITIES = ["monthly", "quarterly", "annual"] as const;
 export type TmfGranularity = (typeof TMF_GRANULARITIES)[number];
 
@@ -103,4 +115,18 @@ export interface TmfDataset {
   latest_kick: TmfLatestKick;
   periods: Record<TmfGranularity, TmfPeriod[]>;
   parameter_changes: TmfParameterChange[];
+  /** Set by the API, absent from the committed snapshot. */
+  run?: TmfRun;
+}
+
+/** Which tier a dataset came from, and when it was read. */
+export interface TmfLoad {
+  data: TmfDataset;
+  /**
+   * "api" — read live from settle-api.
+   * "snapshot" — the API could not be reached, so the committed file was used.
+   */
+  source: "api" | "snapshot";
+  /** ISO-8601, when this process read it. */
+  fetchedAt: string;
 }

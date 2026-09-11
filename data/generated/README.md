@@ -41,3 +41,11 @@ no network and no access to the private repos. Any subset can be rebuilt with
 publishes it already aggregated and already versioned, so the refresh copies it
 through and checks `schema_version`. A major bump fails the refresh rather than
 writing a document whose fields the views no longer recognise.
+
+**It is also the only file here that is not what the page reads first.** The
+Buybacks & Burn tab is on the live tier (see the main README): it asks
+settle-api for the same document and uses this file only when that fails. So
+this is the FALLBACK — still refreshed at each MSC from settlement-reports with
+`pnpm refresh:tmf`, and still what an offline build renders — rather than the
+primary source. Everything else here is read directly and is the primary source
+for its tab.

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { ArrowUpRightIcon, CaretDownIcon } from "@phosphor-icons/react";
+import { ArrowUpRightIcon, CaretDownIcon, WarningIcon } from "@phosphor-icons/react";
 
 import {
   ChartContainer,
@@ -26,9 +26,11 @@ import {
 } from "@/lib/format";
 import { explorerUrl, txUrl } from "@/lib/links";
 import { paths } from "@/lib/routes";
+import { Badge } from "@/components/ui/badge";
 import {
   TMF_GRANULARITIES,
   type TmfGranularity,
+  type TmfRun,
   type TmfParameterChange,
   type TmfPeriod,
 } from "@/lib/tmf/types";
@@ -72,6 +74,48 @@ const LABELS = {
 };
 
 /**
+ * Where the figures came from and how current they are.
+ *
+ * The tab is the only one reading a live source, so it is the only one that
+ * can be quietly serving something stale: an API outage falls back to the
+ * committed snapshot, and a snapshot renders exactly like fresh data. Saying
+ * which is on screen is the whole point of carrying the discriminator this
+ * far.
+ */
+function Provenance({
+  toTs,
+  toBlock,
+  run,
+  tier,
+}: {
+  toTs: string;
+  toBlock: number;
+  run?: TmfRun;
+  tier: "api" | "snapshot";
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+      <span>
+        Data through {formatUtc(toTs)} · block {formatTokens(toBlock)}
+        {run ? ` · run ${run.run_id}` : ""}
+      </span>
+      {tier === "snapshot" ? (
+        <Badge variant="outline" className="gap-1.5 border-destructive/40 text-destructive">
+          <WarningIcon aria-hidden className="size-3" />
+          Showing the last published snapshot — live data unavailable
+        </Badge>
+      ) : run ? (
+        /* The run's own finish time, not when this page rendered. The fetch is
+           cached for an hour, so a render time would claim a freshness the
+           figures do not have — up to an hour out, and always in the flattering
+           direction. */
+        <span className="text-muted-foreground/70">· produced {formatUtc(run.finished_at)}</span>
+      ) : null}
+    </div>
+  );
+}
+
+/**
  * The sink third parties send SKY to. Not published in the dataset — it names
  * it as "0x…dEaD" in prose — so it is taken from the `sink` column of
  * `sky_burns.csv` beside it, where every non-protocol burn lands. The protocol
@@ -91,10 +135,17 @@ const chartConfig = {
   sky_burn_protocol: { label: LABELS.sky_burn_protocol, color: "var(--destructive)" },
 } satisfies ChartConfig;
 
-export function Buybacks({ granularity }: { granularity: TmfGranularity }) {
+export function Buybacks({
+  granularity,
+  source,
+}: {
+  granularity: TmfGranularity;
+  /** Which tier the figures came from; see src/lib/load.ts. */
+  source: "api" | "snapshot";
+}) {
   const tmf = useTmf();
   const router = useRouter();
-  const { totals, latest_kick: latest, source, notes, definitions } = tmf;
+  const { totals, latest_kick: latest, source: sourceMeta, notes, definitions } = tmf;
 
   // Newest first: the question a reader arrives with is what happened lately,
   // and the chart below reads the other way because time runs left to right.
@@ -117,7 +168,7 @@ export function Buybacks({ granularity }: { granularity: TmfGranularity }) {
         meta={[
           { label: "kicks", value: formatTokens(totals.kicks) },
           { label: "granularity", value: GRANULARITY_LABEL[granularity].toLowerCase() },
-          { label: "chain", value: source.chain },
+          { label: "chain", value: sourceMeta.chain },
         ]}
       />
 
@@ -154,7 +205,7 @@ export function Buybacks({ granularity }: { granularity: TmfGranularity }) {
                     rounding 4.82 to "5" would overstate a rounding error as a
                     burn. The headline SKY figures are whole units as specified. */}
                 Plus {totals.sky_burn_other.toFixed(2)} SKY sent to{" "}
-                <BurnSinkLink chain={source.chain} /> by third parties
+                <BurnSinkLink chain={sourceMeta.chain} /> by third parties
               </span>
             ) : (
               "SKY sent to a burn sink by the Pause Proxy"
@@ -163,10 +214,12 @@ export function Buybacks({ granularity }: { granularity: TmfGranularity }) {
         />
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        Data through {formatUtc(source.to_ts)} · block{" "}
-        {formatTokens(source.to_block)}
-      </p>
+      <Provenance
+        toTs={sourceMeta.to_ts}
+        toBlock={sourceMeta.to_block}
+        run={tmf.run}
+        tier={source}
+      />
 
       <Panel
         title="Buyback and dividends"
@@ -286,9 +339,9 @@ export function Buybacks({ granularity }: { granularity: TmfGranularity }) {
 
       <PeriodTable rows={rows} granularity={granularity} />
 
-      <LatestKick kick={latest} chain={source.chain} />
+      <LatestKick kick={latest} chain={sourceMeta.chain} />
 
-      <ParameterHistory changes={tmf.parameter_changes} chain={source.chain} />
+      <ParameterHistory changes={tmf.parameter_changes} chain={sourceMeta.chain} />
 
       {notes.length > 0 && (
         <Panel title="Notes" hint="Published with the dataset; shown as written.">

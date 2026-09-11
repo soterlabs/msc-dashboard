@@ -38,9 +38,13 @@ export default async function Page({
     granularity = first as TmfGranularity;
   }
 
+  // Live, so the page revalidates on the fetch's own schedule rather than
+  // being frozen at build time like the settled tabs.
+  const tmf = await loadTmf();
+
   return (
-    <TmfProvider value={loadTmf()}>
-      <Buybacks granularity={granularity} />
+    <TmfProvider value={tmf.data}>
+      <Buybacks granularity={granularity} source={tmf.source} />
     </TmfProvider>
   );
 }
