@@ -33,7 +33,6 @@ import {
   TMF_GRANULARITIES,
   type TmfDocumentGranularity,
   type TmfGranularity,
-  type TmfRun,
   type TmfParameterChange,
   type TmfPeriod,
 } from "@/lib/tmf/types";
@@ -46,7 +45,6 @@ import {
   Dash,
   FilterGroup,
   FilterItem,
-  Hint,
   LegendItem,
   PageHeader,
   Panel,
@@ -85,39 +83,36 @@ const LABELS = {
  * which is on screen is the whole point of carrying the discriminator this
  * far.
  */
+/**
+ * How current the figures are, in one line.
+ *
+ * `source.to_ts` is the timestamp that describes the data: the extractor stops
+ * at the latest finalized block, so it trails the clock by roughly 100 minutes
+ * and the block beside it is exactly what the totals cover. The producing run's
+ * own timestamp used to sit here too — two instants a couple of hours apart,
+ * which read as a contradiction rather than as the two facts they are.
+ *
+ * The fallback badge stays: a snapshot renders identically to live data, and
+ * that is the one difference a reader cannot otherwise see.
+ */
 function Provenance({
   toTs,
   toBlock,
-  run,
   tier,
   now,
 }: {
   toTs: string;
   toBlock: number;
-  run?: TmfRun;
   tier: "api" | "snapshot";
   now: string;
 }) {
-  const at = new Date(now);
   return (
     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-      {/* Two different lags, and only one of them is ever a problem.
-          `to_ts` trails the clock by ~100 minutes whatever the run does,
-          because the extractor stops at the latest finalized block; the run's
-          own age is the pipeline's. Showing both ages, labelled, is what lets
-          a reader tell "finality is behind" from "the pipeline is behind". */}
       <span>
         Data through {formatUtc(toTs)}{" "}
-        <span className="text-muted-foreground/70">({formatAge(toTs, at)})</span>
+        <span className="text-muted-foreground/70">({formatAge(toTs, new Date(now))})</span>{" "}
+        · block {formatTokens(toBlock)}
       </span>
-      <Hint label="The pipeline reads only finalized blocks — the chain's head minus a reorg margin — so this timestamp sits roughly 100 minutes behind the clock however recently the run completed. It is not a sign the data is stale." />
-      <span>· block {formatTokens(toBlock)}</span>
-      {run ? (
-        <span>
-          · run {run.run_id}, {formatUtc(run.finished_at)}{" "}
-          <span className="text-muted-foreground/70">({formatAge(run.finished_at, at)})</span>
-        </span>
-      ) : null}
       {tier === "snapshot" ? (
         <Badge variant="outline" className="gap-1.5 border-destructive/40 text-destructive">
           <WarningIcon aria-hidden className="size-3" />
@@ -279,7 +274,6 @@ export function Buybacks({
       <Provenance
         toTs={sourceMeta.to_ts}
         toBlock={sourceMeta.to_block}
-        run={tmf.run}
         tier={source}
         now={fetchedAt}
       />
