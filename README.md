@@ -43,26 +43,31 @@ settlement to hang a refresh off — the buyback series moves daily.
 | Tier | Source | Freshness | Datasets |
 | --- | --- | --- | --- |
 | settled | committed JSON, offline build | monthly, in a reviewed PR | `dr`, `ssr`, `sky-total`, `prime` |
-| live | settle-api, fetched server-side with revalidation, falling back to the committed snapshot | hourly | `tmf` (Buybacks & Burn) |
+| live | settle-api, fetched server-side per render, falling back to the committed snapshot | hourly | `tmf` (Buybacks & Burn) |
 
 **The settled tier is unchanged and stays that way.** Its loaders do not fetch;
 a build still reproduces from a checkout alone. The split below — refresh
 writes, build reads — describes it exactly as before.
 
 The live tier adds one thing and keeps everything else: `loadTmf()` asks
-settle-api first (`src/lib/tmf/api.ts`, revalidated every 5 minutes) and validates the
+settle-api first (`src/lib/tmf/api.ts`, fetched fresh per render) and validates the
 response with the same `validateTmf` the committed file goes through, because a
 payload nobody reviewed in a pull request deserves more checking, not less. Any
 failure — unreachable, non-200, timeout, a field renamed upstream — logs a
 warning and falls back to `data/generated/tmf.json`. **A build with no network
 therefore still succeeds**, rendering the snapshot.
 
-Its route renders per request (`dynamic = "force-dynamic"`) rather than being
-prerendered: revalidation coming only from the fetches meant the first request
-after each window served the previous render, which on a source that ticks
-hourly showed a five-hour-old run. The fetch cache is what bounds the upstream
-call rate now — at most one call per five minutes per instance, whatever the
-traffic — and it is sized to the API's own `max-age=300`.
+Its route renders per request (`dynamic = "force-dynamic"`) and its fetches are
+`no-store`. Both were caching decisions that had to go the same way: a
+prerendered route served the previous render, and a revalidated fetch is
+stale-while-revalidate, which serves the last cached copy once however old it
+is. On a page nobody opens overnight that meant the first visitor of the
+morning got yesterday's figures — observed in production as a 21-hour-old run,
+with no warning, because a cache hit looks like a success.
+
+So the tab costs about 400 kB and half a second per view, and is never older
+than the API's own document. `React.cache()` collapses the reads within one
+render, so it is one call each per request.
 
 Two lags are visible on that tab and only one is ever actionable. `source.to_ts`
 trails the clock by roughly 100 minutes because the extractor stops at the

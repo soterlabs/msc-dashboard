@@ -36,28 +36,39 @@ const configured = [process.env.SETTLE_API_URL, process.env.NEXT_PUBLIC_SETTLE_A
 
 export const SETTLE_API_URL = configured ?? DEFAULT_API_URL;
 
-/** Long enough for a cold Railway container, short enough not to stall a build. */
-const TIMEOUT_MS = 5_000;
+/**
+ * How long a render will wait for the API before giving up on it.
+ *
+ * Every render now pays this on an outage rather than one render per cache
+ * window, so it is shorter than it was: the API answers in about half a second
+ * warm, and a page that falls back to the snapshot quickly beats one that
+ * hangs first.
+ */
+const TIMEOUT_MS = 3_000;
 
 /**
- * Seconds the fetch cache holds a response.
+ * Fetched fresh on every render, never cached.
  *
- * The upstream cron ticks hourly and the API serves its documents with
- * `Cache-Control: public, max-age=300`, so five minutes bounds the page at
- * that far behind the store while keeping upstream calls to at most one per
- * five minutes per instance, whatever the traffic. Since the page renders per
- * request, this is the knob that sets the call rate — not the page.
+ * `next: { revalidate }` is stale-while-revalidate, which does not mean "at
+ * most this old" — it means "serve what is cached, then refresh in the
+ * background". On a page nobody looks at overnight, that handed the first
+ * visitor of the morning whatever was last cached, however old, and made their
+ * visit the thing that refreshed it. Observed in production: a 21-hour-old run
+ * served with no warning and no badge, because a cache hit is a success.
+ *
+ * A shorter window would not have helped — the stale copy is served once
+ * whatever the window. So the page fetches per render, which is what the live
+ * tier is for. The cost is about 400 kB and half a second per view, and
+ * `React.cache()` still collapses the two reads inside one render into one
+ * call each.
  */
-const REVALIDATE_SECONDS = 300;
+const NO_STORE = { cache: "no-store" } as const;
 
 export async function fetchTmf(): Promise<TmfDataset | null> {
   const url = `${SETTLE_API_URL}/v1/tmf/history`;
   try {
     const response = await fetch(url, {
-      // Next's own cache, not a module-level variable: revalidation then
-      // belongs to the deployment rather than to however long this process
-      // happens to live, and a build that prerenders many pages fetches once.
-      next: { revalidate: REVALIDATE_SECONDS },
+      ...NO_STORE,
       signal: AbortSignal.timeout(TIMEOUT_MS),
       headers: { accept: "application/json" },
     });
@@ -116,7 +127,7 @@ export async function fetchTmfKicks(since: Date): Promise<TmfKick[] | null> {
   const url = `${SETTLE_API_URL}/v1/tmf/kicks?from=${since.toISOString()}&limit=${KICK_LIMIT}`;
   try {
     const response = await fetch(url, {
-      next: { revalidate: REVALIDATE_SECONDS },
+      ...NO_STORE,
       signal: AbortSignal.timeout(TIMEOUT_MS),
       headers: { accept: "application/json" },
     });
@@ -182,10 +193,10 @@ export async function fetchTmfKicks(since: Date): Promise<TmfKick[] | null> {
  * upstream calls of up to 5000 rows each, and gave the five pages five
  * slightly different windows.
  *
- * Flooring keeps the key stable across the renders inside an hour. It no
- * longer equals the revalidation period, which is shorter: within one hour
- * that is at most a dozen refreshes of a single key, rather than a new key per
- * render.
+ * Nothing is cached any more, so this is no longer about cache keys — it is
+ * about the data. An unfloored window slides a little on every render, which
+ * would let the daily chart's earliest bar appear, shrink and vanish between
+ * one refresh and the next. Floored, the series is stable for the hour.
  */
 export function dailyWindowStart(now: Date): Date {
   const hour = new Date(now);
