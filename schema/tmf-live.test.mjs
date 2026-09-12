@@ -101,22 +101,38 @@ test("tmf api: a 200 carrying the wrong shape returns null", async () => {
   assert.equal(result, null);
 });
 
-test("tmf api: the fetch is cached to the source's cadence, not the page's", async () => {
-  // The page renders per request, so this number is what actually bounds the
-  // upstream call rate. The API serves max-age=300 and the cron ticks hourly.
+test("tmf api: nothing is cached — every render fetches", async () => {
+  /* Not a style preference. `next: { revalidate }` is stale-while-revalidate,
+     so it served the first visitor of the morning whatever was last cached —
+     in production, a 21-hour-old run, with no warning and no badge, because a
+     cache hit is a success. A shorter window would not have helped: the stale
+     copy is served once whatever the window. */
   let init;
   await withFetch(async (_url, opts) => {
     init = opts;
     return new Response(JSON.stringify(fixture()), { status: 200 });
   }, fetchTmf);
-  assert.equal(init.next.revalidate, 300);
+  assert.equal(init.cache, "no-store");
+  assert.equal(init.next, undefined, "no revalidation window alongside no-store");
 
   let kicksInit;
   await withFetch(async (_url, opts) => {
     kicksInit = opts;
     return new Response(JSON.stringify({ kicks: [] }), { status: 200 });
   }, () => fetchTmfKicks(new Date()));
-  assert.equal(kicksInit.next.revalidate, 300);
+  assert.equal(kicksInit.cache, "no-store");
+  assert.equal(kicksInit.next, undefined);
+});
+
+test("tmf api: a render waits 3s for the API, not longer", async () => {
+  // Every render pays this on an outage now, rather than one render per cache
+  // window, so falling back quickly matters more than waiting hopefully.
+  let init;
+  await withFetch(async (_url, opts) => {
+    init = opts;
+    return new Response(JSON.stringify(fixture()), { status: 200 });
+  }, fetchTmf);
+  assert.ok(init.signal, "an abort signal is set");
 });
 
 test("tmf api: a good response comes back validated", async () => {
