@@ -22,16 +22,12 @@ import {
   formatTokens,
   formatAge,
   formatUtc,
+  monthLong,
   shortAddress,
 } from "@/lib/format";
 import { explorerUrl, txUrl } from "@/lib/links";
 import { paths } from "@/lib/routes";
-import {
-  fillGaps,
-  preTmfBurnTotal,
-  tmfBurnTotal,
-  withoutPreTmfBurns,
-} from "@/lib/tmf/domain";
+import { fillGaps } from "@/lib/tmf/domain";
 import { Badge } from "@/components/ui/badge";
 import {
   TMF_DAILY_WINDOW_DAYS,
@@ -76,7 +72,7 @@ const LABELS = {
   usds_total: "Buyback + dividends",
   sky_bought: "SKY bought",
   sky_avg_price: "Avg price (USDS/SKY)",
-  sky_burn_protocol: "SKY burned (protocol)",
+  sky_burn_protocol: "SKY burned",
 };
 
 /**
@@ -177,10 +173,7 @@ export function Buybacks({
   // rather than "the engine was idle for two".
   const series = React.useMemo(() => {
     const raw = granularity === "daily" ? daily : tmf.periods[granularity];
-    // The same cutoff as the burn panel: the table and the tooltips carry burn
-    // figures too, and a June 2025 row reading 426M there would say exactly
-    // what the chart was changed to stop saying.
-    return withoutPreTmfBurns(fillGaps(raw, granularity));
+    return fillGaps(raw, granularity);
   }, [tmf, granularity, daily]);
   const rows = React.useMemo(() => [...series].reverse(), [series]);
 
@@ -191,17 +184,25 @@ export function Buybacks({
      at this granularity". It falls back to the monthly series instead. */
   const burnGranularity: TmfGranularity = granularity === "daily" ? "monthly" : granularity;
   const burnSeries = React.useMemo(
-    () =>
-      withoutPreTmfBurns(
-        fillGaps(tmf.periods[burnGranularity as TmfDocumentGranularity], burnGranularity),
-      ),
+    () => fillGaps(tmf.periods[burnGranularity as TmfDocumentGranularity], burnGranularity),
     [tmf, burnGranularity],
   );
-  /* The document's own totals count every burn it has ever recorded, so the
-     headline is summed from the monthly rows the cutoff keeps. */
-  const burnTotal = React.useMemo(() => tmfBurnTotal(tmf.periods.monthly), [tmf]);
-  const excludedBurn = React.useMemo(() => preTmfBurnTotal(tmf.periods.monthly), [tmf]);
-  const anyBurn = burnSeries.some((r) => r.sky_burn_protocol > 0);
+  /* Both figures come classified from the API, which is why there is no date
+     in this file any more. `sky_burn_protocol` sums the two and is therefore
+     the wrong number for anything about buyback policy — 429M against the
+     engine's 2.9M. */
+  const burnTotal = totals.sky_burn_engine;
+  const correction = totals.sky_burn_supply_correction;
+  /* Named by the period that carries it rather than by a literal date, so the
+     footnote keeps describing whatever the API classifies this way. */
+  const correctionPeriods = React.useMemo(
+    () =>
+      tmf.periods.monthly
+        .filter((r) => r.sky_burn_supply_correction > 0)
+        .map((r) => monthLong(r.period)),
+    [tmf],
+  );
+  const anyBurn = burnSeries.some((r) => r.sky_burn_engine > 0);
 
   return (
     <div className="flex flex-col gap-6">
@@ -390,7 +391,9 @@ export function Buybacks({
           granularity={burnGranularity}
           chain={sourceMeta.chain}
           total={burnTotal}
-          excluded={excludedBurn}
+          correction={correction}
+          correctionPeriods={correctionPeriods}
+          effectiveFrom={sourceMeta.tmf_effective_from}
           note={
             granularity === "daily"
               ? "Burns are published monthly at the finest — the daily view above has none to show."
@@ -490,11 +493,11 @@ function PeriodTooltip({
           label={LABELS.usds_to_stakers}
           value={formatTokens(row.usds_to_stakers)}
         />
-        {row.sky_burn_protocol > 0 && (
+        {row.sky_burn_engine > 0 && (
           <TooltipRow
             color="var(--destructive)"
             label={LABELS.sky_burn_protocol}
-            value={`${formatTokens(row.sky_burn_protocol)} SKY`}
+            value={`${formatTokens(row.sky_burn_engine)} SKY`}
           />
         )}
       </dl>
@@ -548,16 +551,22 @@ function BurnChart({
   granularity,
   chain,
   total,
-  excluded,
+  correction,
+  correctionPeriods,
+  effectiveFrom,
   note,
 }: {
   series: TmfPeriod[];
   granularity: TmfGranularity;
   chain: string;
-  /** Engine burns only — the document's own total counts more than these. */
+  /** Engine burns only — `sky_burn_protocol` counts the correction too. */
   total: number;
-  /** Burned before the engine's first, named in the footnote rather than hidden. */
-  excluded: number;
+  /** The one-off correction, named in the footnote rather than hidden. */
+  correction: number;
+  /** Which period(s) carry it, for that footnote. */
+  correctionPeriods: string[];
+  /** The TMF's first cast — shown to explain the split, never to recompute it. */
+  effectiveFrom: string;
   /** Why this panel is on a different granularity than the one selected. */
   note?: string;
 }) {
@@ -565,17 +574,17 @@ function BurnChart({
   return (
     <Panel
       title="SKY burned"
-      hint="The Smart Burn Engine's own burns: 10/55 of the SKY bought under the 55% regime, cast in the following month's spell."
+      hint={`The Smart Burn Engine's own burns: 10/55 of the SKY bought under the 55% regime, retired by the following month's spell. The engine took effect ${formatUtc(effectiveFrom)}; the API classifies every burn against that, and this chart shows only the engine's.`}
       description={`${GRANULARITY_LABEL[granularity]} · ${formatTokens(total)} SKY burned${note ? ` · ${note}` : ""}`}
       footer={
         <div className="grid gap-1 text-xs text-muted-foreground">
-          {excluded > 0 ? (
+          {correction > 0 ? (
             /* Named rather than silently dropped: it is a real on-chain burn,
                and someone reconciling against the chain will find it. */
             <p>
-              Excludes {formatTokens(excluded)} SKY burned before the engine
-              began — supply created in the MKR→SKY conversion and corrected by
-              the 2025-06-30 executive, not a buyback burn.
+              Excludes {formatTokens(correction)} SKY retired
+              {correctionPeriods.length ? ` in ${correctionPeriods.join(", ")}` : ""}, a
+              one-off correction of supply created in the MKR→SKY conversion.
             </p>
           ) : null}
           {anyOther ? (
@@ -614,7 +623,7 @@ function BurnChart({
             />
             <ChartTooltip cursor={false} content={<BurnTooltip anyOther={anyOther} />} />
             <RBar
-              dataKey="sky_burn_protocol"
+              dataKey="sky_burn_engine"
               fill="var(--color-sky_burn_protocol)"
               radius={4}
               maxBarSize={48}
@@ -641,7 +650,7 @@ function BurnTooltip({
     <div className="min-w-[13rem] rounded-lg border bg-popover px-3 py-2 text-xs shadow-lg">
       <p className="text-muted-foreground">{row.period}</p>
       <p className="mt-0.5 text-base font-semibold tabular-nums">
-        {formatTokens(row.sky_burn_protocol)}
+        {formatTokens(row.sky_burn_engine)}
         <span className="ml-1 text-xs font-normal text-muted-foreground">SKY</span>
       </p>
       <p className="text-[11px] text-muted-foreground">{LABELS.sky_burn_protocol}</p>
@@ -704,8 +713,8 @@ function PeriodTable({
               </Td>
               <Td numeric>{formatTokens(r.sky_bought)}</Td>
               <Td numeric>{formatPrice6(r.sky_avg_price)}</Td>
-              <Td numeric className={cn(r.sky_burn_protocol === 0 && "text-muted-foreground")}>
-                {r.sky_burn_protocol === 0 ? <Dash /> : formatTokens(r.sky_burn_protocol)}
+              <Td numeric className={cn(r.sky_burn_engine === 0 && "text-muted-foreground")}>
+                {r.sky_burn_engine === 0 ? <Dash /> : formatTokens(r.sky_burn_engine)}
               </Td>
             </TableRow>
           ))}

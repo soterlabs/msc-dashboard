@@ -75,14 +75,19 @@ latest finalized block; the run's own timestamp trails it by the cron cadence.
 The provenance line shows the age of both, so "finality is behind" reads
 differently from "the pipeline is behind".
 
-The burn series on that tab starts at **2026-09**, the month the Smart Burn
-Engine cast its first burn. The 426,292,860 SKY burned by the 2025-06-30
-executive corrected supply created in the MKR→SKY conversion — a real burn, not
-an engine burn, and 150× the first real one — so it is excluded from the chart,
-the table and the total, and named in a footnote instead. Nothing in the data
-separates the two (both are protocol burns from the Pause Proxy to the zero
-address), so `TMF_BURNS_FROM` in `src/lib/tmf/domain.ts` asserts it, and should
-be replaced by whatever the API eventually carries.
+The burn figures on that tab are the **engine's own** — `sky_burn_engine`,
+classified upstream since schema 1.2. `sky_burn_protocol` sums those with the
+426,292,860 SKY the 2025-06-30 executive retired to correct supply created in
+the MKR→SKY conversion, which is 150× the engine's total and would read as
+buybacks; it is named in a footnote instead, driven by
+`sky_burn_supply_correction`.
+
+Both are Pause Proxy → zero-address burns on chain, so nothing in the raw data
+separates them. The dashboard used to assert the split with a hardcoded date;
+it now reads the API's classification and holds no date of its own.
+`source.tmf_effective_from` is shown to *explain* the boundary, never to
+recompute it. The validator requires **1.2 or later** for that reason: against
+1.1 those fields are absent and the burn figures would render blank.
 
 The tab's **daily** granularity and its last-24-hours card are aggregated from
 that API's per-kick endpoint, not from the history document — which publishes

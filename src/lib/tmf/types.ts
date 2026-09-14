@@ -17,6 +17,11 @@ export interface TmfSource {
   to_block: number;
   /** ISO-8601 UTC — how current the figures are. */
   to_ts: string;
+  /**
+   * The TMF's first cast. Every burn is classified against it upstream; the
+   * tab shows it to explain the split, and never to recompute it.
+   */
+  tmf_effective_from: string;
   /** Chainlog role → address. */
   contracts: Record<string, string>;
   /** How each series is derived on chain. */
@@ -44,8 +49,23 @@ export interface TmfPeriod {
   sky_bought: number;
   /** usds_buyback / sky_bought, volume-weighted. Null with no kicks. */
   sky_avg_price: number | null;
-  /** SKY sent to a burn sink by the Pause Proxy — the true burn. */
+  /**
+   * SKY sent to a burn sink by the Pause Proxy: the engine's burns and the
+   * one-off correction summed. Dominated by the correction — 429M against the
+   * engine's 2.9M — so it is never the headline for anything about buybacks.
+   */
   sky_burn_protocol: number;
+  /**
+   * The Smart Burn Engine's own burns — the 10/55 share of a month's buys,
+   * retired by the following month's spell. This is what the tab means by
+   * "SKY burned".
+   */
+  sky_burn_engine: number;
+  /**
+   * Burned by the protocol before the TMF took effect. One event: the
+   * 2025-06-30 executive retiring supply created in the MKR→SKY conversion.
+   */
+  sky_burn_supply_correction: number;
   /** SKY sent to 0x…dEaD by anyone else. A footnote, not a headline. */
   sky_burn_other: number;
   burn_events: number;

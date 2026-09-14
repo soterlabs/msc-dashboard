@@ -134,6 +134,8 @@ test("tmf: a burn-only period is accepted with its nulls", () => {
     sky_bought: 0,
     sky_avg_price: null,
     sky_burn_protocol: 1234.5,
+    sky_burn_engine: 1234.5,
+    sky_burn_supply_correction: 0,
     sky_burn_other: 0,
     burn_events: 1,
     first_ts: null,
@@ -204,6 +206,15 @@ test("tmf: a minor schema bump is accepted", () => {
   const tmf = fixture("tmf");
   tmf.schema_version = "1.9.3";
   assert.ok(validateTmf(tmf));
+});
+
+test("tmf: a minor below the one this build needs is rejected", () => {
+  // 1.2 added the engine/correction split that the burn figures now read, so
+  // 1.1 fails rather than rendering them blank. Not a field-level complaint,
+  // so it does not go through `rejects`.
+  const tmf = fixture("tmf");
+  tmf.schema_version = "1.1.0";
+  assert.throws(() => validateTmf(tmf), /1\.1\.0/);
 });
 
 test("sky-total: a stringified number is rejected", () => {

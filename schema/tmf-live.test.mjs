@@ -35,7 +35,7 @@ const fixture = () =>
 
 test("tmf api: the live document passes the same validator as the committed file", () => {
   const doc = validateTmf(fixture());
-  assert.equal(doc.schema_version, "1.1.0");
+  assert.equal(doc.schema_version, "1.2.0");
   assert.ok(doc.periods.monthly.length > 0);
   assert.ok(doc.totals.usds_total > 0);
 });
@@ -141,13 +141,83 @@ test("tmf api: a good response comes back validated", async () => {
     fetchTmf,
   );
   assert.ok(result);
-  assert.equal(result.schema_version, "1.1.0");
+  assert.equal(result.schema_version, "1.2.0");
+});
+
+/* ------------------------------------------------------------ burn kinds */
+
+// Both burns are Pause Proxy → zero address on chain, so the dashboard used to
+// hardcode a date to tell them apart. 1.2 classifies them at source; these
+// assert the tab reads that classification rather than re-deriving it.
+
+test("tmf burns: the engine's burns and the correction are separate fields", () => {
+  const doc = validateTmf(fixture());
+  assert.equal(typeof doc.totals.sky_burn_engine, "number");
+  assert.equal(typeof doc.totals.sky_burn_supply_correction, "number");
+  // The documented identity: protocol is the two summed.
+  assert.ok(
+    Math.abs(
+      doc.totals.sky_burn_engine +
+        doc.totals.sky_burn_supply_correction -
+        doc.totals.sky_burn_protocol,
+    ) < 0.02,
+    "sky_burn_protocol = engine + supply_correction",
+  );
+  // And they are wildly different sizes, which is the whole reason for the
+  // split: showing `protocol` as "SKY burned" reads as 429M of buybacks.
+  assert.ok(doc.totals.sky_burn_supply_correction > doc.totals.sky_burn_engine * 50);
+});
+
+test("tmf burns: the classification boundary is published, not computed", () => {
+  const doc = validateTmf(fixture());
+  assert.equal(typeof doc.source.tmf_effective_from, "string");
+  assert.ok(Date.parse(doc.source.tmf_effective_from) > 0);
+});
+
+test("tmf burns: a period splits its burns the same way", () => {
+  const doc = validateTmf(fixture());
+  for (const row of doc.periods.monthly) {
+    assert.ok(
+      Math.abs(row.sky_burn_engine + row.sky_burn_supply_correction - row.sky_burn_protocol) < 0.02,
+      `${row.period} does not split cleanly`,
+    );
+  }
+});
+
+/* -------------------------------------------------------------- versions */
+
+test("tmf: 1.1 is rejected now that the tab depends on 1.2's fields", () => {
+  // Additive minors are usually safe to accept, but this build READS the
+  // engine/correction split: against 1.1 those fields are undefined and the
+  // burn figures render blank, so it fails rather than degrades.
+  const old = fixture();
+  old.schema_version = "1.1.0";
+  assert.throws(() => validateTmf(old), /1\.1\.0/);
+});
+
+test("tmf: 1.2 and later minors are accepted", () => {
+  for (const version of ["1.2.0", "1.3.7", "1.12.0"]) {
+    const doc = fixture();
+    doc.schema_version = version;
+    assert.ok(validateTmf(doc), `${version} should be readable`);
+  }
+});
+
+test("tmf: a different major is still rejected", () => {
+  const next = fixture();
+  next.schema_version = "2.0.0";
+  assert.throws(() => validateTmf(next), /2\.0\.0/);
 });
 
 /* ---------------------------------------------------------- the two tiers */
 
 test("tmf tiers: a live document is served as the api tier", () => {
-  const { data, source, fetchedAt } = resolveTmf(fixture());
+  // Stated, not assumed: the fixture is a point-in-time capture and the
+  // committed snapshot moves independently, so whichever was captured later
+  // would otherwise decide this test. "Live" here means "not behind".
+  const live = fixture();
+  live.source.to_block = Number.MAX_SAFE_INTEGER;
+  const { data, source, fetchedAt } = resolveTmf(live);
   assert.equal(source, "api");
   assert.equal(data.run.run_id, fixture().run.run_id);
   assert.ok(Date.parse(fetchedAt) > 0);

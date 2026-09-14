@@ -407,14 +407,20 @@ export function validateSkyTotal(data: unknown): SkyTotalDataset {
 /* ------------------------------------------------------------------ TMF */
 
 /**
- * The major version this build's types and views were written against.
+ * The versions this build can read: major 1, minor 1.2 or later.
  *
- * The refresh checks this too, and on purpose: that one stops a bad document
- * being committed, this one stops a committed document being served if the
- * check ever gets bypassed — `pnpm refresh` writing the file and `pnpm build`
- * reading it are separate acts, hours or days apart.
+ * A minimum minor as well as a major, because minors are additive and this
+ * build now DEPENDS on what 1.2 added — the engine/correction split. Against a
+ * 1.1 document `sky_burn_engine` would be undefined and the burn figures would
+ * render as blanks, so it is rejected rather than degraded.
+ *
+ * The refresh checks the major too, and on purpose: that one stops a bad
+ * document being committed, this one stops a committed document being served
+ * if the check is ever bypassed — `pnpm refresh` writing the file and
+ * `pnpm build` reading it are separate acts, hours or days apart.
  */
 const TMF_SCHEMA_MAJOR = 1;
+const TMF_SCHEMA_MIN_MINOR = 2;
 
 /**
  * Mirrors TMF_DOCUMENT_GRANULARITIES in tmf/types.ts — the granularities the
@@ -442,6 +448,8 @@ const TMF_PERIOD_NUMBERS = [
   "usds_total",
   "sky_bought",
   "sky_burn_protocol",
+  "sky_burn_engine",
+  "sky_burn_supply_correction",
   "sky_burn_other",
   "burn_events",
 ];
@@ -485,6 +493,7 @@ export function validateTmf(
     num(p, "source.from_block", source.from_block);
     num(p, "source.to_block", source.to_block);
     str(p, "source.to_ts", source.to_ts);
+    str(p, "source.tmf_effective_from", source.tmf_effective_from);
     stringMap(p, "source.contracts", source.contracts);
     stringMap(p, "source.events", source.events);
   } else {
@@ -551,11 +560,12 @@ export function validateTmf(
   // After the field check, not before: a document whose shape already failed
   // would report the version as its only problem and hide the rest.
   const version = String(data.schema_version ?? "");
-  const major = Number(version.split(".")[0]);
-  if (major !== TMF_SCHEMA_MAJOR) {
+  const [major, minor] = version.split(".").map(Number);
+  if (major !== TMF_SCHEMA_MAJOR || !(minor >= TMF_SCHEMA_MIN_MINOR)) {
     throw new Error(
       `data/generated/tmf.json has schema_version ${version || "(missing)"}, ` +
-        `and this build reads major ${TMF_SCHEMA_MAJOR}. Rerun \`pnpm refresh -- --only=tmf\` ` +
+        `and this build reads ${TMF_SCHEMA_MAJOR}.${TMF_SCHEMA_MIN_MINOR} or later ` +
+        `within major ${TMF_SCHEMA_MAJOR}. Rerun \`pnpm refresh -- --only=tmf\` ` +
         `and reconcile src/lib/tmf/types.ts with the dataset's README.`,
     );
   }
