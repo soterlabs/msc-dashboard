@@ -12,7 +12,16 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { aggregateKicks, dailyPeriods, fillGaps } from "../src/lib/tmf/domain.ts";
+import {
+  TMF_BURNS_FROM,
+  aggregateKicks,
+  dailyPeriods,
+  fillGaps,
+  holdsTmfBurns,
+  preTmfBurnTotal,
+  tmfBurnTotal,
+  withoutPreTmfBurns,
+} from "../src/lib/tmf/domain.ts";
 
 const period = (p, over = {}) => ({
   period: p,
@@ -28,6 +37,64 @@ const period = (p, over = {}) => ({
   first_ts: null,
   last_ts: null,
   ...over,
+});
+
+/* ------------------------------------------------------------------ burns */
+
+// The 2025-06-30 executive burned 426,292,860.23 SKY to correct supply created
+// in the MKR→SKY conversion. It is a real burn and not an engine burn, and at
+// 426M against the first engine burn's 2.86M it is the only thing a shared axis
+// would show. These assert it is excluded — and that nothing else is.
+
+test("burns: the cutoff keeps periods that END on or after it", () => {
+  assert.equal(holdsTmfBurns("2025-06"), false);
+  assert.equal(holdsTmfBurns("2026-09"), true);
+  assert.equal(holdsTmfBurns("2026-08"), false);
+  // A quarter or a year containing the cutoff is kept, not dropped for having
+  // started before it — 2026-Q3 runs Jul–Sep and holds the first engine burn.
+  assert.equal(holdsTmfBurns("2026-Q3"), true);
+  assert.equal(holdsTmfBurns("2026-Q2"), false);
+  assert.equal(holdsTmfBurns("2025-Q2"), false);
+  assert.equal(holdsTmfBurns("2026"), true);
+  assert.equal(holdsTmfBurns("2025"), false);
+  // Daily rows carry no burns, but must not throw on the format.
+  assert.equal(holdsTmfBurns("2026-09-13"), true);
+});
+
+test("burns: pre-engine burns are zeroed, not the rows", () => {
+  const rows = withoutPreTmfBurns([
+    period("2025-06", {
+      usds_total: 14410000,
+      kicks: 1441,
+      sky_burn_protocol: 426292860.23,
+      sky_burn_other: 1.61,
+      burn_events: 2,
+    }),
+    period("2026-09", { sky_burn_protocol: 2860943.76, burn_events: 1 }),
+  ]);
+  // June 2025 was a real month of buying; only its burn columns go.
+  assert.equal(rows[0].usds_total, 14410000);
+  assert.equal(rows[0].kicks, 1441);
+  assert.equal(rows[0].sky_burn_protocol, 0);
+  assert.equal(rows[0].sky_burn_other, 0);
+  assert.equal(rows[0].burn_events, 0);
+  assert.equal(rows[1].sky_burn_protocol, 2860943.76);
+});
+
+test("burns: the totals split on the same cutoff", () => {
+  const rows = [
+    period("2025-06", { sky_burn_protocol: 426292860.23 }),
+    period("2026-09", { sky_burn_protocol: 2860943.76 }),
+  ];
+  assert.equal(tmfBurnTotal(rows), 2860943.76);
+  assert.equal(preTmfBurnTotal(rows), 426292860.23);
+  // The footnote's figure and the headline's must account for everything
+  // between them, or the tab has quietly lost a burn.
+  assert.equal(tmfBurnTotal(rows) + preTmfBurnTotal(rows), 429153803.99);
+});
+
+test("burns: the cutoff is the month the engine's first burn landed", () => {
+  assert.equal(TMF_BURNS_FROM, "2026-09");
 });
 
 /* --------------------------------------------------------------- fillGaps */

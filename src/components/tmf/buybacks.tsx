@@ -26,7 +26,12 @@ import {
 } from "@/lib/format";
 import { explorerUrl, txUrl } from "@/lib/links";
 import { paths } from "@/lib/routes";
-import { fillGaps } from "@/lib/tmf/domain";
+import {
+  fillGaps,
+  preTmfBurnTotal,
+  tmfBurnTotal,
+  withoutPreTmfBurns,
+} from "@/lib/tmf/domain";
 import { Badge } from "@/components/ui/badge";
 import {
   TMF_DAILY_WINDOW_DAYS,
@@ -172,7 +177,10 @@ export function Buybacks({
   // rather than "the engine was idle for two".
   const series = React.useMemo(() => {
     const raw = granularity === "daily" ? daily : tmf.periods[granularity];
-    return fillGaps(raw, granularity);
+    // The same cutoff as the burn panel: the table and the tooltips carry burn
+    // figures too, and a June 2025 row reading 426M there would say exactly
+    // what the chart was changed to stop saying.
+    return withoutPreTmfBurns(fillGaps(raw, granularity));
   }, [tmf, granularity, daily]);
   const rows = React.useMemo(() => [...series].reverse(), [series]);
 
@@ -183,9 +191,16 @@ export function Buybacks({
      at this granularity". It falls back to the monthly series instead. */
   const burnGranularity: TmfGranularity = granularity === "daily" ? "monthly" : granularity;
   const burnSeries = React.useMemo(
-    () => fillGaps(tmf.periods[burnGranularity as TmfDocumentGranularity], burnGranularity),
+    () =>
+      withoutPreTmfBurns(
+        fillGaps(tmf.periods[burnGranularity as TmfDocumentGranularity], burnGranularity),
+      ),
     [tmf, burnGranularity],
   );
+  /* The document's own totals count every burn it has ever recorded, so the
+     headline is summed from the monthly rows the cutoff keeps. */
+  const burnTotal = React.useMemo(() => tmfBurnTotal(tmf.periods.monthly), [tmf]);
+  const excludedBurn = React.useMemo(() => preTmfBurnTotal(tmf.periods.monthly), [tmf]);
   const anyBurn = burnSeries.some((r) => r.sky_burn_protocol > 0);
 
   return (
@@ -374,6 +389,8 @@ export function Buybacks({
           series={burnSeries}
           granularity={burnGranularity}
           chain={sourceMeta.chain}
+          total={burnTotal}
+          excluded={excludedBurn}
           note={
             granularity === "daily"
               ? "Burns are published monthly at the finest — the daily view above has none to show."
@@ -530,11 +547,17 @@ function BurnChart({
   series,
   granularity,
   chain,
+  total,
+  excluded,
   note,
 }: {
   series: TmfPeriod[];
   granularity: TmfGranularity;
   chain: string;
+  /** Engine burns only — the document's own total counts more than these. */
+  total: number;
+  /** Burned before the engine's first, named in the footnote rather than hidden. */
+  excluded: number;
   /** Why this panel is on a different granularity than the one selected. */
   note?: string;
 }) {
@@ -542,15 +565,26 @@ function BurnChart({
   return (
     <Panel
       title="SKY burned"
-      hint="SKY sent to a burn sink by the Pause Proxy — the true burn. Third-party sends are counted separately and are not a protocol act."
-      description={`${GRANULARITY_LABEL[granularity]} · SKY${note ? ` · ${note}` : ""}`}
+      hint="The Smart Burn Engine's own burns: 10/55 of the SKY bought under the 55% regime, cast in the following month's spell."
+      description={`${GRANULARITY_LABEL[granularity]} · ${formatTokens(total)} SKY burned${note ? ` · ${note}` : ""}`}
       footer={
-        anyOther ? (
-          <p className="text-xs text-muted-foreground">
-            Third-party sends to <BurnSinkLink chain={chain} /> are excluded from
-            the bars and shown in the tooltip.
-          </p>
-        ) : null
+        <div className="grid gap-1 text-xs text-muted-foreground">
+          {excluded > 0 ? (
+            /* Named rather than silently dropped: it is a real on-chain burn,
+               and someone reconciling against the chain will find it. */
+            <p>
+              Excludes {formatTokens(excluded)} SKY burned before the engine
+              began — supply created in the MKR→SKY conversion and corrected by
+              the 2025-06-30 executive, not a buyback burn.
+            </p>
+          ) : null}
+          {anyOther ? (
+            <p>
+              Third-party sends to <BurnSinkLink chain={chain} /> are excluded
+              from the bars and shown in the tooltip.
+            </p>
+          ) : null}
+        </div>
       }
     >
       <div className="mb-4 flex flex-wrap gap-4">

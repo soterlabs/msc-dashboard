@@ -7,6 +7,28 @@
  */
 import type { TmfGranularity, TmfKick, TmfPeriod } from "./types";
 
+/**
+ * The month the Smart Burn Engine's own burns begin, `YYYY-MM`.
+ *
+ * Everything before it is a different kind of event. The 2025-06-30 executive
+ * burned 426,292,860.23 SKY to correct supply created in the MKR→SKY
+ * conversion: at 1 MKR : 24,000 SKY a full 1M MKR implies 24B SKY, but MKR had
+ * been burned before the conversion, so that much SKY existed that should not
+ * have. Exactly 17,762.2 MKR-equivalent, which is what a correction looks like
+ * and what a buyback burn does not.
+ *
+ * Charted beside engine burns it says the engine did it, and at 426M against
+ * the first real burn's 2.86M it would be the only thing on the axis.
+ *
+ * The first engine burn — 10/55 of the SKY bought under the 55% regime — cast
+ * on 2026-09-13. Nothing in the data separates the two: both are `protocol`
+ * burns from the Pause Proxy to the zero address, so the split is a judgement,
+ * and it lives here only until the API carries it. When a burn row gains a kind
+ * (or the document a "burns from" date), this constant and the helpers below
+ * should read that instead.
+ */
+export const TMF_BURNS_FROM = "2026-09";
+
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
 /** An empty period — the shape a gap takes. */
@@ -67,6 +89,56 @@ export function dailyPeriods(kicks: TmfKick[]): TmfPeriod[] {
   return [...byDay.entries()]
     .sort(([a], [b]) => (a < b ? -1 : 1))
     .map(([day, rows]) => aggregateKicks(rows, day));
+}
+
+/* ------------------------------------------------------------------ burns */
+
+/** The last calendar month a period covers, `YYYY-MM`. */
+function periodEndsIn(period: string): string {
+  if (/^\d{4}$/.test(period)) return `${period}-12`;
+  const quarter = period.match(/^(\d{4})-Q([1-4])$/);
+  if (quarter) return `${quarter[1]}-${String(Number(quarter[2]) * 3).padStart(2, "0")}`;
+  // Monthly already, or daily — a day ends in its own month.
+  return period.slice(0, 7);
+}
+
+/**
+ * Whether a period can hold an engine burn.
+ *
+ * Keyed on where the period ENDS, so a quarter or a year containing the cutoff
+ * is kept rather than dropped for having started before it.
+ */
+export function holdsTmfBurns(period: string): boolean {
+  return periodEndsIn(period) >= TMF_BURNS_FROM;
+}
+
+/**
+ * The same rows with pre-engine burns zeroed out.
+ *
+ * Zeroed, not filtered: these rows carry the buyback and dividend figures too,
+ * and June 2025 was a real month of buying. Only the burn columns are affected.
+ */
+export function withoutPreTmfBurns(rows: TmfPeriod[]): TmfPeriod[] {
+  return rows.map((r) =>
+    holdsTmfBurns(r.period)
+      ? r
+      : { ...r, sky_burn_protocol: 0, sky_burn_other: 0, burn_events: 0 },
+  );
+}
+
+/** Engine burns only. Summed from the rows rather than read off the document's
+ * own total, which counts every burn ever recorded. */
+export function tmfBurnTotal(rows: TmfPeriod[]): number {
+  return rows
+    .filter((r) => holdsTmfBurns(r.period))
+    .reduce((total, r) => total + r.sky_burn_protocol, 0);
+}
+
+/** What the cutoff excludes — the figure the footnote has to name. */
+export function preTmfBurnTotal(rows: TmfPeriod[]): number {
+  return rows
+    .filter((r) => !holdsTmfBurns(r.period))
+    .reduce((total, r) => total + r.sky_burn_protocol, 0);
 }
 
 /* ------------------------------------------------------------------- gaps */

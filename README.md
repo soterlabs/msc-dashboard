@@ -75,6 +75,15 @@ latest finalized block; the run's own timestamp trails it by the cron cadence.
 The provenance line shows the age of both, so "finality is behind" reads
 differently from "the pipeline is behind".
 
+The burn series on that tab starts at **2026-09**, the month the Smart Burn
+Engine cast its first burn. The 426,292,860 SKY burned by the 2025-06-30
+executive corrected supply created in the MKR→SKY conversion — a real burn, not
+an engine burn, and 150× the first real one — so it is excluded from the chart,
+the table and the total, and named in a footnote instead. Nothing in the data
+separates the two (both are protocol burns from the Pause Proxy to the zero
+address), so `TMF_BURNS_FROM` in `src/lib/tmf/domain.ts` asserts it, and should
+be replaced by whatever the API eventually carries.
+
 The tab's **daily** granularity and its last-24-hours card are aggregated from
 that API's per-kick endpoint, not from the history document — which publishes
 monthly, quarterly and annual only. Daily therefore covers a rolling 90-day
