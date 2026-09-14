@@ -27,7 +27,7 @@ import {
 } from "@/lib/format";
 import { explorerUrl, txUrl } from "@/lib/links";
 import { paths } from "@/lib/routes";
-import { fillGaps } from "@/lib/tmf/domain";
+import { fillGaps, isOvertakenNote } from "@/lib/tmf/domain";
 import { Badge } from "@/components/ui/badge";
 import {
   TMF_DAILY_WINDOW_DAYS,
@@ -163,7 +163,12 @@ export function Buybacks({
 }) {
   const tmf = useTmf();
   const router = useRouter();
-  const { totals, latest_kick: latest, source: sourceMeta, notes, definitions } = tmf;
+  const { totals, latest_kick: latest, source: sourceMeta, definitions } = tmf;
+  /* Verbatim, minus any the data has overtaken — see isOvertakenNote. */
+  const notes = React.useMemo(
+    () => tmf.notes.filter((n) => !isOvertakenNote(n, totals.sky_burn_engine)),
+    [tmf, totals],
+  );
 
   // Newest first: the question a reader arrives with is what happened lately,
   // and the chart below reads the other way because time runs left to right.
