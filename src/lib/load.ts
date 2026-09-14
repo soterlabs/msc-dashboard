@@ -138,7 +138,7 @@ export function resolveTmf(
     : null;
 
   const base = { daily, last24h, fetchedAt: now.toISOString() };
-  if (live && usable(live, snapshot)) {
+  if (live && usable(live)) {
     return { ...base, data: live, source: "api" };
   }
   return { ...base, data: snapshot, source: "snapshot" };
@@ -147,23 +147,29 @@ export function resolveTmf(
 /**
  * Whether a live document should displace the snapshot.
  *
- * `validateTmf` checks types, not substance, so a run that finished with an
- * empty backfill returns a document where every field is the right type and
- * every figure is zero — and it would render as "0 USDS", live and labelled
- * current. The block height is the other half: the API is meant to be ahead of
- * a file refreshed monthly, so a live document behind it is a regression
- * upstream, not fresher data.
+ * One question only: is it substantively there? `validateTmf` checks types, not
+ * substance, so a run that finished with an empty backfill returns a document
+ * where every field is the right type and every figure is zero — and it would
+ * render as "0 USDS", live and labelled current.
+ *
+ * It used to ask a second question — is the live block height at least the
+ * snapshot's — on the reasoning that the API runs hourly against a file
+ * refreshed monthly, so a live document behind it had regressed. That premise
+ * does not hold: the snapshot comes from settlement-reports, published by
+ * settlement-cycle, which is a different pipeline from settle-api reading the
+ * same chain on its own cadence. The two overtake each other by minutes as a
+ * matter of course, and once the snapshot was refreshed the check started
+ * firing on nine minutes of ordinary skew — switching the live tier off and
+ * captioning it "live history unavailable" while the API was answering fine.
+ *
+ * The snapshot is a fallback for not being able to reach the API. It was never
+ * meant to compete on freshness, and the provenance line already shows how old
+ * the figures are, so a genuinely regressed API is visible without a second
+ * mechanism inventing an outage.
  */
-function usable(live: TmfDataset, snapshot: TmfDataset): boolean {
+function usable(live: TmfDataset): boolean {
   if (live.periods.monthly.length === 0) {
     console.warn("[tmf] live document has no monthly periods — keeping the snapshot");
-    return false;
-  }
-  if (live.source.to_block < snapshot.source.to_block) {
-    console.warn(
-      `[tmf] live document stops at block ${live.source.to_block}, behind the ` +
-        `snapshot's ${snapshot.source.to_block} — keeping the snapshot`,
-    );
     return false;
   }
   return true;

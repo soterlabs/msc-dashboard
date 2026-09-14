@@ -212,12 +212,7 @@ test("tmf: a different major is still rejected", () => {
 /* ---------------------------------------------------------- the two tiers */
 
 test("tmf tiers: a live document is served as the api tier", () => {
-  // Stated, not assumed: the fixture is a point-in-time capture and the
-  // committed snapshot moves independently, so whichever was captured later
-  // would otherwise decide this test. "Live" here means "not behind".
-  const live = fixture();
-  live.source.to_block = Number.MAX_SAFE_INTEGER;
-  const { data, source, fetchedAt } = resolveTmf(live);
+  const { data, source, fetchedAt } = resolveTmf(fixture());
   assert.equal(source, "api");
   assert.equal(data.run.run_id, fixture().run.run_id);
   assert.ok(Date.parse(fetchedAt) > 0);
@@ -232,12 +227,22 @@ test("tmf tiers: a document with no periods does not displace the snapshot", () 
   assert.equal(resolveTmf(empty).source, "snapshot");
 });
 
-test("tmf tiers: a document behind the snapshot does not displace it", () => {
-  // The API is meant to run ahead of a file refreshed monthly, so a lower
-  // block height is an upstream regression, not fresher data.
+test("tmf tiers: a document behind the snapshot is still served", () => {
+  /* The snapshot comes from settlement-reports (published by
+     settlement-cycle); the live document comes from settle-api. Two pipelines
+     reading the same chain overtake each other by minutes, so "behind the
+     snapshot" is ordinary skew, not a regression — and rejecting it switched
+     the live tier off and captioned it "live history unavailable" while the
+     API was answering fine. Observed in production at nine minutes of skew. */
   const behind = fixture();
   behind.source.to_block = 1;
-  assert.equal(resolveTmf(behind).source, "snapshot");
+  assert.equal(resolveTmf(behind).source, "api");
+});
+
+test("tmf tiers: the badge means one thing — the API could not be read", () => {
+  // The empty-document case is covered above; this pins the other route to the
+  // snapshot branch, so the two together are everything that reaches it.
+  assert.equal(resolveTmf(null).source, "snapshot");
 });
 
 test("tmf: a malformed run is rejected rather than rendered as undefined", () => {

@@ -96,10 +96,16 @@ window rather than the whole series, and says so on the chart. If that call
 fails the daily option disappears and the card reads "—"; the rest of the tab
 is unaffected, because every other figure comes from the document.
 
-The tab says which one it is showing: "data through … · run N" when live, and a
-badge reading "showing the last published snapshot — live data unavailable"
-when it fell back. A stale figure that looks live is the failure worth
-preventing; an outage that is visible is not.
+The snapshot is a fallback for **not being able to read the API**, and nothing
+else — it does not compete with the live document on freshness. It comes from
+settlement-reports, published by settlement-cycle, which is a different pipeline
+from settle-api reading the same chain on its own cadence, so the two overtake
+each other by minutes as a matter of course.
+
+The tab says which one it is showing: a provenance line reading "Data through
+… (2h 14m ago) · block …", and when it fell back, a badge reading "Totals from
+the last published snapshot — live history unavailable". A stale figure that
+looks live is the failure worth preventing; an outage that is visible is not.
 
 ## Commands
 
