@@ -240,12 +240,9 @@ test("tmf tiers: a document behind the snapshot is still served", () => {
 });
 
 test("tmf tiers: the badge means one thing — the API could not be read", () => {
-  // Everything that reaches the snapshot branch is an unavailability: a failed
-  // fetch (null) or a document with nothing in it.
+  // The empty-document case is covered above; this pins the other route to the
+  // snapshot branch, so the two together are everything that reaches it.
   assert.equal(resolveTmf(null).source, "snapshot");
-  const empty = fixture();
-  empty.periods = { monthly: [], quarterly: [], annual: [] };
-  assert.equal(resolveTmf(empty).source, "snapshot");
 });
 
 test("tmf: a malformed run is rejected rather than rendered as undefined", () => {
