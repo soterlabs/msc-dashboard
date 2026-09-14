@@ -12,7 +12,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { aggregateKicks, dailyPeriods, fillGaps } from "../src/lib/tmf/domain.ts";
+import {
+  aggregateKicks,
+  dailyPeriods,
+  fillGaps,
+  isOvertakenNote,
+} from "../src/lib/tmf/domain.ts";
 
 const period = (p, over = {}) => ({
   period: p,
@@ -23,11 +28,45 @@ const period = (p, over = {}) => ({
   sky_bought: 0,
   sky_avg_price: null,
   sky_burn_protocol: 0,
+  sky_burn_engine: 0,
+  sky_burn_supply_correction: 0,
   sky_burn_other: 0,
   burn_events: 0,
   first_ts: null,
   last_ts: null,
   ...over,
+});
+
+/* ------------------------------------------------------------------ notes */
+
+const SCHEDULED =
+  "SKY burns: the 2025-06-30 executive burned 426,292,860.23 SKY held by the Pause " +
+  "Proxy (SKY.burn(), zero address). The first TMF-rule burn (10/55 of the previous " +
+  "month's buys) is scheduled in the 2026-09-10 executive.";
+
+test("notes: the 'scheduled' burn note is dropped once the burn has cast", () => {
+  assert.equal(isOvertakenNote(SCHEDULED, 2860943.76), true);
+});
+
+test("notes: it is shown while it is still true", () => {
+  // No engine burn yet — the note is accurate and must not be suppressed.
+  assert.equal(isOvertakenNote(SCHEDULED, 0), false);
+});
+
+test("notes: a rewrite upstream comes straight back", () => {
+  const rewritten =
+    "The Smart Burn Engine's own burns are 10/55 of the SKY bought under the 55% " +
+    "regime; the first cast 2026-09-13 for 2,860,943.76 SKY.";
+  assert.equal(isOvertakenNote(rewritten, 2860943.76), false);
+});
+
+test("notes: nothing else is caught", () => {
+  const others = [
+    "The Splitter was deployed 2024-09-17 (block 20,770,191); the first kick ran 2024-11-14.",
+    "Kicks under splitter.burn = 100% have usds_to_stakers = 0 by construction.",
+    "Aggregates are quantized to 2 dp (price to 6 dp) for charting; the CSVs are exact.",
+  ];
+  for (const note of others) assert.equal(isOvertakenNote(note, 2860943.76), false, note);
 });
 
 /* --------------------------------------------------------------- fillGaps */

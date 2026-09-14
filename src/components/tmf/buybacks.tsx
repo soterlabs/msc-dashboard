@@ -22,11 +22,12 @@ import {
   formatTokens,
   formatAge,
   formatUtc,
+  monthLong,
   shortAddress,
 } from "@/lib/format";
 import { explorerUrl, txUrl } from "@/lib/links";
 import { paths } from "@/lib/routes";
-import { fillGaps } from "@/lib/tmf/domain";
+import { fillGaps, isOvertakenNote } from "@/lib/tmf/domain";
 import { Badge } from "@/components/ui/badge";
 import {
   TMF_DAILY_WINDOW_DAYS,
@@ -71,7 +72,7 @@ const LABELS = {
   usds_total: "Buyback + dividends",
   sky_bought: "SKY bought",
   sky_avg_price: "Avg price (USDS/SKY)",
-  sky_burn_protocol: "SKY burned (protocol)",
+  sky_burn_protocol: "SKY burned",
 };
 
 /**
@@ -162,7 +163,12 @@ export function Buybacks({
 }) {
   const tmf = useTmf();
   const router = useRouter();
-  const { totals, latest_kick: latest, source: sourceMeta, notes, definitions } = tmf;
+  const { totals, latest_kick: latest, source: sourceMeta, definitions } = tmf;
+  /* Verbatim, minus any the data has overtaken — see isOvertakenNote. */
+  const notes = React.useMemo(
+    () => tmf.notes.filter((n) => !isOvertakenNote(n, totals.sky_burn_engine)),
+    [tmf, totals],
+  );
 
   // Newest first: the question a reader arrives with is what happened lately,
   // and the chart below reads the other way because time runs left to right.
@@ -186,7 +192,22 @@ export function Buybacks({
     () => fillGaps(tmf.periods[burnGranularity as TmfDocumentGranularity], burnGranularity),
     [tmf, burnGranularity],
   );
-  const anyBurn = burnSeries.some((r) => r.sky_burn_protocol > 0);
+  /* Both figures come classified from the API, which is why there is no date
+     in this file any more. `sky_burn_protocol` sums the two and is therefore
+     the wrong number for anything about buyback policy — 429M against the
+     engine's 2.9M. */
+  const burnTotal = totals.sky_burn_engine;
+  const correction = totals.sky_burn_supply_correction;
+  /* Named by the period that carries it rather than by a literal date, so the
+     footnote keeps describing whatever the API classifies this way. */
+  const correctionPeriods = React.useMemo(
+    () =>
+      tmf.periods.monthly
+        .filter((r) => r.sky_burn_supply_correction > 0)
+        .map((r) => monthLong(r.period)),
+    [tmf],
+  );
+  const anyBurn = burnSeries.some((r) => r.sky_burn_engine > 0);
 
   return (
     <div className="flex flex-col gap-6">
@@ -374,6 +395,10 @@ export function Buybacks({
           series={burnSeries}
           granularity={burnGranularity}
           chain={sourceMeta.chain}
+          total={burnTotal}
+          correction={correction}
+          correctionPeriods={correctionPeriods}
+          effectiveFrom={sourceMeta.tmf_effective_from}
           note={
             granularity === "daily"
               ? "Burns are published monthly at the finest — the daily view above has none to show."
@@ -473,11 +498,11 @@ function PeriodTooltip({
           label={LABELS.usds_to_stakers}
           value={formatTokens(row.usds_to_stakers)}
         />
-        {row.sky_burn_protocol > 0 && (
+        {row.sky_burn_engine > 0 && (
           <TooltipRow
             color="var(--destructive)"
             label={LABELS.sky_burn_protocol}
-            value={`${formatTokens(row.sky_burn_protocol)} SKY`}
+            value={`${formatTokens(row.sky_burn_engine)} SKY`}
           />
         )}
       </dl>
@@ -530,11 +555,23 @@ function BurnChart({
   series,
   granularity,
   chain,
+  total,
+  correction,
+  correctionPeriods,
+  effectiveFrom,
   note,
 }: {
   series: TmfPeriod[];
   granularity: TmfGranularity;
   chain: string;
+  /** Engine burns only — `sky_burn_protocol` counts the correction too. */
+  total: number;
+  /** The one-off correction, named in the footnote rather than hidden. */
+  correction: number;
+  /** Which period(s) carry it, for that footnote. */
+  correctionPeriods: string[];
+  /** The TMF's first cast — shown to explain the split, never to recompute it. */
+  effectiveFrom: string;
   /** Why this panel is on a different granularity than the one selected. */
   note?: string;
 }) {
@@ -542,15 +579,26 @@ function BurnChart({
   return (
     <Panel
       title="SKY burned"
-      hint="SKY sent to a burn sink by the Pause Proxy — the true burn. Third-party sends are counted separately and are not a protocol act."
-      description={`${GRANULARITY_LABEL[granularity]} · SKY${note ? ` · ${note}` : ""}`}
+      hint={`The Smart Burn Engine's own burns: 10/55 of the SKY bought under the 55% regime, retired by the following month's spell. The engine took effect ${formatUtc(effectiveFrom)}; the API classifies every burn against that, and this chart shows only the engine's.`}
+      description={`${GRANULARITY_LABEL[granularity]} · ${formatTokens(total)} SKY burned${note ? ` · ${note}` : ""}`}
       footer={
-        anyOther ? (
-          <p className="text-xs text-muted-foreground">
-            Third-party sends to <BurnSinkLink chain={chain} /> are excluded from
-            the bars and shown in the tooltip.
-          </p>
-        ) : null
+        <div className="grid gap-1 text-xs text-muted-foreground">
+          {correction > 0 ? (
+            /* Named rather than silently dropped: it is a real on-chain burn,
+               and someone reconciling against the chain will find it. */
+            <p>
+              Excludes {formatTokens(correction)} SKY retired
+              {correctionPeriods.length ? ` in ${correctionPeriods.join(", ")}` : ""}, a
+              one-off correction of supply created in the MKR→SKY conversion.
+            </p>
+          ) : null}
+          {anyOther ? (
+            <p>
+              Third-party sends to <BurnSinkLink chain={chain} /> are excluded
+              from the bars and shown in the tooltip.
+            </p>
+          ) : null}
+        </div>
       }
     >
       <div className="mb-4 flex flex-wrap gap-4">
@@ -580,7 +628,7 @@ function BurnChart({
             />
             <ChartTooltip cursor={false} content={<BurnTooltip anyOther={anyOther} />} />
             <RBar
-              dataKey="sky_burn_protocol"
+              dataKey="sky_burn_engine"
               fill="var(--color-sky_burn_protocol)"
               radius={4}
               maxBarSize={48}
@@ -607,7 +655,7 @@ function BurnTooltip({
     <div className="min-w-[13rem] rounded-lg border bg-popover px-3 py-2 text-xs shadow-lg">
       <p className="text-muted-foreground">{row.period}</p>
       <p className="mt-0.5 text-base font-semibold tabular-nums">
-        {formatTokens(row.sky_burn_protocol)}
+        {formatTokens(row.sky_burn_engine)}
         <span className="ml-1 text-xs font-normal text-muted-foreground">SKY</span>
       </p>
       <p className="text-[11px] text-muted-foreground">{LABELS.sky_burn_protocol}</p>
@@ -670,8 +718,8 @@ function PeriodTable({
               </Td>
               <Td numeric>{formatTokens(r.sky_bought)}</Td>
               <Td numeric>{formatPrice6(r.sky_avg_price)}</Td>
-              <Td numeric className={cn(r.sky_burn_protocol === 0 && "text-muted-foreground")}>
-                {r.sky_burn_protocol === 0 ? <Dash /> : formatTokens(r.sky_burn_protocol)}
+              <Td numeric className={cn(r.sky_burn_engine === 0 && "text-muted-foreground")}>
+                {r.sky_burn_engine === 0 ? <Dash /> : formatTokens(r.sky_burn_engine)}
               </Td>
             </TableRow>
           ))}

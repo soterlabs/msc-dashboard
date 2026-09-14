@@ -7,6 +7,27 @@
  */
 import type { TmfGranularity, TmfKick, TmfPeriod } from "./types";
 
+/**
+ * Whether a published note has been overtaken by the data it describes.
+ *
+ * The notes are rendered verbatim, which is right — they are the dataset's own
+ * caveats and paraphrasing them would be worse. But one of them still calls the
+ * engine's first burn "scheduled", and it cast on 2026-09-13, so the tab was
+ * showing a chart of that burn above a note saying it had not happened.
+ *
+ * Keyed on the data rather than on a note index: it is suppressed only once an
+ * engine burn exists, so the note is shown while it is true. And it matches the
+ * stale phrasing, so a rewrite upstream — the real fix — brings the new text
+ * straight back rather than staying hidden behind this.
+ */
+export function isOvertakenNote(note: string, skyBurnEngine: number): boolean {
+  return (
+    skyBurnEngine > 0 &&
+    /first TMF[- ]rule burn/i.test(note) &&
+    /\bis scheduled\b/i.test(note)
+  );
+}
+
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
 /** An empty period — the shape a gap takes. */
@@ -21,6 +42,8 @@ function zeroPeriod(period: string): TmfPeriod {
     // No trade to price and no kick to timestamp. Zero would be a figure.
     sky_avg_price: null,
     sky_burn_protocol: 0,
+    sky_burn_engine: 0,
+    sky_burn_supply_correction: 0,
     sky_burn_other: 0,
     burn_events: 0,
     first_ts: null,
