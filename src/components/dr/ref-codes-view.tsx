@@ -19,6 +19,7 @@ import {
 import { downloadCsv, toCsv } from "@/lib/csv";
 import { formatUSD, formatUSD2, monthLong } from "@/lib/format";
 import type { RefCodeRow } from "@/lib/dr/types";
+import { refCodeFragment, refCodeFromFragment } from "@/lib/dr/ref-code-navigation";
 import { cn } from "@/lib/utils";
 
 import { useDr } from "../data-context";
@@ -41,13 +42,35 @@ import {
   TotalRow,
 } from "../kit";
 
+// Fragments preserve shareable row selection without making a static report
+// depend on server search parameters. Subscribe to Back/Forward as well.
+function subscribeToFragment(onChange: () => void) {
+  window.addEventListener("hashchange", onChange);
+  window.addEventListener("popstate", onChange);
+  return () => {
+    window.removeEventListener("hashchange", onChange);
+    window.removeEventListener("popstate", onChange);
+  };
+}
+const currentRefCode = () => refCodeFromFragment(window.location.hash);
+const serverRefCode = () => null;
+function setOpenRefCode(code: string | null) {
+  window.history.pushState(null, "", code ? refCodeFragment(code) : "#distribution-rewards");
+  window.dispatchEvent(new Event("hashchange"));
+}
+
 type SortKey = "total" | "refCode" | "latest";
 
 export function RefCodesView() {
   const dr = useDr();
   const { monthLabels, reportMonths } = dr;
   const refCodeRows = React.useMemo(() => visibleRefCodeRows(dr), [dr]);
-  const [openRefCode, setOpenRefCode] = React.useState<string | null>(null);
+  const openRefCode = React.useSyncExternalStore(subscribeToFragment, currentRefCode, serverRefCode);
+  React.useEffect(() => {
+    if (openRefCode) {
+      document.getElementById(refCodeFragment(openRefCode).slice(1))?.scrollIntoView({ block: "nearest" });
+    }
+  }, [openRefCode]);
   const [query, setQuery] = React.useState("");
   const [token, setToken] = React.useState("All");
   const [onlyNotes, setOnlyNotes] = React.useState(false);
@@ -163,11 +186,12 @@ export function RefCodesView() {
             return (
               <React.Fragment key={r.refCode}>
                 <TableRow
+                  id={refCodeFragment(r.refCode).slice(1)}
                   onClick={() =>
                     setOpenRefCode(isOpen ? null : r.refCode)
                   }
                   aria-expanded={isOpen}
-                  className="cursor-pointer"
+                  className="scroll-mt-20 cursor-pointer"
                 >
                   <Td className="font-mono font-medium">
                     <button

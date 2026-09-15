@@ -282,7 +282,7 @@ which page it is, and would otherwise rewrite history on every keystroke.
 
 **A month is optional and pinned.** `/prime-agent-revenues/grove` keeps working
 as months are added; `/prime-agent-revenues/grove/2026-08` keeps showing August.
-The former `/supply-side-revenues/…` and `/settlement-revenues/…` paths redirect here (`next.config.ts`). Legacy `/distribution-rewards` links redirect to the merged report; prime-owned ref-code links go to the corresponding prime's ledger.
+The former `/supply-side-revenues/…` and `/settlement-revenues/…` paths redirect here (`next.config.ts`). Legacy `/distribution-rewards` links redirect to the merged report; prime-owned ref-code links open the latest month containing that code, with its token details expanded. Row selection is stored in a `#ref-code-<code>` fragment so copied links and browser Back/Forward preserve it.
 A month without settlement or DR data for that prime 404s. Osero's January
 2026 page is valid because it has DR, and explicitly says no settlement report
 has been published for that month.
