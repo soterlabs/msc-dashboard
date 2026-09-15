@@ -1,3 +1,5 @@
+import { loadSsr } from "@/lib/load";
+import { orderedPartners, partnerMeta } from "@/lib/ssr/domain";
 import type { Metadata } from "next";
 import { Geist_Mono, Public_Sans } from "next/font/google";
 import localFont from "next/font/local";
@@ -66,7 +68,7 @@ export default function RootLayout({
         {/* The chrome wraps every route, so moving between reports swaps only
             the page below it — the sidebar and header never remount. */}
         <TooltipProvider>
-          <AppShell>{children}</AppShell>
+          <AppShell primes={orderedPartners(loadSsr()).map((key) => ({ key, label: partnerMeta(key).label }))}>{children}</AppShell>
         </TooltipProvider>
       </body>
     </html>

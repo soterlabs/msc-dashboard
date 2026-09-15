@@ -1,16 +1,18 @@
 import { notFound } from "next/navigation";
 
-import { SsrProvider } from "@/components/data-context";
+import { DrProvider, SsrProvider } from "@/components/data-context";
 import { SupplySideRevenues } from "@/components/ssr/supply-side-revenues";
-import { loadSsr } from "@/lib/load";
+import { loadDr, loadSsr } from "@/lib/load";
 import { orderedPartners, reportsFor } from "@/lib/ssr/domain";
 import { isMonthSegment } from "@/lib/routes";
+import { scopeDr } from "@/lib/dr/scope";
+import { partnerMeta } from "@/lib/ssr/domain";
 import type { SsrPartner } from "@/lib/ssr/types";
 
 /**
- * /settlement-revenues                   → all primes
- * /settlement-revenues/grove             → Grove, its latest settlement
- * /settlement-revenues/grove/2026-08     → Grove, August
+ * /prime-agent-revenues                   → all primes
+ * /prime-agent-revenues/grove             → Grove, its latest settlement
+ * /prime-agent-revenues/grove/2026-08     → Grove, August
  *
  * The month is optional so a link to a prime keeps working as months are added,
  * and pinned so a link to a settlement keeps showing that settlement.
@@ -37,7 +39,9 @@ export default async function Page({
   if (!path?.length) {
     return (
       <SsrProvider value={ssr}>
-        <SupplySideRevenues partner={null} month={null} />
+        <DrProvider value={loadDr()}>
+          <SupplySideRevenues partner={null} month={null} />
+        </DrProvider>
       </SsrProvider>
     );
   }
@@ -54,9 +58,15 @@ export default async function Page({
     if (!reportsFor(ssr, partner as SsrPartner).some((r) => r.month === month)) notFound();
   }
 
+  const selectedPartner = partner as SsrPartner;
+  const selectedMonth = month ?? reportsFor(ssr, selectedPartner).at(-1)!.month;
+  const dr = scopeDr(loadDr(), partnerMeta(selectedPartner).label, selectedMonth);
+
   return (
     <SsrProvider value={ssr}>
-      <SupplySideRevenues partner={partner as SsrPartner} month={month ?? null} />
+      <DrProvider value={dr}>
+        <SupplySideRevenues partner={selectedPartner} month={selectedMonth} />
+      </DrProvider>
     </SsrProvider>
   );
 }

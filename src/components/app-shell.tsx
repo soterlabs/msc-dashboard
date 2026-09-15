@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import type { Icon } from "@phosphor-icons/react";
 import {
   BankIcon,
-  CoinsIcon,
   FireIcon,
   ScrollIcon,
   TrendUpIcon,
@@ -30,8 +29,12 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarProvider,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import {
   SECTIONS,
@@ -45,7 +48,6 @@ import { ThemeToggle } from "./theme-toggle";
 
 /** Icons live here, not in the route map: nothing on the server needs them. */
 const ICONS: Record<Section, Icon> = {
-  dr: CoinsIcon,
   ssr: TrendUpIcon,
   "sky-total": BankIcon,
   buybacks: FireIcon,
@@ -58,16 +60,18 @@ const ICONS: Record<Section, Icon> = {
  *
  * It holds no section state any more — the URL is the state, so this reads the
  * pathname and the nav is a list of links. That is what makes a view
- * shareable: /settlement-revenues/grove/2026-08 opens on Grove's August
+ * shareable: /prime-agent-revenues/grove/2026-08 opens on Grove's August
  * settlement instead of on whatever the last click left behind.
  */
-export function AppShell({ children }: { children: React.ReactNode }) {
+type PrimeLink = { key: string; label: string };
+
+export function AppShell({ children, primes }: { children: React.ReactNode; primes: PrimeLink[] }) {
   const pathname = usePathname();
   const current = sectionFromPath(pathname);
 
   return (
     <SidebarProvider>
-      <AppSidebar section={current?.key} />
+      <AppSidebar section={current?.key} primes={primes} />
       <SidebarInset>
         <SiteHeader section={current?.key} />
         <div className="@container/main flex flex-1 flex-col gap-6 p-4 md:gap-8 md:p-6 lg:p-8">
@@ -80,9 +84,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
 /* ------------------------------------------------------------- sidebar */
 
-function AppSidebar({ section }: { section?: Section }) {
+function AppSidebar({ section, primes }: { section?: Section; primes: PrimeLink[] }) {
+  const pathname = usePathname();
+  const { setOpenMobile } = useSidebar();
   return (
-    <Sidebar variant="inset" collapsible="icon">
+    <Sidebar variant="inset" collapsible="offcanvas">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -126,11 +132,30 @@ function AppSidebar({ section }: { section?: Section }) {
                     /* A real <a>: middle-click, cmd-click and "copy link
                        address" all have to work on a nav whose whole point is
                        that its destinations are shareable. */
-                    render={<Link href={`/${s.slug}`} />}
+                    render={<Link href={`/${s.slug}`} onClick={() => setOpenMobile(false)} />}
                   >
                     <Icon weight={active ? "fill" : "regular"} />
                     <span>{s.label}</span>
                   </SidebarMenuButton>
+                  {s.key === "ssr" && (
+                    <SidebarMenuSub>
+                      {primes.map((prime) => {
+                        const href = paths.ssrPartner(prime.key);
+                        const selected = pathname === href || pathname.startsWith(`${href}/`);
+                        return (
+                          <SidebarMenuSubItem key={prime.key}>
+                            <SidebarMenuSubButton
+                              render={<Link href={href} onClick={() => setOpenMobile(false)} />}
+                              isActive={selected}
+                              aria-current={selected ? "page" : undefined}
+                            >
+                              {prime.label}
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        );
+                      })}
+                    </SidebarMenuSub>
+                  )}
                 </SidebarMenuItem>
               );
             })}

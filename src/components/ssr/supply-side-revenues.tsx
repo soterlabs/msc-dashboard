@@ -40,7 +40,6 @@ import type {
   SsrVenue,
   SsrPartner,
   SsrRateBuild,
-  SsrRefCode,
   SsrSkyDirectExposure,
 } from "@/lib/ssr/types";
 import {
@@ -54,6 +53,9 @@ import {
 import { paths } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
+import { RatesView } from "../dr/rates-view";
+import { SummaryView } from "../dr/summary-view";
+import { RefCodesView } from "../dr/ref-codes-view";
 import { useSsr } from "../data-context";
 import {
   ActionButton,
@@ -76,7 +78,7 @@ import {
 } from "../kit";
 
 /**
- * `partner` and `month` come from the URL — /settlement-revenues/grove/2026-08
+ * `partner` and `month` come from the URL — /prime-agent-revenues/grove/2026-08
  * is Grove's August settlement, and that link means the same thing to whoever
  * it is sent to. A bare partner path shows its latest month.
  */
@@ -102,7 +104,7 @@ export function SupplySideRevenues({
            unique to it — the Sky side panel totals the selected month, not the
            range — so it moves into the subtitle. */
         <PageHeader
-          title="Prime breakdown"
+          title={`Prime breakdown: ${meta.label}`}
           description={`${meta.label} · ${formatCompactUSD(
             partnerSkyRevenue(ssr, openPartner),
           )} Sky revenue over ${monthRangeLabel(
@@ -111,7 +113,7 @@ export function SupplySideRevenues({
         />
       ) : (
         <PageHeader
-          title="Settlement revenues"
+          title="Prime Agent Revenues"
           description="Settlement reports"
           /* "primes" is the ranked bar below and "sky rev" is the table's own
              aggregate row; only these two are not already on the page */
@@ -129,10 +131,26 @@ export function SupplySideRevenues({
           onBack={() => router.push(paths.ssr())}
         />
       ) : (
-        <Summary
-          partners={partners}
-          onOpenPartner={(p) => router.push(paths.ssrPartner(p))}
-        />
+        <>
+          <Summary
+            partners={partners}
+            onOpenPartner={(p) => router.push(paths.ssrPartner(p))}
+          />
+          <section id="distribution-rewards" className="flex scroll-mt-20 flex-col gap-6">
+            <h2 className="text-xl font-semibold">Distribution rewards</h2>
+            <SummaryView
+              linkedGroups={partners.map((p) => partnerMeta(p).label)}
+              onViewGroup={(group) => {
+                const partner = partners.find((p) => partnerMeta(p).label === group);
+                if (partner) router.push(paths.ssrPartner(partner));
+              }}
+            />
+          </section>
+          <section id="distribution-rates" className="flex scroll-mt-20 flex-col gap-6">
+            <h2 className="text-xl font-semibold">Distribution reward rates</h2>
+            <RatesView />
+          </section>
+        </>
       )}
     </div>
   );
@@ -371,7 +389,7 @@ function PartnerBreakdown({
   // Only the months this prime settled — Osero has two, and a picker offering
   // the other six would produce links that 404.
   const months = reportsFor(ssr, partner).map((r) => r.month);
-  // A bare /settlement-revenues/grove means "the latest", so it keeps working
+  // A bare /prime-agent-revenues/grove means "the latest", so it keeps working
   // as months are added; a pinned month stays pinned.
   const month = monthFromUrl ?? months[months.length - 1];
   const [onlyEarning, setOnlyEarning] = React.useState(true);
@@ -509,7 +527,7 @@ function PartnerBreakdown({
           <Prose className="max-w-3xl">
             {partnerMeta(partner).label} is a bridge / aggregator — it reports
             no venue-level deployments. Its contribution is distribution-rewards
-            attribution only (see the Distribution Rewards section).
+            attribution only (see the distribution rewards below).
           </Prose>
         </Panel>
       ) : (
@@ -596,9 +614,9 @@ function PartnerBreakdown({
         <ExcludedSection rows={report.excludedVenues} />
       ) : null}
 
-      {report && report.refCodes.length > 0 ? (
-        <RefCodesSection rows={report.refCodes} />
-      ) : null}
+      <section id="distribution-rewards" className="scroll-mt-20">
+        <RefCodesView key={`${partner}-${month}`} />
+      </section>
     </div>
   );
 }
@@ -800,55 +818,6 @@ function ExcludedSection({ rows }: { rows: SsrExcludedVenue[] }) {
               </Td>
               <Td numeric className="text-muted-foreground">
                 {formatCompactUSD(v.valueEom)}
-              </Td>
-            </TableRow>
-          ))}
-        </TableBody>
-      </DataTable>
-    </Panel>
-  );
-}
-
-function RefCodesSection({ rows }: { rows: SsrRefCode[] }) {
-  const [onlyEarning, setOnlyEarning] = React.useState(true);
-  const sorted = [...rows].sort((a, b) => (b.dr ?? 0) - (a.dr ?? 0));
-  const shown = onlyEarning
-    ? sorted.filter((rc) => (rc.dr ?? 0) !== 0)
-    : sorted;
-  return (
-    <Panel
-      title="DR per ref code"
-      hint="Distribution rewards attributed in this report — also shown in full on the Distribution Rewards tab."
-      description={
-        onlyEarning
-          ? `Hiding ${sorted.length - shown.length} zero-DR codes`
-          : `Showing all ${sorted.length} codes`
-      }
-      action={
-        <FilterToggle pressed={onlyEarning} onPressedChange={setOnlyEarning}>
-          Hide $0 revenue
-        </FilterToggle>
-      }
-      flush
-    >
-      <DataTable containerClassName="max-h-[26rem]">
-        <TableHeader className="sticky top-0 z-10 bg-card">
-          <TableRow className="hover:bg-transparent">
-            <Th>Ref code</Th>
-            <Th numeric>DR</Th>
-            <Th className="min-w-[260px]">Notes</Th>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {shown.map((rc) => (
-            <TableRow key={rc.refCode}>
-              <Td className="font-mono font-medium">{rc.refCode}</Td>
-              <Td numeric>{rc.dr == null ? <Dash /> : formatUSD(rc.dr)}</Td>
-              <Td
-                className="max-w-[420px] truncate text-muted-foreground"
-                title={rc.notes}
-              >
-                {rc.notes || <Dash />}
               </Td>
             </TableRow>
           ))}

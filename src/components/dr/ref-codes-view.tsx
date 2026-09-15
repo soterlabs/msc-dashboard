@@ -1,22 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import {
   CaretRightIcon,
   DownloadSimpleIcon,
   MagnifyingGlassIcon,
 } from "@phosphor-icons/react";
-import { Bar as RBar, BarChart, Cell, XAxis } from "recharts";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@/components/ui/chart";
 import { Input } from "@/components/ui/input";
 import {
   allTokens,
@@ -28,7 +19,6 @@ import {
 import { downloadCsv, toCsv } from "@/lib/csv";
 import { formatUSD, formatUSD2, monthLong } from "@/lib/format";
 import type { RefCodeRow } from "@/lib/dr/types";
-import { paths } from "@/lib/routes";
 import { cn } from "@/lib/utils";
 
 import { useDr } from "../data-context";
@@ -39,12 +29,9 @@ import {
   DataTable,
   Dash,
   EmptyRow,
-  FilterGroup,
   FilterToggle,
-  MiniStat,
   NoteBadge,
   Panel,
-  SeriesFilterItem,
   Swatch,
   TableBody,
   TableHeader,
@@ -52,46 +39,25 @@ import {
   Td,
   Th,
   TotalRow,
-  moneyTooltip,
 } from "../kit";
 
 type SortKey = "total" | "refCode" | "latest";
 
-export function RefCodesView({
-  openRefCode,
-  selectedGroups,
-  onSetGroups,
-  onSelectAll,
-  onClearGroups,
-}: {
-  /** The code whose history is open, from the URL. */
-  openRefCode: string | null;
-  /** Groups currently shown. Empty shows none. */
-  selectedGroups: Set<string>;
-  onSetGroups: (groups: string[]) => void;
-  onSelectAll: () => void;
-  onClearGroups: () => void;
-}) {
+export function RefCodesView() {
   const dr = useDr();
   const { monthLabels, reportMonths } = dr;
   const refCodeRows = React.useMemo(() => visibleRefCodeRows(dr), [dr]);
-  const groupNames = React.useMemo(
-    () => Array.from(new Set(refCodeRows.map((r) => r.group))),
-    [refCodeRows],
-  );
-  const allSelected = groupNames.every((g) => selectedGroups.has(g));
+  const [openRefCode, setOpenRefCode] = React.useState<string | null>(null);
   const [query, setQuery] = React.useState("");
   const [token, setToken] = React.useState("All");
   const [onlyNotes, setOnlyNotes] = React.useState(false);
   const [sort, setSort] = React.useState<SortKey>("total");
-  const router = useRouter();
 
   const tokens = React.useMemo(() => ["All", ...allTokens(dr)], [dr]);
 
   const rows = React.useMemo(() => {
     const q = query.trim().toLowerCase();
     let out = refCodeRows.filter((r) => {
-      if (!selectedGroups.has(r.group)) return false;
       if (token !== "All" && !r.tokens.includes(token)) return false;
       if (onlyNotes && !r.notes.trim()) return false;
       if (q) {
@@ -112,7 +78,6 @@ export function RefCodesView({
     return out;
   }, [
     query,
-    selectedGroups,
     token,
     onlyNotes,
     sort,
@@ -124,8 +89,8 @@ export function RefCodesView({
 
   return (
     <Panel
-      title="Ledger"
-      description={`${rows.length} of ${refCodeRows.length} ref codes · select a row for its token composition and history`}
+      title="Distribution rewards by ref code"
+      description={`${monthLong(reportMonths[0])} · ${rows.length} of ${refCodeRows.length} ref codes · select a row for its token composition`}
       action={
         <ActionButton onClick={() => exportCsv(rows, reportMonths)}>
           <DownloadSimpleIcon data-icon="inline-start" aria-hidden />
@@ -175,30 +140,6 @@ export function RefCodesView({
           </FilterToggle>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm text-muted-foreground">Groups</span>
-          <FilterGroup
-            multiple
-            value={groupNames.filter((g) => selectedGroups.has(g))}
-            onValueChange={onSetGroups}
-            aria-label="Filter by partner group"
-          >
-            {groupNames.map((g) => (
-              <SeriesFilterItem key={g} value={g} className="gap-2">
-                <Swatch color={groupColor(g)} />
-                {g}
-              </SeriesFilterItem>
-            ))}
-          </FilterGroup>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-muted-foreground hover:text-foreground"
-            onClick={allSelected ? onClearGroups : onSelectAll}
-          >
-            {allSelected ? "Clear" : "Select all"}
-          </Button>
-        </div>
       </div>
 
       <DataTable containerClassName="max-h-[36rem]">
@@ -223,19 +164,22 @@ export function RefCodesView({
               <React.Fragment key={r.refCode}>
                 <TableRow
                   onClick={() =>
-                    /* Opening a code gives it its own address, so "look at
-                       128" is a link rather than a description of which row to
-                       click. Closing returns to the bare ledger. */
-                    router.push(
-                      isOpen ? paths.dr("refcodes") : paths.drRefCode(r.refCode),
-                      { scroll: false },
-                    )
+                    setOpenRefCode(isOpen ? null : r.refCode)
                   }
                   aria-expanded={isOpen}
                   className="cursor-pointer"
                 >
                   <Td className="font-mono font-medium">
-                    <span className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      aria-label={`Token composition for ref code ${r.refCode}`}
+                      aria-expanded={isOpen}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setOpenRefCode(isOpen ? null : r.refCode);
+                      }}
+                      className="flex cursor-pointer items-center gap-2"
+                    >
                       <CaretRightIcon
                         aria-hidden
                         className={cn(
@@ -244,7 +188,7 @@ export function RefCodesView({
                         )}
                       />
                       {r.refCode}
-                    </span>
+                    </button>
                   </Td>
                   <Td>
                     <span className="flex items-center gap-2 text-muted-foreground">
@@ -289,10 +233,10 @@ export function RefCodesView({
                 {isOpen ? (
                   <TableRow className="bg-muted/30 hover:bg-muted/30">
                     <Td
-                      colSpan={reportMonths.length + 4}
+                      colSpan={reportMonths.length + 5}
                       className="p-0 first:pl-0 last:pr-0"
                     >
-                      <RefCodeDetail refCode={r.refCode} group={r.group} />
+                      <RefCodeDetail refCode={r.refCode} />
                     </Td>
                   </TableRow>
                 ) : null}
@@ -300,8 +244,10 @@ export function RefCodesView({
             );
           })}
           {rows.length === 0 ? (
-            <EmptyRow colSpan={reportMonths.length + 4}>
-              No ref codes match these filters.
+            <EmptyRow colSpan={reportMonths.length + 5}>
+              {refCodeRows.length === 0
+                ? "No distribution rewards recorded for this prime and month."
+                : "No ref codes match these filters."}
             </EmptyRow>
           ) : null}
         </TableBody>
@@ -318,50 +264,21 @@ export function RefCodesView({
 
 /* ----------------------------------------------------------- detail panel */
 
-function RefCodeDetail({ refCode, group }: { refCode: string; group: string }) {
+function RefCodeDetail({ refCode }: { refCode: string }) {
   const dr = useDr();
-  const { historyMonths } = dr;
+  const month = dr.reportMonths[0];
   const series = seriesForRefCode(dr, refCode);
-
-  // Code-level monthly totals across the full history (sum of tokens).
-  const history = historyMonths.map((m) => ({
-    m,
-    label: monthLong(m),
-    value: series.reduce((acc, s) => acc + (s.monthly[m] ?? 0), 0),
-  }));
-  const activeMonths = history.filter((h) => h.value > 0).length;
-  const peak = history.reduce(
-    (best, h) => (h.value > best.value ? h : best),
-    history[0] ?? { m: "", label: "", value: 0 },
-  );
-
-  // Month filter for the token breakdown. "all" = full-history totals; any
-  // other value scopes the composition to a single month. Only months that
-  // actually carry DR for this code are offered (latest first).
-  const [month, setMonth] = React.useState<string>("all");
-  const activeMonthKeys = history.filter((h) => h.value > 0).map((h) => h.m);
-  const monthOptions = ["all", ...[...activeMonthKeys].reverse()];
-
-  const tokenValue = (s: (typeof series)[number]) =>
-    month === "all" ? (s.total ?? 0) : (s.monthly[month] ?? 0);
-
-  const shownTokens = [...series]
-    .map((s) => ({ token: s.token, value: tokenValue(s) }))
+  const shownTokens = series
+    .map((s) => ({ token: s.token, value: s.monthly[month] ?? 0 }))
+    .filter((s) => s.value !== 0)
     .sort((a, b) => b.value - a.value);
   const maxToken = Math.max(1, ...shownTokens.map((t) => t.value));
-  const monthTotal =
-    month === "all"
-      ? series.reduce((acc, s) => acc + (s.total ?? 0), 0)
-      : (history.find((h) => h.m === month)?.value ?? 0);
-  const compositionLabel = month === "all" ? "full history" : monthLong(month);
-
-  const historyConfig = {
-    value: { label: "DR", color: groupColor(group) },
-  } satisfies ChartConfig;
+  const monthTotal = shownTokens.reduce((sum, s) => sum + s.value, 0);
+  const compositionLabel = monthLong(month);
 
   return (
     <div className="sticky left-0 w-[min(100%,calc(100vw-2rem))]">
-      <div className="grid gap-6 px-4 py-5 sm:px-6 sm:py-6 lg:grid-cols-[1fr_24rem] lg:gap-8">
+      <div className="grid gap-6 px-4 py-5 sm:px-6 sm:py-6 lg:gap-8">
         {/* left: token composition */}
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -371,14 +288,7 @@ function RefCodeDetail({ refCode, group }: { refCode: string; group: string }) {
                 · {compositionLabel}
               </span>
             </h3>
-            <Dropdown
-              label="Month"
-              value={month}
-              onChange={setMonth}
-              options={monthOptions}
-              render={(v) => (v === "all" ? "All history" : monthLong(v))}
-              className="h-8"
-            />
+
           </div>
 
           <div className="flex flex-col gap-2.5">
@@ -402,14 +312,14 @@ function RefCodeDetail({ refCode, group }: { refCode: string; group: string }) {
                 <span className="tabular-nums">{formatUSD2(s.value)}</span>
               </div>
             ))}
-            {series.length === 0 ? (
+            {shownTokens.length === 0 ? (
               <p className="text-sm text-muted-foreground">
-                No token-level history recorded.
+                No token rewards recorded for this month.
               </p>
             ) : null}
           </div>
 
-          {series.length > 0 ? (
+          {shownTokens.length > 0 ? (
             <div className="flex items-center justify-between border-t pt-3 text-sm">
               <span className="text-muted-foreground">
                 Total · {compositionLabel}
@@ -421,73 +331,7 @@ function RefCodeDetail({ refCode, group }: { refCode: string; group: string }) {
           ) : null}
         </div>
 
-        {/* right: history + stats */}
-        <div className="flex flex-col gap-4">
-          <h3 className="text-sm font-medium">
-            DR history{" "}
-            <span className="font-normal text-muted-foreground">
-              · monthly, select a bar to filter
-            </span>
-          </h3>
 
-          <ChartContainer
-            config={historyConfig}
-            className="aspect-auto h-32 w-full"
-          >
-            <BarChart data={history} margin={{ top: 4, left: 0, right: 0 }}>
-              <XAxis
-                dataKey="m"
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
-                minTickGap={28}
-                tickFormatter={(m: string) => monthLong(m)}
-              />
-              <ChartTooltip
-                cursor={false}
-                content={
-                  <ChartTooltipContent
-                    hideIndicator
-                    labelFormatter={(_, p) =>
-                      monthLong(String(p?.[0]?.payload?.m))
-                    }
-                    formatter={moneyTooltip({ value: "DR" }, (n) =>
-                      formatUSD2(n),
-                    )}
-                  />
-                }
-              />
-              <RBar
-                dataKey="value"
-                radius={3}
-                onClick={(d: { payload?: { m?: string; value?: number } }) => {
-                  const m = d?.payload?.m;
-                  if (!m || !d.payload?.value) return;
-                  setMonth((cur) => (cur === m ? "all" : m));
-                }}
-              >
-                {history.map((h) => (
-                  <Cell
-                    key={h.m}
-                    fill="var(--color-value)"
-                    // Selection is carried by opacity against the same hue, so
-                    // the bar never changes colour or height as it is picked.
-                    fillOpacity={month === h.m ? 1 : h.value > 0 ? 0.55 : 0.15}
-                    cursor={h.value > 0 ? "pointer" : "default"}
-                  />
-                ))}
-              </RBar>
-            </BarChart>
-          </ChartContainer>
-
-          <dl className="grid grid-cols-2 gap-3">
-            <MiniStat label="Months active" value={activeMonths} />
-            <MiniStat
-              label="Peak month"
-              value={peak.value > 0 ? monthLong(peak.m) : "—"}
-            />
-          </dl>
-        </div>
       </div>
     </div>
   );
@@ -521,5 +365,5 @@ function exportCsv(rows: RefCodeRow[], reportMonths: string[]) {
     r.tokens.join(" "),
     r.notes,
   ]);
-  downloadCsv("soter_by_ref_code.csv", toCsv(header, body));
+  downloadCsv(`soter_${rows[0]?.group.toLowerCase() ?? "prime"}_${reportMonths[0]}_ref_codes.csv`, toCsv(header, body));
 }

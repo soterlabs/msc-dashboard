@@ -138,7 +138,7 @@ Three tabs sit behind feature flags and are **hidden unless switched on**
 
 | Variable | Tab |
 | --- | --- |
-| `NEXT_PUBLIC_SHOW_SKY_TOTAL_NET_REVENUE` | Sky Total Net Revenue |
+| `NEXT_PUBLIC_SHOW_SKY_TOTAL_NET_REVENUE` | Sky Net Revenue |
 | `NEXT_PUBLIC_SHOW_BUYBACKS` | Buybacks & Burn |
 | `NEXT_PUBLIC_SHOW_PRIME_PAYMENTS` | Prime Payments |
 
@@ -232,17 +232,34 @@ every column with it. The two do not add up: summing across the boundary either
 counts a cycle twice or skips one, which is why that tab headlines the latest
 month rather than a running total.
 
+## Prime Agent Revenues
+
+Settlement Revenues and Distribution Rewards share `/prime-agent-revenues`.
+The overview ends with the full distribution rewards summary and rate tables.
+The sidebar always lists the primes with settlement reports, with no nested
+collapse toggle. Each prime page is headed `Prime breakdown: <name>` and keeps
+its demand-side, supply-side and Sky-side accounting statements.
+
+The final section reuses the ref-code ledger, sliced on the server by the
+prime's DR group and selected settlement month (`src/lib/dr/scope.ts`). Its
+monthly values, totals, token details, token filters and CSV export all use that
+slice. Changing the month resets the ledger filters and expansion. A missing
+month or a prime without DR shows an empty ledger, never another month's data.
+Skybase stays in the overview summary but has no prime settlement link.
+The layout reads SSR to derive the navigation names; it passes only those names
+and keys to the shared shell, not the report dataset.
+
 ## URLs
 
 Every view has one, so it can be sent to someone:
 
 | | |
 | --- | --- |
-| `/distribution-rewards` | summary; `/refcodes` and `/rates` are the other tabs |
-| `/distribution-rewards/refcodes/128` | that code's token history, open |
-| `/settlement-revenues` | all primes |
-| `/settlement-revenues/grove` | Grove, its latest settlement |
-| `/settlement-revenues/grove/2026-08` | Grove, August |
+| `/prime-agent-revenues#distribution-rewards` | distribution reward summary, below the revenue overview |
+| `/prime-agent-revenues#distribution-rates` | distribution reward rates |
+| `/prime-agent-revenues` | all primes |
+| `/prime-agent-revenues/grove` | Grove, its latest settlement |
+| `/prime-agent-revenues/grove/2026-08` | Grove, August |
 | `/sky-total/2026-08` | that month's waterfall; bare `/sky-total` is the latest |
 | `/buybacks` | buybacks and burn, monthly; `/quarterly` and `/annual` regroup it |
 | `/prime-payments` | the payments ledger |
@@ -255,9 +272,9 @@ twice is a 404 nobody notices until they share the link.
 not the filters, sort or search, which are how a page is being read rather than
 which page it is, and would otherwise rewrite history on every keystroke.
 
-**A month is optional and pinned.** `/settlement-revenues/grove` keeps working
-as months are added; `/settlement-revenues/grove/2026-08` keeps showing August.
-The former `/supply-side-revenues/…` paths redirect here (`next.config.ts`).
+**A month is optional and pinned.** `/prime-agent-revenues/grove` keeps working
+as months are added; `/prime-agent-revenues/grove/2026-08` keeps showing August.
+The former `/supply-side-revenues/…` and `/settlement-revenues/…` paths redirect here (`next.config.ts`). Legacy `/distribution-rewards` links redirect to the merged report; prime-owned ref-code links go to the corresponding prime's ledger.
 A month a prime never settled 404s — Osero has no January, and a link claiming
 otherwise should say so rather than quietly showing different figures.
 
@@ -267,19 +284,18 @@ absent stay the same fact.
 
 ## How the app reads it
 
-Each route's `page.tsx` is a server component: it reads the one file it needs
+Each route's `page.tsx` is a server component: it reads the files it needs
 from `data/generated/` through `src/lib/load.ts` and hands it to its view
 through the matching provider, which the view reads with `useDr()` / `useSsr()`
 / `useSkyTotal()` / `usePrime()`. The loaders use `node:fs`, so importing one
 from a client component fails the build on purpose — the datasets are not meant
 to be part of the browser bundle.
 
-Because a route loads only its own dataset, opening Prime Payments no longer
+Because a route sends only its own report data, opening Prime Payments no longer
 ships the DR, SSR and Sky Total numbers with it; before the routes there was one
 page and every payload carried all four.
 
-The pages are statically prerendered — including one per prime, month and ref
-code, from `generateStaticParams` — so the numbers are fixed at build time.
+The pages are statically prerendered — including one per prime and month, from `generateStaticParams` — so the numbers are fixed at build time.
 
 `src/lib/dataset-schema.ts` validates each dataset against its TypeScript type
 on load and **fails the build** naming the offending field. That matters because
