@@ -86,7 +86,7 @@ export function SkyTotalNetRevenue({ month }: { month: string | null }) {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title="Sky total net revenue"
+        title="Sky Net Revenue"
         description="Consolidated protocol net revenue"
         meta={[
           { label: "latest", value: monthLabels[latest.month] ?? latest.month },

@@ -1,27 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /**
-   * "Supply Side Revenues" was renamed to "Settlement Revenues" — it named a
-   * third of what the tab shows. The slug moved with the label, so anything
-   * already shared under the old path keeps working rather than 404ing on
-   * someone who was sent a link.
-   *
-   * Permanent, because the new path is the canonical one now.
-   */
   async redirects() {
-    return [
-      {
-        source: "/supply-side-revenues",
-        destination: "/settlement-revenues",
-        permanent: true,
-      },
-      {
-        source: "/supply-side-revenues/:path*",
-        destination: "/settlement-revenues/:path*",
-        permanent: true,
-      },
-    ];
+    return ["supply-side-revenues", "settlement-revenues"].flatMap((slug) => [
+      { source: `/${slug}`, destination: "/prime-agent-revenues", permanent: true },
+      { source: `/${slug}/:path*`, destination: "/prime-agent-revenues/:path*", permanent: true },
+    ]);
   },
 };
 

@@ -75,8 +75,10 @@ const allocationConfig = {
 
 export function SummaryView({
   onViewGroup,
+  linkedGroups,
 }: {
   onViewGroup: (group: string) => void;
+  linkedGroups: string[];
 }) {
   const dr = useDr();
   const { monthLabels, reportMonths } = dr;
@@ -233,6 +235,7 @@ export function SummaryView({
           groups={groups}
           grand={grand}
           onViewGroup={onViewGroup}
+          linkedGroups={linkedGroups}
         />
         <TotalRow
           className="border-t pt-4"
@@ -292,10 +295,12 @@ function DistributionTable({
   groups,
   grand,
   onViewGroup,
+  linkedGroups,
 }: {
   groups: ReturnType<typeof orderedGroups>;
   grand: number;
   onViewGroup: (group: string) => void;
+  linkedGroups: string[];
 }) {
   const { monthLabels, reportMonths } = useDr();
   const [open, setOpen] = React.useState<Record<string, boolean>>({});
@@ -372,11 +377,11 @@ function DistributionTable({
                 <Td className="py-0">
                   {/* the row itself expands, so the jump to the ledger needs
                       its own target and has to keep the click to itself */}
-                  <Button
+                  {linkedGroups.includes(g.group) && <Button
                     variant="ghost"
                     size="icon-sm"
-                    aria-label={`View ${g.group} ref codes in the ledger`}
-                    title="Open in the ledger"
+                    aria-label={`View ${g.group} prime breakdown`}
+                    title="Open prime breakdown"
                     onClick={(e) => {
                       e.stopPropagation();
                       onViewGroup(g.group);
@@ -384,7 +389,7 @@ function DistributionTable({
                     className="text-muted-foreground hover:text-foreground"
                   >
                     <ArrowRightIcon aria-hidden />
-                  </Button>
+                  </Button>}
                 </Td>
               </TableRow>
 
