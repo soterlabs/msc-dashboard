@@ -56,7 +56,8 @@ import { cn } from "@/lib/utils";
 import { RatesView } from "../dr/rates-view";
 import { SummaryView } from "../dr/summary-view";
 import { RefCodesView } from "../dr/ref-codes-view";
-import { useSsr } from "../data-context";
+import { compareRewards } from "@/lib/ssr/revenue-context";
+import { useDr, useSsr } from "../data-context";
 import {
   ActionButton,
   DataTable,
@@ -85,7 +86,9 @@ import {
 export function SupplySideRevenues({
   partner: openPartner,
   month,
+  availableMonths = [],
 }: {
+  availableMonths?: string[];
   partner: SsrPartner | null;
   month: string | null;
 }) {
@@ -128,6 +131,7 @@ export function SupplySideRevenues({
         <PartnerBreakdown
           partner={openPartner}
           month={month}
+          months={availableMonths}
           onBack={() => router.push(paths.ssr())}
         />
       ) : (
@@ -377,25 +381,23 @@ function Summary({
 function PartnerBreakdown({
   partner,
   month: monthFromUrl,
+  months,
   onBack,
 }: {
   partner: SsrPartner;
+  months: string[];
   month: string | null;
   onBack: () => void;
 }) {
   const router = useRouter();
   const ssr = useSsr();
   const { monthLabels } = ssr;
-  // Only the months this prime settled — Osero has two, and a picker offering
-  // the other six would produce links that 404.
-  const months = reportsFor(ssr, partner).map((r) => r.month);
-  // A bare /prime-agent-revenues/grove means "the latest", so it keeps working
-  // as months are added; a pinned month stays pinned.
   const month = monthFromUrl ?? months[months.length - 1];
   const [onlyEarning, setOnlyEarning] = React.useState(true);
 
   const report = reportFor(ssr, partner, month);
   const h = report?.headline;
+  const rewards = compareRewards(useDr(), h?.distributionRewards);
   const monthly = partnerMonthlyRevenues(ssr, partner);
 
   const venues = venuesFor(ssr, partner, month);
@@ -428,10 +430,11 @@ function PartnerBreakdown({
           onChange={(m) => router.push(paths.ssrPartner(partner, m))}
           months={months}
           render={(m) => monthLabels[m] ?? m}
-          label="Settlement month"
+          label="Revenue month"
         />
       </div>
 
+      {report ? <>
       <div className="grid grid-cols-1 gap-4 @4xl/main:grid-cols-2">
         <HeadlinePanel
           title="Prime side"
@@ -439,7 +442,7 @@ function PartnerBreakdown({
           rows={[
             ["Demand-side revenue", h?.demandSideRevenue, "sum"],
             ["Agent rate", h?.agentRate, "sub"],
-            ["Distribution rewards", h?.distributionRewards, "sub"],
+            ["Distribution rewards (settled)", h?.distributionRewards, "sub"],
             ["+ Supply-side revenue", h?.primeSupplySideRevenue, "sum"],
           ]}
           total={["Prime agent profit", h?.primeAgentProfit]}
@@ -614,7 +617,24 @@ function PartnerBreakdown({
         <ExcludedSection rows={report.excludedVenues} />
       ) : null}
 
-      <section id="distribution-rewards" className="scroll-mt-20">
+      </> : (
+        <Panel title="Settlement figures unavailable" description={monthLong(month)}>
+          <Prose>No settlement report has been published for {partnerMeta(partner).label} in this month.
+            Prime-side and Sky-side settlement figures are unavailable. Calculated distribution rewards are shown below.</Prose>
+        </Panel>
+      )}
+
+      <section id="distribution-rewards" className="flex scroll-mt-20 flex-col gap-4">
+        <div className="rounded-xl border bg-muted/30 p-4 text-sm" role="note">
+          <p>The ledger shows calculated distribution rewards. Prime-side figures use the published settlement report.</p>
+          {rewards.difference !== null && Math.abs(rewards.difference) >= 0.01 && (
+            <p className="mt-2" data-testid="dr-difference">
+              Calculated DR: {formatUSD2(rewards.calculated)} · Settlement DR: {formatUSD2(rewards.settled)} · Difference: {formatUSD2(rewards.difference)}.
+              {" "}The calculated amount is not included in the prime total; the settlement amount is used there.
+            </p>
+          )}
+          {report && rewards.calculated === null && <p className="mt-2">No calculated DR data is available for this month.</p>}
+        </div>
         <RefCodesView key={`${partner}-${month}`} />
       </section>
     </div>

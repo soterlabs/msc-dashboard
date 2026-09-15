@@ -89,7 +89,7 @@ export function RefCodesView() {
 
   return (
     <Panel
-      title="Distribution rewards by ref code"
+      title="Calculated distribution rewards by ref code"
       description={`${monthLong(reportMonths[0])} · ${rows.length} of ${refCodeRows.length} ref codes · select a row for its token composition`}
       action={
         <ActionButton onClick={() => exportCsv(rows, reportMonths)}>

@@ -3,8 +3,9 @@ import { notFound } from "next/navigation";
 import { DrProvider, SsrProvider } from "@/components/data-context";
 import { SupplySideRevenues } from "@/components/ssr/supply-side-revenues";
 import { loadDr, loadSsr } from "@/lib/load";
-import { orderedPartners, reportsFor } from "@/lib/ssr/domain";
+import { orderedPartners } from "@/lib/ssr/domain";
 import { isMonthSegment } from "@/lib/routes";
+import { revenueMonths } from "@/lib/ssr/revenue-context";
 import { scopeDr } from "@/lib/dr/scope";
 import { partnerMeta } from "@/lib/ssr/domain";
 import type { SsrPartner } from "@/lib/ssr/types";
@@ -19,11 +20,12 @@ import type { SsrPartner } from "@/lib/ssr/types";
  */
 export function generateStaticParams() {
   const ssr = loadSsr();
+  const dr = loadDr();
   return [
     { path: undefined },
     ...orderedPartners(ssr).flatMap((partner) => [
       { path: [partner] },
-      ...reportsFor(ssr, partner).map((r) => ({ path: [partner, r.month] })),
+      ...revenueMonths(ssr, dr, partner, partnerMeta(partner).label).map((month) => ({ path: [partner, month] })),
     ]),
   ];
 }
@@ -50,22 +52,18 @@ export default async function Page({
   if (rest.length) notFound();
   if (!orderedPartners(ssr).includes(partner as SsrPartner)) notFound();
 
-  // A month that exists but not for this prime is a 404 too — Osero has no
-  // January, and a link claiming otherwise should say so rather than quietly
-  // showing a different month's figures.
-  if (month !== undefined) {
-    if (!isMonthSegment(month)) notFound();
-    if (!reportsFor(ssr, partner as SsrPartner).some((r) => r.month === month)) notFound();
-  }
-
   const selectedPartner = partner as SsrPartner;
-  const selectedMonth = month ?? reportsFor(ssr, selectedPartner).at(-1)!.month;
-  const dr = scopeDr(loadDr(), partnerMeta(selectedPartner).label, selectedMonth);
+  const sourceDr = loadDr();
+  const group = partnerMeta(selectedPartner).label;
+  const months = revenueMonths(ssr, sourceDr, selectedPartner, group);
+  if (month !== undefined && (!isMonthSegment(month) || !months.includes(month))) notFound();
+  const selectedMonth = month ?? months.at(-1)!;
+  const dr = scopeDr(sourceDr, group, selectedMonth);
 
   return (
     <SsrProvider value={ssr}>
       <DrProvider value={dr}>
-        <SupplySideRevenues partner={selectedPartner} month={selectedMonth} />
+        <SupplySideRevenues partner={selectedPartner} month={selectedMonth} availableMonths={months} />
       </DrProvider>
     </SsrProvider>
   );

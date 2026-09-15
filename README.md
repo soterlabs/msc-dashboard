@@ -243,8 +243,16 @@ its demand-side, supply-side and Sky-side accounting statements.
 The final section reuses the ref-code ledger, sliced on the server by the
 prime's DR group and selected settlement month (`src/lib/dr/scope.ts`). Its
 monthly values, totals, token details, token filters and CSV export all use that
-slice. Changing the month resets the ledger filters and expansion. A missing
-month or a prime without DR shows an empty ledger, never another month's data.
+slice. Changing the month resets the ledger filters and expansion. A prime without DR shows an empty ledger, never another month's data.
+The month picker and generated routes use the union of settlement months and
+months with reported DR for that prime. DR-only months show the ledger with an
+explicit settlement-unavailable message; they do not invent zero settlement
+figures. Months present in neither source still 404.
+
+The ledger is labelled calculated DR, while the prime statement uses settled
+DR. A comparison above the ledger shows both full-month amounts and their
+difference when they disagree (for example, Keel in August 2026). Interactive
+ledger filters do not change this comparison or the published settlement total.
 Skybase stays in the overview summary but has no prime settlement link.
 The layout reads SSR to derive the navigation names; it passes only those names
 and keys to the shared shell, not the report dataset.
@@ -275,8 +283,9 @@ which page it is, and would otherwise rewrite history on every keystroke.
 **A month is optional and pinned.** `/prime-agent-revenues/grove` keeps working
 as months are added; `/prime-agent-revenues/grove/2026-08` keeps showing August.
 The former `/supply-side-revenues/…` and `/settlement-revenues/…` paths redirect here (`next.config.ts`). Legacy `/distribution-rewards` links redirect to the merged report; prime-owned ref-code links go to the corresponding prime's ledger.
-A month a prime never settled 404s — Osero has no January, and a link claiming
-otherwise should say so rather than quietly showing different figures.
+A month without settlement or DR data for that prime 404s. Osero's January
+2026 page is valid because it has DR, and explicitly says no settlement report
+has been published for that month.
 
 **A hidden report has no address.** With its flag off, the route 404s and its
 loader is never called, so the tab being unreachable and its numbers being
