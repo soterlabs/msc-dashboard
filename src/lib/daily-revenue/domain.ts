@@ -24,9 +24,23 @@ export function historyDays(history: History): { cutoff: string; estimate: Estim
   }
   return days.reverse();
 }
+function newestFirst(a: Estimate, b: Estimate): number {
+  return b.cutoff.localeCompare(a.cutoff) ||
+    (b.publication_order !== undefined && a.publication_order !== undefined
+      ? b.publication_order - a.publication_order
+      : Date.parse(b.computed_at) - Date.parse(a.computed_at));
+}
+/** Independently cached endpoints may observe a correction at different times.
+ * Use the newest known publication consistently in both headline and table. */
+export function mergeHistory(history: History | null, latest: Estimate | null): History | null {
+  if (!history || !latest || latest.cutoff < history.start || latest.cutoff > history.end) return history;
+  const previous = history.results.find((r) => r.cutoff === latest.cutoff);
+  if (previous && newestFirst(previous, latest) <= 0) return history;
+  return { ...history, results: [...history.results.filter((r) => r.cutoff !== latest.cutoff), latest].sort(newestFirst) };
+}
 /** Only a returned cutoff in the selected month may populate its headline. */
 export function selectedEstimate(month: string, history: History | null, latest: Estimate | null): Estimate | null {
   const candidates = history?.results.filter((r) => r.cutoff.startsWith(`${month}-`)) ?? [];
   if (latest?.cutoff.startsWith(`${month}-`)) candidates.push(latest);
-  return candidates.sort((a, b) => b.cutoff.localeCompare(a.cutoff) || (b.publication_order !== undefined && a.publication_order !== undefined ? b.publication_order - a.publication_order : Date.parse(b.computed_at) - Date.parse(a.computed_at)))[0] ?? null;
+  return candidates.sort(newestFirst)[0] ?? null;
 }

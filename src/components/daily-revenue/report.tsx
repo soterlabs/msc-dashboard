@@ -39,7 +39,7 @@ export function AttemptStatus({ attempt }: { attempt: Attempt | null }) {
 }
 export function FreshnessStatus({ cutoff, expected }: { cutoff: string | null; expected: string }) {
   return <div className="flex flex-wrap items-center gap-2 text-xs">
-    <Badge variant="secondary">{cutoff === null ? "No published estimate" : cutoff < expected ? "Behind expected cutoff" : "Current cutoff"}</Badge>
+    <Badge variant="secondary">{cutoff === null ? "No estimate available" : cutoff < expected ? "Behind expected cutoff" : "Current cutoff"}</Badge>
     <span>Latest publication: {cutoff ?? "—"} · expected {expected} (UTC)</span>
   </div>;
 }

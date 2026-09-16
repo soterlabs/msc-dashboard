@@ -7,7 +7,7 @@ import { FLAGS } from "@/lib/flags";
 import { paths } from "@/lib/routes";
 import { loadSsr } from "@/lib/load";
 import { revenueClient } from "@/lib/daily-revenue/api";
-import { monthWindow, selectedEstimate, validMonth, yesterday } from "@/lib/daily-revenue/domain";
+import { mergeHistory, monthWindow, selectedEstimate, validMonth, yesterday } from "@/lib/daily-revenue/domain";
 import { DAILY_PRIMES, isDailyPrime, primeName, type History, type ReadResult } from "@/lib/daily-revenue/types";
 
 export const dynamic = "force-dynamic";
@@ -56,7 +56,8 @@ export default async function Page({ params }: { params: Promise<{ path?: string
   const window = monthWindow(selectedMonth, now);
   const history: ReadResult<History> = window ? await revenueClient.history(prime, window.start, window.end)
     : { data: null, source: "missing", verifiedAt: null, error: "This month has no completed UTC days yet." };
-  const estimate = selectedEstimate(selectedMonth, history.data, latest.data?.data ?? null);
+  const observations = mergeHistory(history.data, latest.data?.data ?? null);
+  const estimate = selectedEstimate(selectedMonth, observations, latest.data?.data ?? null);
   const settled = settledFor(prime, selectedMonth);
   return <div className="space-y-6">
     <PageHeader title={`Daily MSC Revenue: ${primeName(prime)}`} description="Provisional MTD estimates and canonical settled reports" />
@@ -72,6 +73,6 @@ export default async function Page({ params }: { params: Promise<{ path?: string
     <SettledPanel report={settled} selectedMonth={selectedMonth} />
     <ReadNotice read={history} />
     {estimate ? <EstimatePanel estimate={estimate} /> : <Panel title="No published estimate for this month"><p className="text-sm text-muted-foreground">Missing observations are unavailable, not zero revenue. Use the separately dated settled report when available.</p></Panel>}
-    {history.data && <HistoryTable history={history.data} />}
+    {observations && <HistoryTable history={observations} />}
   </div>;
 }

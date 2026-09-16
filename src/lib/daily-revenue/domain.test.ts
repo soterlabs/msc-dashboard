@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import { addMoney, decimal, usd } from "./decimal.ts";
-import { historyDays, metrics, monthWindow, selectedEstimate, yesterday } from "./domain.ts";
+import { mergeHistory, historyDays, metrics, monthWindow, selectedEstimate, yesterday } from "./domain.ts";
 import { validateHistory, validateLatest } from "./schema.ts";
 import { DAILY_PRIMES } from "./types.ts";
 const fixture = (name: string) => JSON.parse(readFileSync(`schema/fixtures/daily-revenue/${name}.json`, "utf8"));
@@ -65,4 +65,18 @@ test("validators reject wrong prime, wrong month, invalid dates and numeric mone
     (d: ReturnType<typeof fixture>) => { d.data.provisional = false; },
     (d: ReturnType<typeof fixture>) => { d.schema_version = "2.0"; },
   ]) { const data = fixture("grove"); mutate(data); assert.throws(() => validateLatest(data, "grove")); }
+});
+
+
+test("history and headline share the newest revision even when endpoint caches differ", () => {
+  const history = validateHistory(fixture("history"), "grove", "2026-09-01", "2026-09-15");
+  const correction = { ...history.results[0], revision_id: "c".repeat(64), publication_order: 999 };
+  const merged = mergeHistory(history, correction)!;
+  assert.equal(merged.results[0].revision_id, correction.revision_id);
+  assert.equal(selectedEstimate("2026-09", merged, correction)?.revision_id, merged.results[0].revision_id);
+  assert.notEqual(history.results[0].revision_id, correction.revision_id);
+  assert.equal(mergeHistory(merged, history.results[0]), merged);
+  assert.equal(mergeHistory(null, correction), null);
+  assert.equal(mergeHistory({ ...history, results: [] }, correction)?.results[0].revision_id, correction.revision_id);
+  assert.equal(mergeHistory({ ...history, start: "2026-08-01", end: "2026-08-31" }, correction)?.results.length, 2);
 });
