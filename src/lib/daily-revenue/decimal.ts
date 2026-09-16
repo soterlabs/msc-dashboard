@@ -17,3 +17,7 @@ export function usd(value: string | null): string {
   const [whole, cents] = n.abs().toFixed(2).split(".");
   return `${n.isNegative() && !n.toDecimalPlaces(2).isZero() ? "-" : ""}$${whole.replace(/\B(?=(\d{3})+(?!\d))/g, " ")}.${cents}`;
 }
+/** Zero at full precision: "0", "0.00" and "0E-18" are all the same nothing. */
+export function isZeroMoney(value: string): boolean {
+  return new Money(decimal(value)).isZero();
+}

@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Panel, DataTable, TableHeader, TableBody, TableRow, Th, Td } from "@/components/kit";
-import { REVENUE_API_URL } from "@/lib/daily-revenue/api";
-import { metrics, historyDays } from "@/lib/daily-revenue/domain";
+import { REVENUE_PUBLIC_URL } from "@/lib/daily-revenue/api";
+import { utcStamp as utc } from "@/lib/daily-revenue/calendar";
+import { distributionExcluded, distributionNote, metrics, historyDays } from "@/lib/daily-revenue/domain";
 import { usd } from "@/lib/daily-revenue/decimal";
-import { DAILY_PRIMES, primeName, type Attempt, type DailyPrime, type Estimate, type History, type ReadResult } from "@/lib/daily-revenue/types";
+import { DAILY_PRIMES, primeName, type Attempt, type DailyPrime, type Estimate, type Freshness, type History, type ReadResult } from "@/lib/daily-revenue/types";
 import { paths } from "@/lib/routes";
 import { formatUSD2, monthLong } from "@/lib/format";
 import type { SsrReport } from "@/lib/ssr/types";
@@ -19,11 +20,11 @@ export function PrimeNavigation({ selected }: { selected?: DailyPrime }) {
 export function ScheduleNote() {
   return <p className="max-w-5xl text-sm text-muted-foreground">
     Updated daily at 20:17 UTC through the previous completed UTC day. These are provisional month-to-date (MTD) estimates, not daily earnings.
-    Monthly distribution rewards are excluded. Before the scheduled update, or while official reference rates are pending after weekends or holidays,
-    a retained cutoff may be behind yesterday without a failed scheduled run.
+    Monthly distribution rewards are excluded from the daily inputs, and each estimate is captioned with what its own response carries.
+    Before the scheduled update, or while official reference rates are pending after weekends or holidays, a retained cutoff may be behind
+    the expected one without a failed scheduled run.
   </p>;
 }
-const utc = (value: string) => `${new Date(value).toISOString().slice(0, 19).replace("T", " ")} UTC`;
 export function ReadNotice({ read }: { read: Pick<ReadResult<unknown>, "source" | "verifiedAt" | "error"> }) {
   return <div className="space-y-1 text-xs text-muted-foreground">
     {read.error && <p role="status">{read.error}</p>}
@@ -37,10 +38,14 @@ export function AttemptStatus({ attempt }: { attempt: Attempt | null }) {
     {attempt.status === "failed" || attempt.status === "abandoned" ? " The last successful estimate is retained." : ""}
   </p>;
 }
-export function FreshnessStatus({ cutoff, expected }: { cutoff: string | null; expected: string }) {
+/** Staleness is the API's own judgement, not a comparison against yesterday:
+ * the day's estimate publishes at 20:17 UTC, so for most of a healthy day the
+ * newest published cutoff is two days back and behind nothing. */
+export function FreshnessStatus({ freshness }: { freshness: Freshness | null }) {
+  const cutoff = freshness?.actual_cutoff ?? null;
   return <div className="flex flex-wrap items-center gap-2 text-xs">
-    <Badge variant="secondary">{cutoff === null ? "No estimate available" : cutoff < expected ? "Behind expected cutoff" : "Current cutoff"}</Badge>
-    <span>Latest publication: {cutoff ?? "—"} · expected {expected} (UTC)</span>
+    <Badge variant="secondary">{cutoff === null ? "No estimate available" : freshness?.stale ? "Behind expected cutoff" : "Current cutoff"}</Badge>
+    <span>Latest publication: {cutoff ?? "—"} · expected {freshness?.expected_cutoff ?? "—"} (UTC)</span>
   </div>;
 }
 function Metric({ label, value, exact }: { label: string; value: string; exact?: string }) {
@@ -70,18 +75,18 @@ export function Provenance({ estimate }: { estimate: Estimate }) {
       </dl>
       <p>Prime total = supply-side revenue + agent rate + distribution rewards + Chronicle Points + GAR. External venue rewards are already included in supply-side revenue.</p>
       <dl className="grid gap-2 sm:grid-cols-2">
-        {[["Agent rate", r.agent_rate], ["Distribution rewards (excluded monthly input)", r.distribution_rewards], ["Chronicle Points", r.chronicle_points], ["GAR", r.gar], ["Net P&L (audit metric, not prime total)", r.monthly_pnl]].map(([label, value]) =>
+        {[["Agent rate", r.agent_rate], [`Distribution rewards (${distributionExcluded(estimate) ? "excluded monthly input" : "included in the prime total"})`, r.distribution_rewards], ["Chronicle Points", r.chronicle_points], ["GAR", r.gar], ["Net P&L (audit metric, not prime total)", r.monthly_pnl]].map(([label, value]) =>
           <div key={label}><dt>{label}</dt><dd title={value} className="tabular-nums">{usd(value)} <span className="break-all font-mono">(exact: {value})</span></dd></div>)}
       </dl>
       <details><summary className="cursor-pointer">Block pins and reference-rate provenance</summary>
         <pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-muted p-3">{JSON.stringify({ opening_pins: estimate.opening_pins, closing_pins: estimate.closing_pins, input_provenance: estimate.input_provenance }, null, 2)}</pre>
       </details>
-      <a className="underline" href={`${REVENUE_API_URL}/v1/revenue/${estimate.prime}/at/${estimate.cutoff}?revision=${estimate.revision_id}`} target="_blank" rel="noreferrer">Read this exact published revision</a>
+      <a className="underline" href={`${REVENUE_PUBLIC_URL}/v1/revenue/${estimate.prime}/at/${estimate.cutoff}?revision=${estimate.revision_id}`} target="_blank" rel="noreferrer">Read this exact published revision</a>
     </div>
   </details>;
 }
 export function EstimatePanel({ estimate }: { estimate: Estimate }) {
-  return <Panel title={`Provisional MTD estimate through ${estimate.cutoff} (UTC)`} description={`Computed ${utc(estimate.computed_at)} · monthly distribution rewards excluded`}>
+  return <Panel title={`Provisional MTD estimate through ${estimate.cutoff} (UTC)`} description={`Computed ${utc(estimate.computed_at)} · ${distributionNote(estimate)}`}>
     <div className="space-y-5"><EstimateMetrics estimate={estimate} /><Provenance estimate={estimate} /></div>
   </Panel>;
 }

@@ -1,19 +1,16 @@
-import { addMoney } from "./decimal.ts";
+import { addMoney, isZeroMoney } from "./decimal.ts";
 import type { Estimate, History } from "./types";
-export const yesterday = (now: Date) => new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) - 86400000).toISOString().slice(0, 10);
-export function validMonth(value: string): boolean { return /^\d{4}-(0[1-9]|1[0-2])$/.test(value) && Number(value.slice(0, 4)) >= 2000; }
-export function monthWindow(month: string, now: Date): { start: string; end: string } | null {
-  if (!validMonth(month)) return null;
-  const start = `${month}-01`;
-  const endOfMonth = new Date(Date.UTC(Number(month.slice(0, 4)), Number(month.slice(5, 7)), 0)).toISOString().slice(0, 10);
-  const end = endOfMonth < yesterday(now) ? endOfMonth : yesterday(now);
-  return start > end ? null : { start, end };
-}
 export function metrics(estimate: Estimate) {
   const r = estimate.result;
   const demand = addMoney([r.agent_rate, r.distribution_rewards, r.chronicle_points, r.gar]);
   return { supply: r.prime_agent_revenue, demand, prime: addMoney([r.prime_agent_revenue, demand]), sky: r.sky_revenue };
 }
+/** The prime total sums whatever the response carries, distribution rewards
+ * included. The daily cadence reports them as zero, but a caption that asserts
+ * the exclusion unconditionally would be a lie the first time it does not. */
+export const distributionExcluded = (estimate: Estimate) => isZeroMoney(estimate.result.distribution_rewards);
+export const distributionNote = (estimate: Estimate) =>
+  distributionExcluded(estimate) ? "monthly distribution rewards excluded" : "includes the distribution rewards this response reports";
 /** Never sum MTD observations. Fill the calendar with null gaps, not zeroes. */
 export function historyDays(history: History): { cutoff: string; estimate: Estimate | null }[] {
   const records = new Map(history.results.map((r) => [r.cutoff, r]));
@@ -24,11 +21,16 @@ export function historyDays(history: History): { cutoff: string; estimate: Estim
   }
   return days.reverse();
 }
+/** One key per revision — cutoff, then publication order, then computation
+ * time — rather than a key chosen from the pair. Comparing on publication_order
+ * only when both operands carry it is not transitive, so with the field present
+ * on some revisions of a cutoff and absent on others the winner would fall out
+ * of the sort implementation instead of out of the data. A revision without an
+ * order ranks below every ordered one at its cutoff. */
+const rank = (e: Estimate): [string, number, number] => [e.cutoff, e.publication_order ?? -1, Date.parse(e.computed_at)];
 function newestFirst(a: Estimate, b: Estimate): number {
-  return b.cutoff.localeCompare(a.cutoff) ||
-    (b.publication_order !== undefined && a.publication_order !== undefined
-      ? b.publication_order - a.publication_order
-      : Date.parse(b.computed_at) - Date.parse(a.computed_at));
+  const [ac, ao, at] = rank(a), [bc, bo, bt] = rank(b);
+  return bc.localeCompare(ac) || bo - ao || bt - at;
 }
 /** Independently cached endpoints may observe a correction at different times.
  * Use the newest known publication consistently in both headline and table. */

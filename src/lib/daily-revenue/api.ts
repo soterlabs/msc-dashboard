@@ -2,14 +2,29 @@
 import { validateHistory, validateLatest, validateStatus } from "./schema.ts";
 import type { DailyPrime, ReadResult } from "./types";
 
-export const REVENUE_API_URL = [process.env.SETTLE_API_URL, process.env.NEXT_PUBLIC_SETTLE_API_URL]
-  .map((v) => v?.trim()).find(Boolean)?.replace(/\/$/, "") ?? "https://settle-api-production.up.railway.app";
+const DEFAULT_REVENUE_API_URL = "https://settle-api-production.up.railway.app";
+const host = (value: string | undefined) => value?.trim().replace(/\/$/, "") || undefined;
+
+/** Where this process reads. SETTLE_API_URL is server-only and may name a host
+ * no browser can resolve, which is the whole reason it is not NEXT_PUBLIC_. */
+export const REVENUE_API_URL = host(process.env.SETTLE_API_URL) ?? host(process.env.NEXT_PUBLIC_SETTLE_API_URL) ?? DEFAULT_REVENUE_API_URL;
+
+/** The same API as a reader's browser reaches it, for links they click. The
+ * server-only variable is deliberately not consulted: an internal hostname in
+ * an href is a dead link in the page and a leaked hostname in its HTML. */
+export const REVENUE_PUBLIC_URL = host(process.env.NEXT_PUBLIC_SETTLE_API_URL) ?? DEFAULT_REVENUE_API_URL;
+
+/** The API answered and the validators rejected what it said. Kept apart from a
+ * transport failure so a renamed field is not reported to readers as an outage,
+ * and so the cause reaches the server log instead of being swallowed. */
+class InvalidResponse extends Error {}
 interface Entry { data: unknown; etag: string | null; expires: number; verifiedAt: string }
 
 /** Bounded per-process cache. Expired entries are revalidated before rendering;
  * they are only served stale on an explicit error, with their original as-of.
  * Deploy/restart clears this cache; the canonical monthly files remain usable. */
-export function createRevenueClient(fetcher: typeof fetch = fetch, now: () => number = Date.now, base = REVENUE_API_URL) {
+export function createRevenueClient(fetcher: typeof fetch = fetch, now: () => number = Date.now, base = REVENUE_API_URL,
+  log: (message: string, cause: unknown) => void = console.error) {
   const entries = new Map<string, Entry>();
   const pending = new Map<string, Promise<ReadResult<unknown>>>();
   async function request<T>(path: string, validate: (value: unknown) => T, cache = true, statusEndpoint = false): Promise<ReadResult<T>> {
@@ -28,7 +43,12 @@ export function createRevenueClient(fetcher: typeof fetch = fetch, now: () => nu
         }
         const notModified = response.status === 304 && previous;
         if (!notModified && !response.ok && !(statusEndpoint && response.status === 503)) throw new Error(`API returned ${response.status}`);
-        const data = notModified ? previous.data as T : validate(await response.json());
+        let data: T;
+        if (notModified) data = previous.data as T;
+        else {
+          try { data = validate(await response.json()); }
+          catch (cause) { throw new InvalidResponse(`${path} did not match the expected shape`, { cause }); }
+        }
         const verifiedAt = new Date(now()).toISOString();
         if (cache) {
           const control = response.headers.get("cache-control") ?? "";
@@ -42,10 +62,14 @@ export function createRevenueClient(fetcher: typeof fetch = fetch, now: () => nu
           } else entries.delete(path);
         }
         return { data, source: "api", verifiedAt, error: null };
-      } catch {
+      } catch (cause) {
+        const invalid = cause instanceof InvalidResponse;
+        log(`[daily-revenue] ${path}: ${invalid ? "invalid response" : "read failed"}`, cause);
         return previous
-          ? { data: previous.data as T, source: "cache", verifiedAt: previous.verifiedAt, error: "Live API unavailable; showing the last successfully verified response." }
-          : { data: null, source: "unavailable", verifiedAt: null, error: "Daily revenue API unavailable. Settled reports remain available." };
+          ? { data: previous.data as T, source: "cache", verifiedAt: previous.verifiedAt,
+              error: `Live API ${invalid ? "returned an unexpected response" : "unavailable"}; showing the last successfully verified response.` }
+          : { data: null, source: "unavailable", verifiedAt: null,
+              error: `Daily revenue API ${invalid ? "returned an unexpected response" : "unavailable"}. Settled reports remain available.` };
       }
     })();
     pending.set(path, work);

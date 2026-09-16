@@ -65,10 +65,15 @@ function freshness(value: unknown): Freshness {
   if (typeof v.stale !== "boolean") throw new Error("Invalid freshness");
   return { expected_cutoff: date(v.expected_cutoff), actual_cutoff: v.actual_cutoff === null ? null : date(v.actual_cutoff), stale: v.stale };
 }
+/** The estimate and its freshness block can be assembled either side of a
+ * revision publish. A disagreement between them is a freshness inconsistency,
+ * not a reason to discard an estimate that is itself valid: report the cutoff
+ * actually rendered, and hold it stale until it reaches the expected one. */
 export function validateLatest(value: unknown, prime: DailyPrime): Latest {
   const v = envelope(value, prime), data = validateEstimate(v.data, prime), f = freshness(v.freshness);
-  if (f.actual_cutoff !== data.cutoff) throw new Error("Freshness does not match the estimate");
-  return { data, freshness: f, latest_attempt: attempt(v.latest_attempt) };
+  const reconciled = f.actual_cutoff === data.cutoff ? f
+    : { expected_cutoff: f.expected_cutoff, actual_cutoff: data.cutoff, stale: f.stale || data.cutoff < f.expected_cutoff };
+  return { data, freshness: reconciled, latest_attempt: attempt(v.latest_attempt) };
 }
 export function validateHistory(value: unknown, prime: DailyPrime, start: string, end: string): History {
   const v = envelope(value, prime);
@@ -80,8 +85,12 @@ export function validateHistory(value: unknown, prime: DailyPrime, start: string
 export function validateStatus(value: unknown): DailyStatus {
   const v = object(value), primes = object(v.primes);
   if (v.cadence !== "daily" || typeof v.ready !== "boolean") throw new Error("Invalid revenue status");
-  return Object.fromEntries(DAILY_PRIMES.filter((p) => primes[p] !== undefined).map((p) => {
-    const state = object(primes[p]);
-    return [p, { ...freshness(state), latest_attempt: attempt(state.latest_attempt) }];
+  // A malformed entry drops that prime alone. Six primes share this document
+  // and one bad state block is no reason to blank the other five.
+  return Object.fromEntries(DAILY_PRIMES.flatMap((p) => {
+    try {
+      const state = object(primes[p]);
+      return [[p, { ...freshness(state), latest_attempt: attempt(state.latest_attempt) }]];
+    } catch { return []; }
   }));
 }

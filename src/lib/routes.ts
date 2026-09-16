@@ -102,7 +102,9 @@ export const paths = {
       ? `/${slugOf("buybacks")}/${granularity}`
       : `/${slugOf("buybacks")}`,
 
-  dailyRevenue: (prime?: string, month?: string) => `/daily-revenue${prime ? `/${prime}` : ""}${prime && month ? `/${month}` : ""}`,
+  /** A prime's daily estimates; with a month, that month's window. */
+  dailyRevenue: (prime?: string, month?: string) =>
+    `/${slugOf("daily-revenue")}${prime ? `/${prime}` : ""}${prime && month ? `/${month}` : ""}`,
 
   prime: () => `/${slugOf("prime")}`,
 };

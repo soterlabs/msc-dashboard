@@ -7,7 +7,8 @@ import { FLAGS } from "@/lib/flags";
 import { paths } from "@/lib/routes";
 import { loadSsr } from "@/lib/load";
 import { revenueClient } from "@/lib/daily-revenue/api";
-import { mergeHistory, monthWindow, selectedEstimate, validMonth, yesterday } from "@/lib/daily-revenue/domain";
+import { monthWindow, utcStamp, validMonth } from "@/lib/daily-revenue/calendar";
+import { distributionNote, mergeHistory, selectedEstimate } from "@/lib/daily-revenue/domain";
 import { DAILY_PRIMES, isDailyPrime, primeName, type History, type ReadResult } from "@/lib/daily-revenue/types";
 
 export const dynamic = "force-dynamic";
@@ -24,7 +25,6 @@ export default async function Page({ params }: { params: Promise<{ path?: string
     const reports = ssr.reports.filter((r) => r.partner === p).sort((a, b) => b.month.localeCompare(a.month));
     return reports.find((r) => r.month === selectedMonth) ?? reports[0];
   };
-  const expected = yesterday(now);
   if (!prime) {
     const [latest, status] = await Promise.all([
       Promise.all(DAILY_PRIMES.map(async (p) => ({ prime: p, read: await revenueClient.latest(p) }))),
@@ -38,10 +38,10 @@ export default async function Page({ params }: { params: Promise<{ path?: string
         {latest.map(({ prime: p, read }) => <Panel key={p} title={<Link className="underline-offset-4 hover:underline" href={paths.dailyRevenue(p)}>{primeName(p)}</Link>}
           description={read.data ? `Provisional MTD estimate through ${read.data.data.cutoff} (UTC)` : "Daily estimate unavailable"}>
           <div className="space-y-4">
-            <FreshnessStatus cutoff={read.data?.data.cutoff ?? null} expected={expected} />
+            <FreshnessStatus freshness={read.data?.freshness ?? status.data?.[p] ?? null} />
             <AttemptStatus attempt={status.data?.[p]?.latest_attempt ?? read.data?.latest_attempt ?? null} />
             <ReadNotice read={read} />
-            {read.data ? <><EstimateMetrics estimate={read.data.data} /><p className="text-xs text-muted-foreground">Computed {read.data.data.computed_at} · monthly DR excluded</p><Provenance estimate={read.data.data} /></>
+            {read.data ? <><EstimateMetrics estimate={read.data.data} /><p className="text-xs text-muted-foreground">Computed {utcStamp(read.data.data.computed_at)} · {distributionNote(read.data.data)}</p><Provenance estimate={read.data.data} /></>
               : <SettledPanel report={settledFor(p)} />}
             <Link href={paths.dailyRevenue(p)} className="text-sm underline">View {primeName(p)}’s daily observations</Link>
           </div>
@@ -64,7 +64,7 @@ export default async function Page({ params }: { params: Promise<{ path?: string
     <PrimeNavigation selected={prime} /><ScheduleNote />
     <DailyMonthPicker prime={prime} month={selectedMonth} max={now.toISOString().slice(0, 7)} />
     <div className="space-y-2 rounded-xl bg-muted/40 p-4">
-      <FreshnessStatus cutoff={latest.data?.data.cutoff ?? null} expected={expected} />
+      <FreshnessStatus freshness={latest.data?.freshness ?? status.data?.[prime] ?? null} />
       <AttemptStatus attempt={status.data?.[prime]?.latest_attempt ?? latest.data?.latest_attempt ?? null} />
       <ReadNotice read={latest} />
       {status.error && <ReadNotice read={status} />}

@@ -2,8 +2,9 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import { addMoney, decimal, usd } from "./decimal.ts";
-import { mergeHistory, historyDays, metrics, monthWindow, selectedEstimate, yesterday } from "./domain.ts";
-import { validateHistory, validateLatest } from "./schema.ts";
+import { monthWindow, yesterday } from "./calendar.ts";
+import { distributionNote, mergeHistory, historyDays, metrics, selectedEstimate } from "./domain.ts";
+import { validateHistory, validateLatest, validateStatus } from "./schema.ts";
 import { DAILY_PRIMES } from "./types.ts";
 const fixture = (name: string) => JSON.parse(readFileSync(`schema/fixtures/daily-revenue/${name}.json`, "utf8"));
 const grove = validateLatest(fixture("grove"), "grove");
@@ -79,4 +80,44 @@ test("history and headline share the newest revision even when endpoint caches d
   assert.equal(mergeHistory(null, correction), null);
   assert.equal(mergeHistory({ ...history, results: [] }, correction)?.results[0].revision_id, correction.revision_id);
   assert.equal(mergeHistory({ ...history, start: "2026-08-01", end: "2026-08-31" }, correction)?.results.length, 2);
+});
+
+test("revision ranking stays transitive when publication_order is only sometimes reported", () => {
+  const base = { ...grove.data, cutoff: "2026-09-15" };
+  const ordered = { ...base, revision_id: "a".repeat(64), publication_order: 9, computed_at: "2026-09-15T10:00:00Z" };
+  const unordered = { ...base, revision_id: "b".repeat(64), publication_order: undefined, computed_at: "2026-09-15T11:00:00Z" };
+  const newest = { ...base, revision_id: "c".repeat(64), publication_order: 12, computed_at: "2026-09-15T12:00:00Z" };
+  const window = { start: "2026-09-01", end: "2026-09-15" };
+  // Every input order must name the same winner; a comparator that switches
+  // keys per pair lets the sort implementation choose instead.
+  for (const results of [[ordered, unordered, newest], [newest, ordered, unordered], [unordered, newest, ordered]])
+    assert.equal(selectedEstimate("2026-09", { ...window, results }, null)?.revision_id, newest.revision_id);
+});
+
+test("a published estimate carries its own freshness, and a mismatched block never voids it", () => {
+  const data = fixture("grove");
+  data.freshness = { expected_cutoff: "2026-09-15", actual_cutoff: "2026-09-15", stale: false };
+  assert.equal(validateLatest(data, "grove").freshness.stale, false);
+  // The pipeline publishes at 20:17 UTC: a D-1 cutoff is current, not behind.
+  data.freshness = { expected_cutoff: "2026-09-16", actual_cutoff: "2026-09-16", stale: true };
+  const reconciled = validateLatest(data, "grove");
+  assert.equal(reconciled.data.cutoff, "2026-09-15");
+  assert.equal(reconciled.freshness.actual_cutoff, "2026-09-15");
+  assert.equal(reconciled.freshness.stale, true);
+});
+
+test("one malformed prime in the status document does not blank the other five", () => {
+  const data = fixture("grove");
+  const good = { ...data.freshness, latest_attempt: data.latest_attempt };
+  const status = validateStatus({ cadence: "daily", ready: true, primes: { grove: null, spark: { stale: "no" }, obex: good, keel: good } });
+  assert.deepEqual(Object.keys(status).sort(), ["keel", "obex"]);
+  assert.equal(status.obex?.expected_cutoff, data.freshness.expected_cutoff);
+});
+
+test("the headline caption follows the distribution rewards the response actually reports", () => {
+  assert.equal(grove.data.result.distribution_rewards, "0");
+  assert.match(distributionNote(grove.data), /excluded/);
+  const withRewards = { ...grove.data, result: { ...grove.data.result, distribution_rewards: "1250.00" } };
+  assert.doesNotMatch(distributionNote(withRewards), /excluded/);
+  assert.equal(metrics(withRewards).prime, addMoney([metrics(grove.data).prime, "1250.00"]));
 });
