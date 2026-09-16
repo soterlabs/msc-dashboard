@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import type { Icon } from "@phosphor-icons/react";
 import {
   BankIcon,
+  CalendarIcon,
   FireIcon,
   ScrollIcon,
   TrendUpIcon,
@@ -48,6 +49,7 @@ import { ThemeToggle } from "./theme-toggle";
 
 /** Icons live here, not in the route map: nothing on the server needs them. */
 const ICONS: Record<Section, Icon> = {
+  "daily-revenue": CalendarIcon,
   ssr: TrendUpIcon,
   "sky-total": BankIcon,
   buybacks: FireIcon,

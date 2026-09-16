@@ -16,6 +16,8 @@
  */
 
 export interface Flags {
+  /** Provisional daily month-to-date MSC revenue. */
+  dailyRevenue: boolean;
   /** "Prime Payments" — payments to primes, from data/prime/payments.csv. */
   primePayments: boolean;
   /** "Sky Total Net Revenue" — consolidated Sky net revenue (MSC + non-MSC). */
@@ -31,6 +33,7 @@ function on(value: string | undefined): boolean {
 }
 
 export const FLAGS: Flags = {
+  dailyRevenue: on(process.env.NEXT_PUBLIC_SHOW_DAILY_REVENUE),
   primePayments: on(process.env.NEXT_PUBLIC_SHOW_PRIME_PAYMENTS),
   skyTotalNetRevenue: on(process.env.NEXT_PUBLIC_SHOW_SKY_TOTAL_NET_REVENUE),
   buybacks: on(process.env.NEXT_PUBLIC_SHOW_BUYBACKS),

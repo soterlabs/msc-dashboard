@@ -1,0 +1,262 @@
+{
+  "schema_version": "1.0",
+  "prime": "grove",
+  "cadence": "daily",
+  "estimate_basis": "month_to_date",
+  "results": [
+    {
+      "revision_id": "60a3d753383aaa2b4f89373aa1d26c247c6ec9ae82d6d92f16a800286ebf3191",
+      "publication_order": 13,
+      "prime": "grove",
+      "cutoff": "2026-09-15",
+      "opening_pins": {
+        "base": 50715726,
+        "monad": 100893400,
+        "plume": 90704090,
+        "ethereum": 25878704,
+        "avalanche_c": 94159927
+      },
+      "closing_pins": {
+        "base": 51363726,
+        "monad": 105170570,
+        "plume": 93563471,
+        "ethereum": 25986306,
+        "avalanche_c": 95383572
+      },
+      "code_version": "03fa6c64e61adbd835102297e6a174e93973b6e0",
+      "configuration_version": "72fa6cb30fc60c8e5be295ae91a006cb5ee8fb349a722f2691fb220eb91413c6",
+      "input_revision": "1a9761273b5f316860c1a81dda979297671259ddf4a8a70b1a4b579b5d3dd4ec",
+      "computed_at": "2026-09-16T20:22:05.038532+00:00",
+      "result": {
+        "sky_revenue": "3583192.931062606912014136182",
+        "agent_rate": "39248.25905022342263180069408",
+        "prime_agent_revenue": "3793209.945909163549262691933",
+        "monthly_pnl": "254630.932639585159522288710",
+        "distribution_rewards": "0",
+        "chronicle_points": "5365.658742805099641932265006",
+        "gar": "0",
+        "prime_id": "grove",
+        "month": {
+          "year": 2026,
+          "month": 9
+        },
+        "period": {
+          "end": "2026-09-15",
+          "start": "2026-09-01",
+          "pin_blocks": {
+            "base": 51363726,
+            "monad": 105170570,
+            "plume": 93563471,
+            "ethereum": 25986306,
+            "avalanche_c": 95383572
+          }
+        }
+      },
+      "result_hash": "c16a0102c917e71bfa2bd492b24d6a15a2cb7dc3c24784f4b7faccd1ea1863ea",
+      "provisional": true,
+      "excluded_inputs": [
+        "monthly_distribution_rewards"
+      ],
+      "input_provenance": {
+        "reference_rates": {
+          "series": {
+            "sofr": {
+              "source": "https://markets.newyorkfed.org/api/rates/secured/sofr/search.json",
+              "observations": [
+                {
+                  "apr": "0.0366",
+                  "effective_date": "2026-09-01",
+                  "revision_indicator": ""
+                },
+                {
+                  "apr": "0.0365",
+                  "effective_date": "2026-09-02",
+                  "revision_indicator": ""
+                },
+                {
+                  "apr": "0.0366",
+                  "effective_date": "2026-09-03",
+                  "revision_indicator": ""
+                },
+                {
+                  "apr": "0.0365",
+                  "effective_date": "2026-09-04",
+                  "revision_indicator": ""
+                },
+                {
+                  "apr": "0.0364",
+                  "effective_date": "2026-09-08",
+                  "revision_indicator": ""
+                },
+                {
+                  "apr": "0.0364",
+                  "effective_date": "2026-09-09",
+                  "revision_indicator": ""
+                },
+                {
+                  "apr": "0.0362",
+                  "effective_date": "2026-09-10",
+                  "revision_indicator": ""
+                },
+                {
+                  "apr": "0.0362",
+                  "effective_date": "2026-09-11",
+                  "revision_indicator": ""
+                },
+                {
+                  "apr": "0.0362",
+                  "effective_date": "2026-09-14",
+                  "revision_indicator": ""
+                },
+                {
+                  "apr": "0.0364",
+                  "effective_date": "2026-09-15",
+                  "revision_indicator": ""
+                }
+              ]
+            }
+          },
+          "snapshot_id": "3b25eaa7472d20ffb1cb8c29551154e37e5e37be63c695642b6f0229e426ebd6",
+          "calendar_version": "5c97bff7a8a0e94f3c047e279bfb099855f18cde2ecef0f7c772a96232aff3f7",
+          "coverage_complete": true,
+          "first_observed_at": "2026-09-16T13:56:26.752529+00:00",
+          "carry_forward_dates": {
+            "2026-09-05": "2026-09-04",
+            "2026-09-06": "2026-09-04",
+            "2026-09-07": "2026-09-04",
+            "2026-09-12": "2026-09-11",
+            "2026-09-13": "2026-09-11"
+          }
+        },
+        "manual_input_revision": "0"
+      }
+    },
+    {
+      "revision_id": "2585543676fbb7d09dbc5e1146fa15682f57904280c5379121da74d9bcdc179a",
+      "publication_order": 2,
+      "prime": "grove",
+      "cutoff": "2026-09-14",
+      "opening_pins": {
+        "base": 50715726,
+        "monad": 100893400,
+        "plume": 90704090,
+        "ethereum": 25878704,
+        "avalanche_c": 94159927
+      },
+      "closing_pins": {
+        "base": 51320526,
+        "monad": 104884449,
+        "plume": 93371034,
+        "ethereum": 25979136,
+        "avalanche_c": 95302143
+      },
+      "code_version": "8071f5b851281e0195f667b35ddaeacc90128ae9",
+      "configuration_version": "72fa6cb30fc60c8e5be295ae91a006cb5ee8fb349a722f2691fb220eb91413c6",
+      "input_revision": "7225e6b5ed5032c8471cd1862f1f8fe5294742b9af57714da9555a0c34056def",
+      "computed_at": "2026-09-16T11:38:07.859138+00:00",
+      "result": {
+        "sky_revenue": "3356566.669107969689692471855",
+        "agent_rate": "36514.47196777599932514577895",
+        "prime_agent_revenue": "3707363.015101125326013750606",
+        "monthly_pnl": "392318.393416201925742638964",
+        "distribution_rewards": "0",
+        "chronicle_points": "5007.575455270290096214433994",
+        "gar": "0",
+        "prime_id": "grove",
+        "month": {
+          "year": 2026,
+          "month": 9
+        },
+        "period": {
+          "end": "2026-09-14",
+          "start": "2026-09-01",
+          "pin_blocks": {
+            "base": 51320526,
+            "monad": 104884449,
+            "plume": 93371034,
+            "ethereum": 25979136,
+            "avalanche_c": 95302143
+          }
+        }
+      },
+      "result_hash": "d08632d0d54d76d8e8224d3f93c76c680e2009b78892ae0938343e8f66440dac",
+      "provisional": true,
+      "excluded_inputs": [
+        "monthly_distribution_rewards"
+      ],
+      "input_provenance": {
+        "reference_rates": {
+          "series": {
+            "sofr": {
+              "source": "https://markets.newyorkfed.org/api/rates/secured/sofr/search.json",
+              "observations": [
+                {
+                  "apr": "0.0366",
+                  "effective_date": "2026-09-01",
+                  "revision_indicator": ""
+                },
+                {
+                  "apr": "0.0365",
+                  "effective_date": "2026-09-02",
+                  "revision_indicator": ""
+                },
+                {
+                  "apr": "0.0366",
+                  "effective_date": "2026-09-03",
+                  "revision_indicator": ""
+                },
+                {
+                  "apr": "0.0365",
+                  "effective_date": "2026-09-04",
+                  "revision_indicator": ""
+                },
+                {
+                  "apr": "0.0364",
+                  "effective_date": "2026-09-08",
+                  "revision_indicator": ""
+                },
+                {
+                  "apr": "0.0364",
+                  "effective_date": "2026-09-09",
+                  "revision_indicator": ""
+                },
+                {
+                  "apr": "0.0362",
+                  "effective_date": "2026-09-10",
+                  "revision_indicator": ""
+                },
+                {
+                  "apr": "0.0362",
+                  "effective_date": "2026-09-11",
+                  "revision_indicator": ""
+                },
+                {
+                  "apr": "0.0362",
+                  "effective_date": "2026-09-14",
+                  "revision_indicator": ""
+                }
+              ]
+            }
+          },
+          "snapshot_id": "3d97e2737a604a98973d59f891aa5ead3314111b3d0fcb6405b2e29d7331fbbb",
+          "calendar_version": "5c97bff7a8a0e94f3c047e279bfb099855f18cde2ecef0f7c772a96232aff3f7",
+          "coverage_complete": true,
+          "first_observed_at": "2026-09-16T11:19:26.396834+00:00",
+          "carry_forward_dates": {
+            "2026-09-05": "2026-09-04",
+            "2026-09-06": "2026-09-04",
+            "2026-09-07": "2026-09-04",
+            "2026-09-12": "2026-09-11",
+            "2026-09-13": "2026-09-11"
+          }
+        },
+        "manual_input_revision": "0"
+      }
+    }
+  ],
+  "order": "cutoff descending",
+  "limit": 90,
+  "start": "2026-09-01",
+  "end": "2026-09-15",
+  "missing_dates": "unavailable; use canonical monthly data"
+}

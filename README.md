@@ -344,3 +344,42 @@ state, which is what lets client components use them without pulling the data in
   `schema/prime-payments.mjs` with the `Kind` it implies.
 
 Each of these fails loudly if skipped, which is deliberate.
+
+## Daily MSC Revenue
+
+`NEXT_PUBLIC_SHOW_DAILY_REVENUE=true` enables `/daily-revenue` and the six-prime
+MTD overview. It is enabled on Railway **dev** and disabled on **production**.
+The flag is evaluated before any API read and is inlined at build time. The
+route returns 404 when disabled. No settled-data loader or refresh changes.
+
+`/daily-revenue/<prime>/<YYYY-MM>` shows the selected month's daily observations
+and, separately, the canonical settled report when present. A bare prime URL
+selects the returned latest cutoff's month, not the clock's month. Missing dates
+are gaps; MTD observations are never added together or labelled daily earnings.
+Monthly distribution rewards are excluded from these provisional estimates,
+including estimates with a month-end cutoff.
+
+The source is the public settle-api (`SETTLE_API_URL`, with the same
+`NEXT_PUBLIC_SETTLE_API_URL` fallback as buybacks). The pipeline runs daily at
+20:17 UTC through the prior completed day. Being behind yesterday before that
+run or while official reference rates are pending is distinct from a failed
+attempt. Cutoff, expected cutoff, computation and last attempt are visible.
+Revision IDs, versions, block pins and reference-rate provenance are expandable.
+An exact-revision link opens the retained public API record.
+
+`src/lib/daily-revenue/api.ts` keeps up to 96 validated responses per process,
+respects API max-age (at most 300 seconds), and uses ETag revalidation after
+expiry. Revalidation completes before rendering; errors may retain the last
+successful response with an explicit cached/as-of label. A restart clears that
+cache. Cold outages and missing estimates link to separately dated committed
+settlements; one failed prime never hides the others. The status endpoint's
+503 JSON is interpreted as health/freshness data, not discarded as an outage.
+There is no browser polling or backend compute trigger.
+
+Decimal API strings use `decimal.js`; arithmetic never passes through JS
+`Number`. `prime_agent_revenue` is supply-side revenue; the prime total also
+includes agent rate, distribution rewards, Chronicle Points and GAR.
+`monthly_pnl` is the net audit metric, not the prime total. Monetary display is
+rounded to cents, with exact source values available in provenance/tooltips.
+Live-response fixtures captured on 2026-09-16 live under
+`schema/fixtures/daily-revenue`; they are never production fallbacks.
