@@ -1,0 +1,147 @@
+{
+  "schema_version": "1.0",
+  "prime": "grove",
+  "cadence": "daily",
+  "estimate_basis": "month_to_date",
+  "data": {
+    "revision_id": "60a3d753383aaa2b4f89373aa1d26c247c6ec9ae82d6d92f16a800286ebf3191",
+    "publication_order": 13,
+    "prime": "grove",
+    "cutoff": "2026-09-15",
+    "opening_pins": {
+      "base": 50715726,
+      "monad": 100893400,
+      "plume": 90704090,
+      "ethereum": 25878704,
+      "avalanche_c": 94159927
+    },
+    "closing_pins": {
+      "base": 51363726,
+      "monad": 105170570,
+      "plume": 93563471,
+      "ethereum": 25986306,
+      "avalanche_c": 95383572
+    },
+    "code_version": "03fa6c64e61adbd835102297e6a174e93973b6e0",
+    "configuration_version": "72fa6cb30fc60c8e5be295ae91a006cb5ee8fb349a722f2691fb220eb91413c6",
+    "input_revision": "1a9761273b5f316860c1a81dda979297671259ddf4a8a70b1a4b579b5d3dd4ec",
+    "computed_at": "2026-09-16T20:22:05.038532+00:00",
+    "result": {
+      "sky_revenue": "3583192.931062606912014136182",
+      "agent_rate": "39248.25905022342263180069408",
+      "prime_agent_revenue": "3793209.945909163549262691933",
+      "monthly_pnl": "254630.932639585159522288710",
+      "distribution_rewards": "0",
+      "chronicle_points": "5365.658742805099641932265006",
+      "gar": "0",
+      "prime_id": "grove",
+      "month": {
+        "year": 2026,
+        "month": 9
+      },
+      "period": {
+        "end": "2026-09-15",
+        "start": "2026-09-01",
+        "pin_blocks": {
+          "base": 51363726,
+          "monad": 105170570,
+          "plume": 93563471,
+          "ethereum": 25986306,
+          "avalanche_c": 95383572
+        }
+      }
+    },
+    "result_hash": "c16a0102c917e71bfa2bd492b24d6a15a2cb7dc3c24784f4b7faccd1ea1863ea",
+    "provisional": true,
+    "excluded_inputs": [
+      "monthly_distribution_rewards"
+    ],
+    "input_provenance": {
+      "reference_rates": {
+        "series": {
+          "sofr": {
+            "source": "https://markets.newyorkfed.org/api/rates/secured/sofr/search.json",
+            "observations": [
+              {
+                "apr": "0.0366",
+                "effective_date": "2026-09-01",
+                "revision_indicator": ""
+              },
+              {
+                "apr": "0.0365",
+                "effective_date": "2026-09-02",
+                "revision_indicator": ""
+              },
+              {
+                "apr": "0.0366",
+                "effective_date": "2026-09-03",
+                "revision_indicator": ""
+              },
+              {
+                "apr": "0.0365",
+                "effective_date": "2026-09-04",
+                "revision_indicator": ""
+              },
+              {
+                "apr": "0.0364",
+                "effective_date": "2026-09-08",
+                "revision_indicator": ""
+              },
+              {
+                "apr": "0.0364",
+                "effective_date": "2026-09-09",
+                "revision_indicator": ""
+              },
+              {
+                "apr": "0.0362",
+                "effective_date": "2026-09-10",
+                "revision_indicator": ""
+              },
+              {
+                "apr": "0.0362",
+                "effective_date": "2026-09-11",
+                "revision_indicator": ""
+              },
+              {
+                "apr": "0.0362",
+                "effective_date": "2026-09-14",
+                "revision_indicator": ""
+              },
+              {
+                "apr": "0.0364",
+                "effective_date": "2026-09-15",
+                "revision_indicator": ""
+              }
+            ]
+          }
+        },
+        "snapshot_id": "3b25eaa7472d20ffb1cb8c29551154e37e5e37be63c695642b6f0229e426ebd6",
+        "calendar_version": "5c97bff7a8a0e94f3c047e279bfb099855f18cde2ecef0f7c772a96232aff3f7",
+        "coverage_complete": true,
+        "first_observed_at": "2026-09-16T13:56:26.752529+00:00",
+        "carry_forward_dates": {
+          "2026-09-05": "2026-09-04",
+          "2026-09-06": "2026-09-04",
+          "2026-09-07": "2026-09-04",
+          "2026-09-12": "2026-09-11",
+          "2026-09-13": "2026-09-11"
+        }
+      },
+      "manual_input_revision": "0"
+    }
+  },
+  "freshness": {
+    "expected_cutoff": "2026-09-15",
+    "actual_cutoff": "2026-09-15",
+    "stale": false
+  },
+  "latest_attempt": {
+    "attempt_id": "2cffa724-febb-49c2-9265-c9804b29954c",
+    "cutoff": "2026-09-15",
+    "status": "succeeded",
+    "started_at": "2026-09-16T20:21:52.496881+00:00",
+    "finished_at": "2026-09-16T20:22:05.038532+00:00",
+    "error_type": null,
+    "revision_id": "60a3d753383aaa2b4f89373aa1d26c247c6ec9ae82d6d92f16a800286ebf3191"
+  }
+}

@@ -1,0 +1,68 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import test from "node:test";
+import { addMoney, decimal, usd } from "./decimal.ts";
+import { historyDays, metrics, monthWindow, selectedEstimate, yesterday } from "./domain.ts";
+import { validateHistory, validateLatest } from "./schema.ts";
+import { DAILY_PRIMES } from "./types.ts";
+const fixture = (name: string) => JSON.parse(readFileSync(`schema/fixtures/daily-revenue/${name}.json`, "utf8"));
+const grove = validateLatest(fixture("grove"), "grove");
+
+test("all six captured live responses validate and map supply/prime/net P&L distinctly", () => {
+  for (const prime of DAILY_PRIMES) {
+    const doc = validateLatest(fixture(prime), prime);
+    const m = metrics(doc.data);
+    assert.equal(doc.data.cutoff, "2026-09-15");
+    assert.equal(m.supply, doc.data.result.prime_agent_revenue);
+    // Backend P&L is rounded to its Decimal context; reconcile at display precision.
+    assert.equal(usd(m.prime), usd(addMoney([doc.data.result.monthly_pnl, doc.data.result.sky_revenue])));
+  }
+  assert.equal(usd(metrics(grove.data).prime), "$3 837 823.86");
+  assert.notEqual(metrics(grove.data).prime, grove.data.result.monthly_pnl);
+});
+
+test("decimal sums and rounding remain exact beyond JS safe integers", () => {
+  assert.equal(addMoney(["9007199254740993.01", "0.02"]), "9007199254740993.03");
+  assert.equal(usd("9007199254740993.015"), "$9 007 199 254 740 993.02");
+  assert.equal(usd("-0.005"), "-$0.01");
+  assert.equal(usd("-0.0001"), "$0.00");
+  assert.equal(usd("0E-18"), "$0.00");
+  assert.equal(usd(null), "—");
+  for (const bad of [null, "", "NaN", "Infinity", 10, "0x10", "1e10000"]) assert.throws(() => decimal(bad));
+});
+
+test("selected-month estimates never borrow another month's earnings at rollover", () => {
+  const now = new Date("2026-10-01T00:00:00Z");
+  assert.equal(yesterday(now), "2026-09-30");
+  assert.equal(monthWindow("2026-10", now), null);
+  assert.equal(selectedEstimate("2026-10", null, grove.data), null);
+  assert.deepEqual(monthWindow("2026-09", now), { start: "2026-09-01", end: "2026-09-30" });
+  assert.deepEqual(monthWindow("2028-02", new Date("2028-03-01Z")), { start: "2028-02-01", end: "2028-02-29" });
+  assert.equal(monthWindow("2026-13", now), null);
+});
+
+test("history keeps missing dates as null and never sums MTD observations", () => {
+  const history = validateHistory(fixture("history"), "grove", "2026-09-01", "2026-09-15");
+  const days = historyDays(history);
+  assert.equal(days.length, 15);
+  assert.equal(days.filter((d) => d.estimate === null).length, 13);
+  assert.equal(selectedEstimate("2026-09", history, null)?.revision_id, history.results[0].revision_id);
+  assert.equal(days.at(-1)?.estimate, null);
+});
+
+test("a later published correction under the same cutoff displaces older revisions", () => {
+  const older = structuredClone(grove.data);
+  const revised = { ...older, revision_id: "a".repeat(64), publication_order: (older.publication_order ?? 0) + 1, computed_at: "2026-09-15T12:00:00Z" };
+  assert.equal(selectedEstimate("2026-09", { results: [revised], start: "2026-09-01", end: "2026-09-15" }, older)?.revision_id, revised.revision_id);
+});
+
+test("validators reject wrong prime, wrong month, invalid dates and numeric money", () => {
+  assert.throws(() => validateLatest(fixture("grove"), "spark"));
+  for (const mutate of [
+    (d: ReturnType<typeof fixture>) => { d.data.result.month.month = 8; },
+    (d: ReturnType<typeof fixture>) => { d.data.cutoff = "2026-02-30"; },
+    (d: ReturnType<typeof fixture>) => { d.data.result.agent_rate = 1; },
+    (d: ReturnType<typeof fixture>) => { d.data.provisional = false; },
+    (d: ReturnType<typeof fixture>) => { d.schema_version = "2.0"; },
+  ]) { const data = fixture("grove"); mutate(data); assert.throws(() => validateLatest(data, "grove")); }
+});

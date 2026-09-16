@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0",
+  "prime": "obex",
+  "cadence": "daily",
+  "estimate_basis": "month_to_date",
+  "data": {
+    "revision_id": "ea5ab3c0584059f728cb6245937b7b3efe1e60a6ba42190eeb45d3a77433b8f3",
+    "publication_order": 15,
+    "prime": "obex",
+    "cutoff": "2026-09-15",
+    "opening_pins": {
+      "ethereum": 25878704
+    },
+    "closing_pins": {
+      "ethereum": 25986306
+    },
+    "code_version": "03fa6c64e61adbd835102297e6a174e93973b6e0",
+    "configuration_version": "72fa6cb30fc60c8e5be295ae91a006cb5ee8fb349a722f2691fb220eb91413c6",
+    "input_revision": "d92574715c25fc3bf415367e3ff6cd061acd8b30817de05126d85b6f37465266",
+    "computed_at": "2026-09-16T20:23:56.973359+00:00",
+    "result": {
+      "sky_revenue": "617798.3214829208628251884574",
+      "agent_rate": "37983.27303616575684950624224",
+      "prime_agent_revenue": "806117.37348575196200",
+      "monthly_pnl": "226302.3250389968560243177848",
+      "distribution_rewards": "0",
+      "chronicle_points": "0",
+      "gar": "0",
+      "prime_id": "obex",
+      "month": {
+        "year": 2026,
+        "month": 9
+      },
+      "period": {
+        "end": "2026-09-15",
+        "start": "2026-09-01",
+        "pin_blocks": {
+          "ethereum": 25986306
+        }
+      }
+    },
+    "result_hash": "9297520d786f1150b8d8d5a7e060e838adf6d13130d624eb0d5c5ab7c4772909",
+    "provisional": true,
+    "excluded_inputs": [
+      "monthly_distribution_rewards"
+    ],
+    "input_provenance": {
+      "manual_input_revision": "0"
+    }
+  },
+  "freshness": {
+    "expected_cutoff": "2026-09-15",
+    "actual_cutoff": "2026-09-15",
+    "stale": false
+  },
+  "latest_attempt": {
+    "attempt_id": "05a32952-2096-470b-a218-fc48c36f92f9",
+    "cutoff": "2026-09-15",
+    "status": "succeeded",
+    "started_at": "2026-09-16T20:23:55.381638+00:00",
+    "finished_at": "2026-09-16T20:23:56.973359+00:00",
+    "error_type": null,
+    "revision_id": "ea5ab3c0584059f728cb6245937b7b3efe1e60a6ba42190eeb45d3a77433b8f3"
+  }
+}

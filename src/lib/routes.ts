@@ -13,7 +13,7 @@
  */
 import { FLAGS, type Flags } from "./flags";
 
-export type Section = "ssr" | "sky-total" | "buybacks" | "prime";
+export type Section = "daily-revenue" | "ssr" | "sky-total" | "buybacks" | "prime";
 
 export interface SectionRoute {
   key: Section;
@@ -33,6 +33,13 @@ export const SECTIONS: SectionRoute[] = [
     // Both settlement revenues and distribution rewards belong to this report.
     label: "Prime Agent Revenues",
     source: "soter · settlement-reports · distribution rewards",
+  },
+  {
+    key: "daily-revenue",
+    slug: "daily-revenue",
+    label: "Daily MSC Revenue",
+    source: "settle-api · provisional MTD",
+    flag: "dailyRevenue",
   },
   {
     key: "sky-total",
@@ -94,6 +101,8 @@ export const paths = {
     granularity && granularity !== "monthly"
       ? `/${slugOf("buybacks")}/${granularity}`
       : `/${slugOf("buybacks")}`,
+
+  dailyRevenue: (prime?: string, month?: string) => `/daily-revenue${prime ? `/${prime}` : ""}${prime && month ? `/${month}` : ""}`,
 
   prime: () => `/${slugOf("prime")}`,
 };
