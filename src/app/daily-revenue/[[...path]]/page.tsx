@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PageHeader, Panel } from "@/components/kit";
 import { DailyMonthPicker } from "@/components/daily-revenue/month-picker";
+import { PrimeComparison, RevenueComponents, RevenueTrend } from "@/components/daily-revenue/charts";
 import { AttemptStatus, EstimateMetrics, EstimatePanel, FreshnessStatus, HistoryTable, PrimeNavigation, Provenance, ReadNotice, ScheduleNote, SettledPanel } from "@/components/daily-revenue/report";
 import { FLAGS } from "@/lib/flags";
 import { paths } from "@/lib/routes";
@@ -34,6 +35,7 @@ export default async function Page({ params }: { params: Promise<{ path?: string
       <PageHeader title="Daily MSC Revenue" description="Provisional revenue estimates by prime agent" />
       <PrimeNavigation /><ScheduleNote />
       <ReadNotice read={status} />
+      <PrimeComparison estimates={latest.flatMap(({ read }) => read.data ? [read.data.data] : [])} />
       <div className="grid gap-6 @4xl/main:grid-cols-2">
         {latest.map(({ prime: p, read }) => <Panel key={p} title={<Link className="underline-offset-4 hover:underline" href={paths.dailyRevenue(p)}>{primeName(p)}</Link>}
           description={read.data ? `Provisional MTD estimate through ${read.data.data.cutoff} (UTC)` : "Daily estimate unavailable"}>
@@ -70,9 +72,13 @@ export default async function Page({ params }: { params: Promise<{ path?: string
       {status.error && <ReadNotice read={status} />}
       {latest.data && !latest.data.data.cutoff.startsWith(selectedMonth) && <Link className="text-sm underline" href={paths.dailyRevenue(prime, latest.data.data.cutoff.slice(0, 7))}>Latest estimate belongs to {latest.data.data.cutoff.slice(0, 7)}</Link>}
     </div>
-    <SettledPanel report={settled} selectedMonth={selectedMonth} />
     <ReadNotice read={history} />
     {estimate ? <EstimatePanel estimate={estimate} /> : <Panel title="No published estimate for this month"><p className="text-sm text-muted-foreground">Missing observations are unavailable, not zero revenue. Use the separately dated settled report when available.</p></Panel>}
+    <div className="grid gap-6 @5xl/main:grid-cols-2">
+      {observations && <RevenueTrend history={observations} />}
+      {estimate && <RevenueComponents estimate={estimate} />}
+    </div>
+    <SettledPanel report={settled} selectedMonth={selectedMonth} />
     {observations && <HistoryTable history={observations} />}
   </div>;
 }
