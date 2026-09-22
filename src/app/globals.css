@@ -4,35 +4,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/*
- * Sky · Soter console — shadcn "base-luma" theme (preset bKsGuPTO).
- *
- * Two themes, tuned separately rather than one palette at two brightnesses.
- * Dark is the preset's own stone-950 ground. Light is cream, not white: warming
- * the neutrals to hue ~88 keeps the whole surface on the same warm axis the
- * stone ramp lives on. Depth is three steps in both — sidebar, background,
- * card.
- *
- * The preset cannot supply a categorical chart palette; it ships a monochrome
- * stone ramp, which cannot separate six partner groups. chart-1..6 replace it,
- * and every domain colour is an alias of one stop, read from TypeScript as a
- * `var(--group-…)` string — which is why re-theming never means touching a
- * domain module. The hues are the partners' own, so both themes keep them; only
- * lightness flips, because a stop that separates on stone-950 disappears on
- * cream and the other way round.
- *
- * Accent discipline:
- *   --primary     "on / selected". Stone, so the interface carries no hue and
- *                 selecting a thing says nothing about whether it is good.
- *   --destructive "down / money out" — the one judgement the console makes.
- *   --chart-*     data series only, never chrome.
- * Figures are always --foreground; only a fall is coloured.
- *
- * A border only ever separates two things — a table row from the next, a card's
- * header from its body. Objects are told apart by fill: surfaces take the
- * preset's ring and shadow, controls a tint of --input, the selected control a
- * solid --primary.
- */
 
 @theme inline {
   /* Public Sans is the preset's face and carries the whole interface. Geist
@@ -143,14 +114,12 @@
   --sidebar-border: oklch(0.25 0.012 55 / 11%);
   --sidebar-ring: oklch(0.6 0.015 58);
 
-  /* The dark theme's hues at L 0.50–0.63, so every series separates from cream
-   * instead of glowing on it. */
-  --chart-1: oklch(0.56 0.16 128); /* Grove — botanical green */
-  --chart-2: oklch(0.55 0.11 195); /* teal — the free stop */
-  --chart-3: oklch(0.5 0.14 250); /* Keel — navy */
-  --chart-4: oklch(0.48 0.24 278); /* Skybase — Sky's indigo */
-  --chart-5: oklch(0.55 0.21 348); /* magenta */
-  --chart-6: oklch(0.63 0.15 62); /* Spark — the warm end of its gradient */
+  --chart-1: oklch(0.63 0.15 128); /* Grove — botanical green */
+  --chart-2: oklch(0.61 0.12 185);
+  --chart-3: oklch(0.59 0.16 250);
+  --chart-4: oklch(0.59 0.22 278);
+  --chart-5: oklch(0.62 0.20 348);
+  --chart-6: oklch(0.68 0.16 60);
 
   /* The ramp inverts with the ground: "bright" means "carries most", which on
    * cream is the darkest of the three. */
@@ -158,7 +127,8 @@
   --chart-neutral: oklch(0.62 0.015 88);
   --chart-neutral-quiet: oklch(0.76 0.012 88);
 
-  --sky-revenue: oklch(0.5 0.19 305);
+  --sky-revenue: oklch(0.88 0.03 85);
+  --revenue-total: oklch(0.62 0.15 230);
 }
 
 :root.dark {
@@ -173,8 +143,8 @@
   --popover-foreground: oklch(0.985 0.001 106.423);
   --primary: oklch(0.985 0.001 106.423);
   --primary-foreground: oklch(0.216 0.006 56.043);
-  --secondary: oklch(0.274 0.006 286.033);
-  --secondary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.274 0.008 56);
+  --secondary-foreground: var(--foreground);
   --muted: oklch(0.268 0.007 34.298);
   /* Lifted from the preset's 0.709 (6.76:1) to 8.15:1: this dashboard sets
    * secondary text at 12–14px over dense figures. */
@@ -194,35 +164,21 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.553 0.013 58.071);
 
-  /* ---------------------------------------------------- categorical palette
-   * Where a group is a real company its stop is that company's own colour,
-   * taken from its site and lifted to the lightness a dark ground needs:
-   *
-   *   Grove    grove.finance — botanical green over near-black
-   *   Spark    spark.fi — the magenta→coral→amber hero gradient, warm end
-   *   Keel     "deep navy tones" (Properly Studio's identity work)
-   *   Skybase  Sky's own codes, so Sky's own indigo (#4331e9 on sky.money)
-   *   Osero    osero.org is monochrome: a black wordmark on white, no hue
-   *   Obex     no published identity — it takes the wheel's free stop
-   *
-   * Lightness stays within 0.68–0.82 so no series outweighs another, and nothing
-   * lands in the red-orange sector around hue 22 that --destructive owns. */
-  --chart-1: oklch(0.82 0.19 128); /* Grove — botanical green */
-  --chart-2: oklch(0.78 0.14 182); /* teal — the free stop */
-  --chart-3: oklch(0.8 0.13 238); /* Keel — navy, lifted for a dark ground */
-  --chart-4: oklch(0.68 0.2 285); /* Skybase — Sky's indigo */
-  --chart-5: oklch(0.72 0.21 345); /* magenta */
-  --chart-6: oklch(0.8 0.17 70); /* Spark — the warm end of its gradient */
+  --chart-1: oklch(0.80 0.19 128);
+  --chart-2: oklch(0.77 0.15 185);
+  --chart-3: oklch(0.75 0.15 250);
+  --chart-4: oklch(0.66 0.20 278);
+  --chart-5: oklch(0.74 0.19 348);
+  --chart-6: oklch(0.78 0.18 60);
 
   /* Osero's brand has no hue, so it takes the brightest of three neutrals; the
    * residual buckets, which are not partners, take the two dimmer ones. */
-  --chart-neutral-bright: oklch(0.8 0.012 90);
+  --chart-neutral-bright: oklch(0.75 0.012 88);
   --chart-neutral: oklch(0.62 0.02 90);
   --chart-neutral-quiet: oklch(0.46 0.02 90);
 
-  /* Sky's own revenue is the constant in every chart a partner appears in, so it
-   * sits off the wheel: the house colour, not a seventh partner. */
-  --sky-revenue: oklch(0.84 0.12 305);
+  --sky-revenue: var(--foreground);
+  --revenue-total: oklch(0.76 0.16 230);
 }
 
 :root {

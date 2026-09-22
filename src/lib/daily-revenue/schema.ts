@@ -1,5 +1,5 @@
 import { decimal } from "./decimal.ts";
-import { DAILY_PRIMES, MONEY_FIELDS, type Attempt, type DailyPrime, type DailyStatus, type Estimate, type Freshness, type History, type Latest } from "./types.ts";
+import { DAILY_PRIMES, MONEY_FIELDS, type Attempt, type DailyRow, type DailyPrime, type DailyStatus, type Estimate, type Freshness, type History, type Latest } from "./types.ts";
 function object(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("Expected an object");
   return value as Record<string, unknown>;
@@ -37,6 +37,22 @@ function envelope(value: unknown, prime: DailyPrime) {
   if (v.schema_version !== "1.0" || v.prime !== prime || v.cadence !== "daily" || v.estimate_basis !== "month_to_date") throw new Error("Unsupported daily revenue document");
   return v;
 }
+function rate(value: unknown): number | null {
+  if (value === null || value === undefined) return null;
+  if (typeof value !== "number" || !Number.isFinite(value)) throw new Error("Invalid rate");
+  return value;
+}
+function days(value: unknown, start: string, end: string): DailyRow[] {
+  if (value === undefined) return [];
+  if (!Array.isArray(value)) throw new Error("Expected daily rows");
+  const rows = value.map((item): DailyRow => {
+    const v = object(item);
+    return { date: date(v.date), charge: decimal(v.daily_sky_rev), debt: decimal(v.cum_debt), utilized: decimal(v.utilized),
+      rates: { ssr: rate(v.ssr_apy), base: rate(v.base_apr), subsidized: rate(v.sub_apr), reference: rate(v.ref_rate_apr) } };
+  });
+  if (rows.some((r) => r.date < start || r.date > end) || new Set(rows.map((r) => r.date)).size !== rows.length) throw new Error("Invalid daily rows");
+  return rows.sort((a, b) => a.date.localeCompare(b.date));
+}
 export function validateEstimate(value: unknown, prime: DailyPrime): Estimate {
   const v = object(value), r = object(v.result), period = object(r.period), month = object(r.month);
   const cutoff = date(v.cutoff);
@@ -50,6 +66,7 @@ export function validateEstimate(value: unknown, prime: DailyPrime): Estimate {
     opening_pins: pins(v.opening_pins), closing_pins: pins(v.closing_pins), provisional: true,
     excluded_inputs: strings(v.excluded_inputs), input_provenance: object(v.input_provenance),
     result: Object.fromEntries(MONEY_FIELDS.map((key) => [key, decimal(r[key])])) as Estimate["result"],
+    days: days(r.sky_revenue_daily, `${cutoff.slice(0, 7)}-01`, cutoff),
   };
 }
 function attempt(value: unknown): Attempt | null {

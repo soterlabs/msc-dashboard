@@ -1,5 +1,6 @@
 import { addMoney, isZeroMoney } from "./decimal.ts";
-import type { Estimate, History } from "./types";
+import type { DayRange } from "./calendar.ts";
+import type { DailyRow, Estimate, History } from "./types";
 export function metrics(estimate: Estimate) {
   const r = estimate.result;
   const demand = addMoney([r.agent_rate, r.distribution_rewards, r.chronicle_points, r.gar]);
@@ -40,9 +41,11 @@ export function mergeHistory(history: History | null, latest: Estimate | null): 
   if (previous && newestFirst(previous, latest) <= 0) return history;
   return { ...history, results: [...history.results.filter((r) => r.cutoff !== latest.cutoff), latest].sort(newestFirst) };
 }
-/** Only a returned cutoff in the selected month may populate its headline. */
-export function selectedEstimate(month: string, history: History | null, latest: Estimate | null): Estimate | null {
-  const candidates = history?.results.filter((r) => r.cutoff.startsWith(`${month}-`)) ?? [];
-  if (latest?.cutoff.startsWith(`${month}-`)) candidates.push(latest);
-  return candidates.sort(newestFirst)[0] ?? null;
+export function rangeDays(estimates: Estimate[], range: DayRange): DailyRow[] {
+  const newest = new Map<string, Estimate>();
+  for (const estimate of estimates) {
+    const month = estimate.cutoff.slice(0, 7), current = newest.get(month);
+    if (!current || newestFirst(estimate, current) < 0) newest.set(month, estimate);
+  }
+  return [...newest.values()].flatMap((e) => e.days).filter((d) => d.date >= range.from && d.date <= range.to).sort((a, b) => a.date.localeCompare(b.date));
 }

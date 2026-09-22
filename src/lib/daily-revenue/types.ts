@@ -4,6 +4,13 @@ export const primeName = (prime: DailyPrime) => prime[0].toUpperCase() + prime.s
 export const isDailyPrime = (value: string): value is DailyPrime => (DAILY_PRIMES as readonly string[]).includes(value);
 export const MONEY_FIELDS = ["sky_revenue", "agent_rate", "prime_agent_revenue", "monthly_pnl", "distribution_rewards", "chronicle_points", "gar"] as const;
 export type RevenueResult = Record<(typeof MONEY_FIELDS)[number], string>;
+export interface DailyRow {
+  date: string;
+  charge: string;
+  debt: string;
+  utilized: string;
+  rates: { ssr: number | null; base: number | null; subsidized: number | null; reference: number | null };
+}
 export interface Estimate {
   prime: DailyPrime;
   revision_id: string;
@@ -19,6 +26,7 @@ export interface Estimate {
   excluded_inputs: string[];
   input_provenance: Record<string, unknown>;
   result: RevenueResult;
+  days: DailyRow[];
 }
 export interface Attempt {
   attempt_id: string;

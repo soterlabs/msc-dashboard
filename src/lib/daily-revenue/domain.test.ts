@@ -2,12 +2,14 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import { addMoney, decimal, usd } from "./decimal.ts";
-import { monthWindow, yesterday } from "./calendar.ts";
-import { distributionNote, mergeHistory, historyDays, metrics, selectedEstimate } from "./domain.ts";
+import { monthWindow, rangeLabel, rangeLength, resolveRange, yesterday } from "./calendar.ts";
+import { distributionNote, mergeHistory, historyDays, metrics, rangeDays } from "./domain.ts";
 import { validateHistory, validateLatest, validateStatus } from "./schema.ts";
-import { DAILY_PRIMES } from "./types.ts";
+import { DAILY_PRIMES, type Estimate } from "./types.ts";
 const fixture = (name: string) => JSON.parse(readFileSync(`schema/fixtures/daily-revenue/${name}.json`, "utf8"));
 const grove = validateLatest(fixture("grove"), "grove");
+const tagged = (e: Estimate, tag: string): Estimate => ({ ...e, days: e.days.map((d, i) => i ? d : { ...d, charge: tag }) });
+const firstCharge = (estimates: Estimate[]) => rangeDays(estimates, { from: "2026-09-01", to: "2026-09-01" })[0]?.charge;
 
 test("all six captured live responses validate and map supply/prime/net P&L distinctly", () => {
   for (const prime of DAILY_PRIMES) {
@@ -32,11 +34,10 @@ test("decimal sums and rounding remain exact beyond JS safe integers", () => {
   for (const bad of [null, "", "NaN", "Infinity", 10, "0x10", "1e10000"]) assert.throws(() => decimal(bad));
 });
 
-test("selected-month estimates never borrow another month's earnings at rollover", () => {
+test("month windows never reach a day that has not completed", () => {
   const now = new Date("2026-10-01T00:00:00Z");
   assert.equal(yesterday(now), "2026-09-30");
   assert.equal(monthWindow("2026-10", now), null);
-  assert.equal(selectedEstimate("2026-10", null, grove.data), null);
   assert.deepEqual(monthWindow("2026-09", now), { start: "2026-09-01", end: "2026-09-30" });
   assert.deepEqual(monthWindow("2028-02", new Date("2028-03-01Z")), { start: "2028-02-01", end: "2028-02-29" });
   assert.equal(monthWindow("2026-13", now), null);
@@ -47,14 +48,14 @@ test("history keeps missing dates as null and never sums MTD observations", () =
   const days = historyDays(history);
   assert.equal(days.length, 15);
   assert.equal(days.filter((d) => d.estimate === null).length, 13);
-  assert.equal(selectedEstimate("2026-09", history, null)?.revision_id, history.results[0].revision_id);
   assert.equal(days.at(-1)?.estimate, null);
 });
 
 test("a later published correction under the same cutoff displaces older revisions", () => {
   const older = structuredClone(grove.data);
   const revised = { ...older, revision_id: "a".repeat(64), publication_order: (older.publication_order ?? 0) + 1, computed_at: "2026-09-15T12:00:00Z" };
-  assert.equal(selectedEstimate("2026-09", { results: [revised], start: "2026-09-01", end: "2026-09-15" }, older)?.revision_id, revised.revision_id);
+  assert.equal(firstCharge([tagged(older, "1"), tagged(revised, "2")]), "2");
+  assert.equal(firstCharge([tagged(revised, "2"), tagged(older, "1")]), "2");
 });
 
 test("validators reject wrong prime, wrong month, invalid dates and numeric money", () => {
@@ -74,7 +75,6 @@ test("history and headline share the newest revision even when endpoint caches d
   const correction = { ...history.results[0], revision_id: "c".repeat(64), publication_order: 999 };
   const merged = mergeHistory(history, correction)!;
   assert.equal(merged.results[0].revision_id, correction.revision_id);
-  assert.equal(selectedEstimate("2026-09", merged, correction)?.revision_id, merged.results[0].revision_id);
   assert.notEqual(history.results[0].revision_id, correction.revision_id);
   assert.equal(mergeHistory(merged, history.results[0]), merged);
   assert.equal(mergeHistory(null, correction), null);
@@ -87,11 +87,10 @@ test("revision ranking stays transitive when publication_order is only sometimes
   const ordered = { ...base, revision_id: "a".repeat(64), publication_order: 9, computed_at: "2026-09-15T10:00:00Z" };
   const unordered = { ...base, revision_id: "b".repeat(64), publication_order: undefined, computed_at: "2026-09-15T11:00:00Z" };
   const newest = { ...base, revision_id: "c".repeat(64), publication_order: 12, computed_at: "2026-09-15T12:00:00Z" };
-  const window = { start: "2026-09-01", end: "2026-09-15" };
   // Every input order must name the same winner; a comparator that switches
   // keys per pair lets the sort implementation choose instead.
-  for (const results of [[ordered, unordered, newest], [newest, ordered, unordered], [unordered, newest, ordered]])
-    assert.equal(selectedEstimate("2026-09", { ...window, results }, null)?.revision_id, newest.revision_id);
+  const [a, b, c] = [tagged(ordered, "1"), tagged(unordered, "2"), tagged(newest, "3")];
+  for (const results of [[a, b, c], [c, a, b], [b, c, a]]) assert.equal(firstCharge(results), "3");
 });
 
 test("a published estimate carries its own freshness, and a mismatched block never voids it", () => {
@@ -120,4 +119,45 @@ test("the headline caption follows the distribution rewards the response actuall
   const withRewards = { ...grove.data, result: { ...grove.data.result, distribution_rewards: "1250.00" } };
   assert.doesNotMatch(distributionNote(withRewards), /excluded/);
   assert.equal(metrics(withRewards).prime, addMoney([metrics(grove.data).prime, "1250.00"]));
+});
+
+test("daily rows reconcile to month-to-date Sky revenue for every captured prime", () => {
+  for (const prime of DAILY_PRIMES) {
+    const raw = fixture(prime), doc = validateLatest(raw, prime);
+    assert.equal(doc.data.days.length, 15);
+    const { sde_revenue, susds_spread_reimbursement, sky_revenue } = raw.data.result;
+    const rebuilt = addMoney([...doc.data.days.map((d) => d.charge), sde_revenue, `-${susds_spread_reimbursement}`.replace("--", "")]);
+    assert.equal(usd(rebuilt), usd(sky_revenue), prime);
+  }
+  assert.equal(grove.data.days[0].rates.subsidized !== null, true);
+  assert.equal(validateLatest(fixture("obex"), "obex").data.days[0].rates.subsidized, null);
+});
+
+test("daily rows outside the estimate's month, duplicated or malformed are rejected; absent rows are empty", () => {
+  for (const mutate of [
+    (rows: { date: string; daily_sky_rev: unknown }[]) => { rows[0].date = "2026-08-31"; },
+    (rows: { date: string; daily_sky_rev: unknown }[]) => { rows[1].date = rows[0].date; },
+    (rows: { date: string; daily_sky_rev: unknown }[]) => { rows[0].daily_sky_rev = 12.5; },
+  ]) { const data = fixture("grove"); mutate(data.data.result.sky_revenue_daily); assert.throws(() => validateLatest(data, "grove")); }
+  const data = fixture("grove"); delete data.data.result.sky_revenue_daily;
+  assert.deepEqual(validateLatest(data, "grove").data.days, []);
+});
+
+test("range days take each month from its newest estimate and never double count", () => {
+  const august = { ...grove.data, cutoff: "2026-08-31", days: grove.data.days.map((d) => ({ ...d, date: d.date.replace("-09-", "-08-") })) };
+  const earlier = { ...grove.data, cutoff: "2026-09-14", publication_order: 1, days: grove.data.days.slice(0, 14) };
+  const days = rangeDays([earlier, august, grove.data], { from: "2026-08-10", to: "2026-09-05" });
+  assert.deepEqual([days[0].date, days.at(-1)?.date, days.length], ["2026-08-10", "2026-09-05", 11]);
+  assert.equal(new Set(days.map((d) => d.date)).size, days.length);
+});
+
+test("ranges fall back to month to date when unusable and label their span", () => {
+  const max = "2026-09-16", last = "2026-09-15";
+  assert.deepEqual(resolveRange("2026-09-03", "2026-09-10", max, last), { from: "2026-09-03", to: "2026-09-10" });
+  for (const [from, to] of [[undefined, undefined], ["2026-09-10", "2026-09-03"], ["2026-09-01", "2026-09-17"], ["2026-02-30", "2026-03-01"], ["2026-06-01", "2026-09-15"]])
+    assert.deepEqual(resolveRange(from, to, max, last), { from: "2026-09-01", to: last });
+  assert.equal(rangeLength({ from: "2026-06-18", to: "2026-09-15" }), 90);
+  assert.equal(rangeLabel({ from: "2026-09-01", to: "2026-09-15" }), "1–15 Sept 2026");
+  assert.equal(rangeLabel({ from: "2026-08-25", to: "2026-09-15" }), "25 Aug – 15 Sept 2026");
+  assert.equal(rangeLabel({ from: "2025-12-20", to: "2026-01-05" }), "20 Dec 2025 – 5 Jan 2026");
 });

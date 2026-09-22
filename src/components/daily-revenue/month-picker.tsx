@@ -1,18 +1,22 @@
 "use client";
+
 import { useRouter } from "next/navigation";
-import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { paths } from "@/lib/routes";
-import { validMonth } from "@/lib/daily-revenue/calendar";
 import type { DailyPrime } from "@/lib/daily-revenue/types";
 
-export function DailyMonthPicker({ prime, month, max }: { prime: DailyPrime; month: string; max: string }) {
+const label = (month: string) => new Date(`${month}-01T00:00:00Z`).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
+
+export function DailyMonthPicker({ prime, month, availableMonths }: { prime?: DailyPrime; month: string; availableMonths: string[] }) {
   const router = useRouter();
-  // Uncontrolled, keyed on the month it was rendered for: a month is typed one
-  // segment at a time, and a value controlled straight off the prop would
-  // revert on every keystroke that does not yet parse, leaving the native
-  // picker as the only way in. The key remounts it once navigation lands.
-  return <label className="flex items-center gap-3 text-sm">Reporting month
-    <Input key={month} aria-label="Reporting month" type="month" defaultValue={month} min="2000-01" max={max} className="w-44"
-      onChange={(e) => { if (validMonth(e.target.value) && e.target.value <= max) router.push(paths.dailyRevenue(prime, e.target.value)); }} />
-  </label>;
+  return <div className="flex items-center gap-3 text-sm">
+    <span className="text-muted-foreground">Reporting month</span>
+    <Select value={month} onValueChange={(value) => { if (value) router.push(paths.dailyRevenue(prime, value)); }}>
+      <SelectTrigger aria-label="Reporting month"><SelectValue>{label(month)}</SelectValue></SelectTrigger>
+      <SelectContent alignItemWithTrigger={false} align="end" sideOffset={6}><SelectGroup>
+        {availableMonths.map((value) => <SelectItem key={value} value={value}>{label(value)}</SelectItem>)}
+        {!availableMonths.includes(month) && <SelectItem value={month} disabled>{label(month)} · No data</SelectItem>}
+      </SelectGroup></SelectContent>
+    </Select>
+  </div>;
 }

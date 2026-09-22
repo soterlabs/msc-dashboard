@@ -38,7 +38,7 @@ export const SECTIONS: SectionRoute[] = [
     key: "daily-revenue",
     slug: "daily-revenue",
     label: "Daily MSC Revenue",
-    source: "settle-api · provisional MTD",
+    source: "settle-api",
     flag: "dailyRevenue",
   },
   {
@@ -102,9 +102,8 @@ export const paths = {
       ? `/${slugOf("buybacks")}/${granularity}`
       : `/${slugOf("buybacks")}`,
 
-  /** A prime's daily estimates; with a month, that month's window. */
   dailyRevenue: (prime?: string, month?: string) =>
-    `/${slugOf("daily-revenue")}${prime ? `/${prime}` : ""}${prime && month ? `/${month}` : ""}`,
+    `/${slugOf("daily-revenue")}${prime ? `/${prime}` : ""}${month ? `?month=${encodeURIComponent(month)}` : ""}`,
 
   prime: () => `/${slugOf("prime")}`,
 };

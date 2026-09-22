@@ -1,29 +1,28 @@
 import Link from "next/link";
+import { Disclosure, EstimateDetails } from "./layout";
 import { Badge } from "@/components/ui/badge";
-import { Panel, DataTable, TableHeader, TableBody, TableRow, Th, Td } from "@/components/kit";
+import { Hint, Panel, StatCard, Swatch, DataTable, TableHeader, TableBody, TableRow, Th, Td } from "@/components/kit";
 import { REVENUE_PUBLIC_URL } from "@/lib/daily-revenue/api";
-import { utcStamp as utc } from "@/lib/daily-revenue/calendar";
-import { distributionExcluded, distributionNote, metrics, historyDays } from "@/lib/daily-revenue/domain";
-import { usd } from "@/lib/daily-revenue/decimal";
-import { DAILY_PRIMES, primeName, type Attempt, type DailyPrime, type Estimate, type Freshness, type History, type ReadResult } from "@/lib/daily-revenue/types";
+import { utcStamp as utc, rangeLength, type DayRange } from "@/lib/daily-revenue/calendar";
+import { publicationChanges } from "@/lib/daily-revenue/charts";
+import { distributionExcluded, metrics, historyDays } from "@/lib/daily-revenue/domain";
+import { addMoney, usd } from "@/lib/daily-revenue/decimal";
+import { DAILY_PRIMES, primeName, type Attempt, type DailyPrime, type DailyRow, type Estimate, type Freshness, type History, type Latest, type ReadResult } from "@/lib/daily-revenue/types";
 import { paths } from "@/lib/routes";
-import { formatUSD2, monthLong } from "@/lib/format";
-import type { SsrReport } from "@/lib/ssr/types";
 
-export function PrimeNavigation({ selected }: { selected?: DailyPrime }) {
-  return <nav aria-label="Daily revenue primes" className="flex flex-wrap gap-2">
-    <Link href={paths.dailyRevenue()} aria-current={!selected ? "page" : undefined} className={`rounded-full px-4 py-2 text-sm ${!selected ? "bg-primary text-primary-foreground" : "bg-muted"}`}>All primes</Link>
-    {DAILY_PRIMES.map((p) => <Link key={p} href={paths.dailyRevenue(p)} aria-current={selected === p ? "page" : undefined}
-      className={`rounded-full px-4 py-2 text-sm ${selected === p ? "bg-primary text-primary-foreground" : "bg-muted"}`}>{primeName(p)}</Link>)}
+export function PrimeNavigation({ selected, range }: { selected?: DailyPrime; range: DayRange }) {
+  return <nav aria-label="Daily revenue primes" className="flex w-fit max-w-full gap-1 overflow-x-auto rounded-full bg-muted p-1">
+    <Link href={paths.dailyRevenue(undefined, range.from.slice(0, 7))} aria-current={!selected ? "page" : undefined} className={`shrink-0 rounded-full px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-ring ${!selected ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-background/60 hover:text-foreground"}`}>All primes</Link>
+    {DAILY_PRIMES.map((p) => <Link key={p} href={paths.dailyRevenue(p, range.from.slice(0, 7))} aria-current={selected === p ? "page" : undefined}
+      className={`shrink-0 rounded-full px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-ring ${selected === p ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-background/60 hover:text-foreground"}`}>{primeName(p)}</Link>)}
   </nav>;
 }
 export function ScheduleNote() {
-  return <p className="max-w-5xl text-sm text-muted-foreground">
-    Updated daily at 20:17 UTC through the previous completed UTC day. These are provisional month-to-date (MTD) estimates, not daily earnings.
-    Monthly distribution rewards are excluded from the daily inputs, and each estimate is captioned with what its own response carries.
-    Before the scheduled update, or while official reference rates are pending after weekends or holidays, a retained cutoff may be behind
-    the expected one without a failed scheduled run.
-  </p>;
+  return <Disclosure title="How to read these estimates">
+    <p>Each observation can revise earlier estimates. Differences between observations are not necessarily that day’s earnings.</p>
+    <p>Updated daily at 20:17 UTC through the previous completed UTC day. Reference-rate delays after weekends or holidays can hold back an update.</p>
+    <p>Sky debt charge is reported per UTC day, so it can be summed over any range. Prime revenue is only published month to date. Final monthly amounts, their breakdown and per-venue detail are in Prime Agent Revenues.</p>
+  </Disclosure>;
 }
 export function ReadNotice({ read }: { read: Pick<ReadResult<unknown>, "source" | "verifiedAt" | "error"> }) {
   return <div className="space-y-1 text-xs text-muted-foreground">
@@ -43,75 +42,120 @@ export function AttemptStatus({ attempt }: { attempt: Attempt | null }) {
  * newest published cutoff is two days back and behind nothing. */
 export function FreshnessStatus({ freshness }: { freshness: Freshness | null }) {
   const cutoff = freshness?.actual_cutoff ?? null;
-  return <div className="flex flex-wrap items-center gap-2 text-xs">
-    <Badge variant="secondary">{cutoff === null ? "No estimate available" : freshness?.stale ? "Behind expected cutoff" : "Current cutoff"}</Badge>
-    <span>Latest publication: {cutoff ?? "—"} · expected {freshness?.expected_cutoff ?? "—"} (UTC)</span>
-  </div>;
-}
-function Metric({ label, value, exact }: { label: string; value: string; exact?: string }) {
-  return <div><dt className="text-xs text-muted-foreground">{label}</dt><dd className="mt-1 text-lg font-semibold tabular-nums" title={exact}>{value}</dd></div>;
-}
-export function EstimateMetrics({ estimate }: { estimate: Estimate }) {
-  const m = metrics(estimate);
-  return <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2 @3xl/main:grid-cols-4">
-    <Metric label="Prime total · MTD" value={usd(m.prime)} exact={m.prime} />
-    <Metric label="Demand-side revenue · MTD" value={usd(m.demand)} exact={m.demand} />
-    <Metric label="Supply-side revenue · MTD" value={usd(m.supply)} exact={m.supply} />
-    <Metric label="Sky revenue · MTD" value={usd(m.sky)} exact={m.sky} />
-  </dl>;
+  return <Badge variant="secondary" title={freshness ? `Latest cutoff: ${cutoff ?? "unavailable"}. Expected: ${freshness.expected_cutoff} (UTC).` : undefined}>
+    {cutoff === null ? "Unavailable" : freshness?.stale ? "Update delayed" : "Up to date"}
+  </Badge>;
 }
 export function Provenance({ estimate }: { estimate: Estimate }) {
-  const r = estimate.result;
-  return <details className="text-xs">
-    <summary className="cursor-pointer font-medium">Provenance and components</summary>
-    <div className="mt-3 space-y-3 break-words text-muted-foreground">
-      <dl className="grid gap-2 sm:grid-cols-2">
-        <div><dt>Revision</dt><dd className="break-all font-mono">{estimate.revision_id}</dd></div>
-        <div><dt>Cutoff / computation</dt><dd>{estimate.cutoff} / {utc(estimate.computed_at)}</dd></div>
-        <div><dt>Code version</dt><dd className="break-all font-mono">{estimate.code_version}</dd></div>
-        <div><dt>Configuration version</dt><dd className="break-all font-mono">{estimate.configuration_version}</dd></div>
-        <div><dt>Input revision</dt><dd className="break-all font-mono">{estimate.input_revision}</dd></div>
-        <div><dt>Excluded inputs</dt><dd>{estimate.excluded_inputs.join(", ") || "None reported"}</dd></div>
+  const date = (value: string) => new Date(`${value}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+  return <EstimateDetails title={`${primeName(estimate.prime)} · estimate details`} description={`Month-to-date through ${date(estimate.cutoff)}`}>
+    <section className="space-y-3">
+      <h3 className="font-medium">About this estimate</h3>
+      <dl className="space-y-3 text-sm">
+        <div><dt className="text-muted-foreground">Period covered</dt><dd className="mt-1">{date(`${estimate.cutoff.slice(0, 7)}-01`)} – {date(estimate.cutoff)} (UTC)</dd></div>
+        <div><dt className="text-muted-foreground">Calculated on</dt><dd className="mt-1">{utc(estimate.computed_at)}</dd></div>
+        <div><dt className="text-muted-foreground">Daily rows</dt><dd className="mt-1">{estimate.days.length ? `${estimate.days.length} UTC days` : "Not carried by this publication"}</dd></div>
       </dl>
-      <p>Prime total = supply-side revenue + agent rate + distribution rewards + Chronicle Points + GAR. External venue rewards are already included in supply-side revenue.</p>
-      <dl className="grid gap-2 sm:grid-cols-2">
-        {[["Agent rate", r.agent_rate], [`Distribution rewards (${distributionExcluded(estimate) ? "excluded monthly input" : "included in the prime total"})`, r.distribution_rewards], ["Chronicle Points", r.chronicle_points], ["GAR", r.gar], ["Net P&L (audit metric, not prime total)", r.monthly_pnl]].map(([label, value]) =>
-          <div key={label}><dt>{label}</dt><dd title={value} className="tabular-nums">{usd(value)} <span className="break-all font-mono">(exact: {value})</span></dd></div>)}
+      <p className="text-xs leading-relaxed text-muted-foreground">This is a running monthly estimate. It may change before the final monthly report. {distributionExcluded(estimate) ? "Monthly distribution rewards are excluded." : "This estimate includes reported distribution rewards."}</p>
+    </section>
+    <Disclosure title="Technical records">
+      <p>These identifiers track the calculation and its source data. They are reference IDs, not amounts.</p>
+      <dl className="space-y-4">
+        {[
+          ["Published estimate ID", estimate.revision_id],
+          ["Calculation software version", estimate.code_version],
+          ["Calculation settings version", estimate.configuration_version],
+          ["Source data version", estimate.input_revision],
+        ].map(([label, value]) => <div key={label}><dt className="font-medium text-foreground">{label}</dt><dd className="mt-1 break-all font-mono text-xs">{value}</dd></div>)}
       </dl>
-      <details><summary className="cursor-pointer">Block pins and reference-rate provenance</summary>
-        <pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-muted p-3">{JSON.stringify({ opening_pins: estimate.opening_pins, closing_pins: estimate.closing_pins, input_provenance: estimate.input_provenance }, null, 2)}</pre>
+      <details className="text-xs">
+        <summary className="cursor-pointer rounded py-2 font-medium text-foreground focus-visible:outline-2 focus-visible:outline-ring">Raw inputs & full-precision amounts</summary>
+        <p className="my-2">Unrounded values, blockchain reference blocks and rate sources used to reproduce this estimate.</p>
+        <pre className="max-h-80 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-muted p-3">{JSON.stringify({ amounts: estimate.result, excluded_inputs: estimate.excluded_inputs, opening_blocks: estimate.opening_pins, closing_blocks: estimate.closing_pins, rate_sources: estimate.input_provenance }, null, 2)}</pre>
       </details>
-      <a className="underline" href={`${REVENUE_PUBLIC_URL}/v1/revenue/${estimate.prime}/at/${estimate.cutoff}?revision=${estimate.revision_id}`} target="_blank" rel="noreferrer">Read this exact published revision</a>
-    </div>
-  </details>;
+      <a className="inline-block py-1 text-sm underline underline-offset-4" href={`${REVENUE_PUBLIC_URL}/v1/revenue/${estimate.prime}/at/${estimate.cutoff}?revision=${estimate.revision_id}`} target="_blank" rel="noreferrer">Open original data (JSON)</a>
+    </Disclosure>
+  </EstimateDetails>;
 }
-export function EstimatePanel({ estimate }: { estimate: Estimate }) {
-  return <Panel title={`Provisional MTD estimate through ${estimate.cutoff} (UTC)`} description={`Computed ${utc(estimate.computed_at)} · ${distributionNote(estimate)}`}>
-    <div className="space-y-5"><EstimateMetrics estimate={estimate} /><Provenance estimate={estimate} /></div>
-  </Panel>;
+const columnHelp = {
+  prime: "The prime agent. Select its name to open daily details for the same month.",
+  revenue: "Revenue accrued from the start of the selected month to this publication. Includes supply-side revenue, agent rate and any reported distribution rewards, Chronicle Points and GAR. This is a running total in USD, not one day’s earnings.",
+  sky: "Sky’s accrued revenue for the month: daily financing charges plus Sky Direct revenue, less sUSDS spread reimbursement. USD; not just the financing charge.",
+  change: "Latest accrued prime revenue minus the previous UTC day’s published total. May include corrections to earlier days. A dash means there is no comparable previous-day publication in the same month.",
+  cost: "Sum of available daily Sky financing charges in the selected month, in USD. This is not total Sky revenue and is not subtracted again from Prime revenue. A day count indicates incomplete coverage.",
+  status: "Whether the latest data meets the API’s expected reporting date. Saved estimate means a previous response is shown after a fetch error; unavailable means no usable response.",
+  cutoff: "The last UTC day included in this month-to-date estimate, not the time the report was published.",
+  date: "The UTC day this row describes. Values come from the newest available publication for the month and may include revisions.",
+  charge: "Sky’s financing charge for this UTC day, in USD. Read directly from daily_sky_rev; it excludes the separate Sky Direct revenue component.",
+  debt: "Debt reported for this UTC day, in USD, from the API’s cum_debt field. This is a balance, not an amount to sum across days.",
+  utilized: "The portion of debt treated as utilized by the calculation for this UTC day, in USD. Read directly from utilized; this is a balance, not revenue.",
+  details: "Open the calculation date, included inputs and source record for this publication.",
+};
+function ColumnLabel({ label, help }: { label: string; help: keyof typeof columnHelp }) {
+  return <span className="inline-flex items-center gap-1">{label}<Hint label={columnHelp[help]} /></span>;
 }
-export function SettledPanel({ report, selectedMonth }: { report: SsrReport | undefined; selectedMonth?: string }) {
-  if (!report) return <p className="text-sm text-muted-foreground">No canonical settled report is available{selectedMonth ? ` for ${monthLong(selectedMonth)}` : " for this prime"}.</p>;
-  const selected = !selectedMonth || report.month === selectedMonth;
-  return <Panel title={selected ? "Canonical settled report" : "Latest available settled report"}
-    description={`${monthLong(report.month)} · committed settlement snapshot${selected ? " · authoritative for this month" : " · a different reporting month"}`}>
-    <div className="space-y-4"><dl className="grid grid-cols-2 gap-4">
-      <Metric label="Settled prime agent profit" value={formatUSD2(report.headline.primeAgentProfit)} />
-      <Metric label="Settled Sky revenue" value={formatUSD2(report.headline.skyRevenue)} />
-    </dl><Link className="text-sm underline" href={paths.ssrPartner(report.partner, report.month)}>Open {primeName(report.partner)}’s settled report</Link></div>
-  </Panel>;
-}
+
 export function HistoryTable({ history }: { history: History }) {
-  return <Panel title="Daily MTD observations" description="Each row is a cumulative month-to-date estimate. Do not sum rows. Changes can include revisions to earlier days and are not necessarily that day’s earnings." flush>
+  return <Panel title="Published observations" description="Dates without a publication are omitted." flush>
     <DataTable containerClassName="max-h-[36rem]"><TableHeader><TableRow>
-      <Th>Cutoff (UTC)</Th><Th numeric>Prime total · MTD</Th><Th numeric>Sky revenue · MTD</Th><Th>Publication</Th>
+      <Th><ColumnLabel label="Through (UTC)" help="cutoff" /></Th><Th numeric><ColumnLabel label="Prime revenue (MTD)" help="revenue" /></Th><Th numeric><ColumnLabel label="Sky revenue (MTD)" help="sky" /></Th><Th><ColumnLabel label="Details" help="details" /></Th>
     </TableRow></TableHeader><TableBody>
-      {historyDays(history).map(({ cutoff, estimate }) => <TableRow key={cutoff}>
+      {historyDays(history).filter(({ estimate }) => estimate !== null).map(({ cutoff, estimate }) => <TableRow key={cutoff}>
         <Td className="whitespace-nowrap">{cutoff}</Td>
         <Td numeric>{estimate ? usd(metrics(estimate).prime) : "—"}</Td>
         <Td numeric>{estimate ? usd(estimate.result.sky_revenue) : "—"}</Td>
         <Td>{estimate ? <Provenance estimate={estimate} /> : <span className="text-muted-foreground">No published estimate</span>}</Td>
       </TableRow>)}
     </TableBody></DataTable>
+  </Panel>;
+}
+
+export function PrimeTable({ rows, range, showStatus }: {
+  showStatus: boolean;
+  range: DayRange;
+  rows: { prime: DailyPrime; observations: History; changes: History; days: DailyRow[]; read: ReadResult<Latest>; freshness: Freshness | null }[];
+}) {
+  const totals = rows.map(({ days }) => days.length ? addMoney(days.map((d) => d.charge)) : null);
+  const latest = rows.map(({ observations }) => [...observations.results].sort((a, b) => b.cutoff.localeCompare(a.cutoff))[0]);
+  return <Panel title="By prime" flush>
+    <DataTable><TableHeader><TableRow>
+      <Th><ColumnLabel label="Prime" help="prime" /></Th><Th numeric><ColumnLabel label="Prime revenue (MTD)" help="revenue" /></Th><Th numeric><ColumnLabel label="Change vs previous day" help="change" /></Th><Th numeric><ColumnLabel label="Financing cost" help="cost" /></Th>{showStatus && <Th><ColumnLabel label="Status" help="status" /></Th>}
+    </TableRow></TableHeader><TableBody>
+      {rows.map(({ prime, changes, days, read, freshness }, i) => {
+        const last = latest[i];
+        const change = last ? publicationChanges(changes).find((r) => r.cutoff === last.cutoff)?.exact : null;
+        return <TableRow key={prime}>
+          <Td><Link className="inline-flex items-center gap-2 py-2 font-medium underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ring" href={paths.dailyRevenue(prime, range.from.slice(0, 7))}><Swatch color={`var(--group-${prime})`} />{primeName(prime)}<span aria-hidden className="text-muted-foreground">→</span></Link></Td>
+          <Td numeric><span className="font-medium">{usd(last ? metrics(last).prime : null)}</span></Td>
+          <Td numeric>{usd(change?.prime ?? null)}</Td>
+          <Td numeric>{usd(totals[i])}{days.length < rangeLength(range) && <span className="block text-xs text-muted-foreground">{days.length}/{rangeLength(range)} days</span>}</Td>
+          {showStatus && <Td>{read.error ? <Badge variant="secondary">{read.data ? "Saved estimate" : "Unavailable"}</Badge> : <FreshnessStatus freshness={freshness} />}</Td>}
+        </TableRow>;
+      })}
+    </TableBody></DataTable>
+  </Panel>;
+}
+
+export function AccruedSnapshot({ history, changes }: { history: History; changes: History }) {
+  const estimate = [...history.results].sort((a, b) => b.cutoff.localeCompare(a.cutoff))[0];
+  if (!estimate) return <Panel title="No publications in this month"><p className="text-sm text-muted-foreground">Daily financing costs may still be available below.</p></Panel>;
+  const m = metrics(estimate);
+  const change = publicationChanges(changes).find((r) => r.cutoff === estimate.cutoff)?.exact;
+  const signed = (value: string) => `${Number(value) > 0 ? "+" : ""}${usd(value)}`;
+  return <section aria-label="Latest accrued revenue" className="space-y-3">
+    <div className="grid gap-4 sm:grid-cols-2">
+      <StatCard label="Prime revenue (MTD)" value={usd(m.prime)} note={change ? `${signed(change.prime)} since previous publication` : "No previous-day publication to compare"} />
+      <StatCard label="Sky revenue (MTD)" value={usd(m.sky)} note={change ? `${signed(change.sky)} since previous publication` : undefined} />
+    </div>
+  </section>;
+}
+
+export function DailyDataTable({ days }: { days: DailyRow[] }) {
+  return <Panel title="Daily financing data" description="Latest published daily values · USD · UTC" flush>
+    <DataTable><TableHeader><TableRow><Th><ColumnLabel label="Date" help="date" /></Th><Th numeric><ColumnLabel label="Financing cost (daily)" help="charge" /></Th><Th numeric><ColumnLabel label="Debt" help="debt" /></Th><Th numeric><ColumnLabel label="Utilized debt" help="utilized" /></Th></TableRow></TableHeader>
+      <TableBody>{days.length ? [...days].reverse().map((day) => <TableRow key={day.date}>
+        <Td>{day.date}</Td><Td numeric>{usd(day.charge)}</Td><Td numeric>{usd(day.debt)}</Td><Td numeric>{usd(day.utilized)}</Td>
+      </TableRow>) : <TableRow><Td colSpan={4}>No daily data published for this month.</Td></TableRow>}</TableBody>
+    </DataTable>
   </Panel>;
 }

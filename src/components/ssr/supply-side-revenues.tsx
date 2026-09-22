@@ -398,7 +398,7 @@ function PartnerBreakdown({
   const report = reportFor(ssr, partner, month);
   const h = report?.headline;
   const rewards = compareRewards(useDr(), h?.distributionRewards);
-  const monthly = partnerMonthlyRevenues(ssr, partner);
+  const monthly = React.useMemo(() => partnerMonthlyRevenues(ssr, partner), [ssr, partner]);
 
   const venues = venuesFor(ssr, partner, month);
   const shownVenues = onlyEarning
@@ -410,12 +410,12 @@ function PartnerBreakdown({
     prime: { label: "Prime revenue", color: partnerColor(partner) },
   } satisfies ChartConfig;
 
-  const revenueData = monthly.map((x) => ({
+  const revenueData = React.useMemo(() => monthly.map((x) => ({
     month: monthLabels[x.month],
     key: x.month,
     sky: x.sky,
     prime: x.prime,
-  }));
+  })), [monthly, monthLabels]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -500,6 +500,7 @@ function PartnerBreakdown({
             <RBar
               dataKey="sky"
               stackId="rev"
+              isAnimationActive={false}
               fill="var(--color-sky)"
               radius={[0, 0, 4, 4]}
               maxBarSize={64}
@@ -512,6 +513,7 @@ function PartnerBreakdown({
             <RBar
               dataKey="prime"
               stackId="rev"
+              isAnimationActive={false}
               fill="var(--color-prime)"
               radius={[4, 4, 0, 0]}
               maxBarSize={64}
