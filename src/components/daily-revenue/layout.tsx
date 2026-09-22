@@ -15,7 +15,7 @@ export function RevenueViews({ overview, history, sources }: { overview: ReactNo
 }
 
 export function Disclosure({ title, children, contentClassName = "space-y-3 text-muted-foreground" }: { title: string; children: ReactNode; contentClassName?: string }) {
-  return <Collapsible className="min-w-0 rounded-xl bg-muted/40 whitespace-normal">
+  return <Collapsible className="min-w-0 rounded-xl bg-muted/80 whitespace-normal">
     <CollapsibleTrigger className="group flex w-full items-center justify-between gap-4 rounded-xl px-4 py-3 text-left text-sm font-medium outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring aria-expanded:rounded-b-none">
       {title}<CaretDownIcon aria-hidden className="size-4 shrink-0 transition-transform group-aria-expanded:rotate-180" />
     </CollapsibleTrigger>
