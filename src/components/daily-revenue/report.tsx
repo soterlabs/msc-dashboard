@@ -1,117 +1,104 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { Panel, DataTable, TableHeader, TableBody, TableRow, Th, Td } from "@/components/kit";
-import { REVENUE_PUBLIC_URL } from "@/lib/daily-revenue/api";
-import { utcStamp as utc } from "@/lib/daily-revenue/calendar";
-import { distributionExcluded, distributionNote, metrics, historyDays } from "@/lib/daily-revenue/domain";
-import { usd } from "@/lib/daily-revenue/decimal";
-import { DAILY_PRIMES, primeName, type Attempt, type DailyPrime, type Estimate, type Freshness, type History, type ReadResult } from "@/lib/daily-revenue/types";
+import { DataTable, Panel, TableBody, TableHeader, TableRow, Td, Th } from "@/components/kit";
 import { paths } from "@/lib/routes";
-import { formatUSD2, monthLong } from "@/lib/format";
-import type { SsrReport } from "@/lib/ssr/types";
+import { latestValue } from "@/lib/daily-revenue/domain";
+import { compareMoney, usd } from "@/lib/daily-revenue/decimal";
+import { primeName, SEPTEMBER_MONTH, type AllocationSeries, type DailyPrime, type PrimeSeries, type ReadResult, type RevenuePoint } from "@/lib/daily-revenue/types";
+import { CopyLink } from "./copy-link";
 
-export function PrimeNavigation({ selected }: { selected?: DailyPrime }) {
-  return <nav aria-label="Daily revenue primes" className="flex flex-wrap gap-2">
-    <Link href={paths.dailyRevenue()} aria-current={!selected ? "page" : undefined} className={`rounded-full px-4 py-2 text-sm ${!selected ? "bg-primary text-primary-foreground" : "bg-muted"}`}>All primes</Link>
-    {DAILY_PRIMES.map((p) => <Link key={p} href={paths.dailyRevenue(p)} aria-current={selected === p ? "page" : undefined}
-      className={`rounded-full px-4 py-2 text-sm ${selected === p ? "bg-primary text-primary-foreground" : "bg-muted"}`}>{primeName(p)}</Link>)}
+function LinkAffordance({ className = "" }: { className?: string }) {
+  return <svg aria-hidden className={className} fill="none" viewBox="0 0 24 24">
+    <path d="M8 16 16 8M9 8h7v7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" />
+  </svg>;
+}
+
+export function Breadcrumbs({ prime, allocation }: { prime?: DailyPrime; allocation?: string }) {
+  return <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+    <Link className="hover:text-foreground hover:underline" href={paths.dailyRevenue()}>Daily Revenue</Link>
+    {prime && <><span aria-hidden>/</span><Link className="hover:text-foreground hover:underline" href={paths.dailyRevenue(SEPTEMBER_MONTH, prime)}>{primeName(prime)}</Link></>}
+    {allocation && <><span aria-hidden>/</span><span className="text-foreground">{allocation}</span></>}
   </nav>;
 }
-export function ScheduleNote() {
-  return <p className="max-w-5xl text-sm text-muted-foreground">
-    Updated daily at 20:17 UTC through the previous completed UTC day. These are provisional month-to-date (MTD) estimates, not daily earnings.
-    Monthly distribution rewards are excluded from the daily inputs, and each estimate is captioned with what its own response carries.
-    Before the scheduled update, or while official reference rates are pending after weekends or holidays, a retained cutoff may be behind
-    the expected one without a failed scheduled run.
-  </p>;
-}
-export function ReadNotice({ read }: { read: Pick<ReadResult<unknown>, "source" | "verifiedAt" | "error"> }) {
-  return <div className="space-y-1 text-xs text-muted-foreground">
-    {read.error && <p role="status">{read.error}</p>}
-    {read.verifiedAt && <p>{read.source === "cache" ? "Cached API response" : "API response"} · last verified {utc(read.verifiedAt)}</p>}
-  </div>;
-}
-export function AttemptStatus({ attempt }: { attempt: Attempt | null }) {
-  if (!attempt) return <p className="text-xs text-muted-foreground">No attempt information available.</p>;
-  return <p className="text-xs text-muted-foreground">Last known attempt: {attempt.status} · cutoff {attempt.cutoff} · started {utc(attempt.started_at)}
-    {attempt.finished_at ? ` · finished ${utc(attempt.finished_at)}` : ""}{attempt.error_type ? ` · ${attempt.error_type}` : ""}.
-    {attempt.status === "failed" || attempt.status === "abandoned" ? " The last successful estimate is retained." : ""}
-  </p>;
-}
-/** Staleness is the API's own judgement, not a comparison against yesterday:
- * the day's estimate publishes at 20:17 UTC, so for most of a healthy day the
- * newest published cutoff is two days back and behind nothing. */
-export function FreshnessStatus({ freshness }: { freshness: Freshness | null }) {
-  const cutoff = freshness?.actual_cutoff ?? null;
-  return <div className="flex flex-wrap items-center gap-2 text-xs">
-    <Badge variant="secondary">{cutoff === null ? "No estimate available" : freshness?.stale ? "Behind expected cutoff" : "Current cutoff"}</Badge>
-    <span>Latest publication: {cutoff ?? "—"} · expected {freshness?.expected_cutoff ?? "—"} (UTC)</span>
-  </div>;
-}
-function Metric({ label, value, exact }: { label: string; value: string; exact?: string }) {
-  return <div><dt className="text-xs text-muted-foreground">{label}</dt><dd className="mt-1 text-lg font-semibold tabular-nums" title={exact}>{value}</dd></div>;
-}
-export function EstimateMetrics({ estimate }: { estimate: Estimate }) {
-  const m = metrics(estimate);
-  return <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2 @3xl/main:grid-cols-4">
-    <Metric label="Prime total · MTD" value={usd(m.prime)} exact={m.prime} />
-    <Metric label="Demand-side revenue · MTD" value={usd(m.demand)} exact={m.demand} />
-    <Metric label="Supply-side revenue · MTD" value={usd(m.supply)} exact={m.supply} />
-    <Metric label="Sky revenue · MTD" value={usd(m.sky)} exact={m.sky} />
-  </dl>;
-}
-export function Provenance({ estimate }: { estimate: Estimate }) {
-  const r = estimate.result;
-  return <details className="text-xs">
-    <summary className="cursor-pointer font-medium">Provenance and components</summary>
-    <div className="mt-3 space-y-3 break-words text-muted-foreground">
-      <dl className="grid gap-2 sm:grid-cols-2">
-        <div><dt>Revision</dt><dd className="break-all font-mono">{estimate.revision_id}</dd></div>
-        <div><dt>Cutoff / computation</dt><dd>{estimate.cutoff} / {utc(estimate.computed_at)}</dd></div>
-        <div><dt>Code version</dt><dd className="break-all font-mono">{estimate.code_version}</dd></div>
-        <div><dt>Configuration version</dt><dd className="break-all font-mono">{estimate.configuration_version}</dd></div>
-        <div><dt>Input revision</dt><dd className="break-all font-mono">{estimate.input_revision}</dd></div>
-        <div><dt>Excluded inputs</dt><dd>{estimate.excluded_inputs.join(", ") || "None reported"}</dd></div>
-      </dl>
-      <p>Prime total = supply-side revenue + agent rate + distribution rewards + Chronicle Points + GAR. External venue rewards are already included in supply-side revenue.</p>
-      <dl className="grid gap-2 sm:grid-cols-2">
-        {[["Agent rate", r.agent_rate], [`Distribution rewards (${distributionExcluded(estimate) ? "excluded monthly input" : "included in the prime total"})`, r.distribution_rewards], ["Chronicle Points", r.chronicle_points], ["GAR", r.gar], ["Net P&L (audit metric, not prime total)", r.monthly_pnl]].map(([label, value]) =>
-          <div key={label}><dt>{label}</dt><dd title={value} className="tabular-nums">{usd(value)} <span className="break-all font-mono">(exact: {value})</span></dd></div>)}
-      </dl>
-      <details><summary className="cursor-pointer">Block pins and reference-rate provenance</summary>
-        <pre className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-muted p-3">{JSON.stringify({ opening_pins: estimate.opening_pins, closing_pins: estimate.closing_pins, input_provenance: estimate.input_provenance }, null, 2)}</pre>
-      </details>
-      <a className="underline" href={`${REVENUE_PUBLIC_URL}/v1/revenue/${estimate.prime}/at/${estimate.cutoff}?revision=${estimate.revision_id}`} target="_blank" rel="noreferrer">Read this exact published revision</a>
+export function Methodology() {
+  return <details className="rounded-xl bg-muted/50 p-4 text-sm">
+    <summary className="cursor-pointer font-medium">Methodology and availability</summary>
+    <div className="mt-3 max-w-4xl space-y-2 text-muted-foreground">
+      <p>Supply-side allocation revenue is each allocation’s <code>revenue</code>: the amount attributable to the prime after SDE sharing, including external allocation income, and before prime-level borrowing costs. External revenue is not added again.</p>
+      <p>Daily values are changes between consecutive provisional month-to-date snapshots. September 1 uses a zero opening baseline. Missing snapshots or allocation rows remain gaps; changes can include revisions to earlier days.</p>
     </div>
   </details>;
 }
-export function EstimatePanel({ estimate }: { estimate: Estimate }) {
-  return <Panel title={`Provisional MTD estimate through ${estimate.cutoff} (UTC)`} description={`Computed ${utc(estimate.computed_at)} · ${distributionNote(estimate)}`}>
-    <div className="space-y-5"><EstimateMetrics estimate={estimate} /><Provenance estimate={estimate} /></div>
-  </Panel>;
+export function PageActions() { return <CopyLink />; }
+export function ReadNotice({ read }: { read: Pick<ReadResult<unknown>, "source" | "verifiedAt" | "error"> }) {
+  if (!read.error && !read.verifiedAt) return null;
+  return <div role={read.error ? "status" : undefined} className="text-xs text-muted-foreground">
+    {read.error && <p>{read.error}</p>}
+    {read.verifiedAt && <p>{read.source === "cache" ? "Retained API response" : "API response"} verified {new Date(read.verifiedAt).toISOString().slice(0, 19).replace("T", " ")} UTC.</p>}
+  </div>;
 }
-export function SettledPanel({ report, selectedMonth }: { report: SsrReport | undefined; selectedMonth?: string }) {
-  if (!report) return <p className="text-sm text-muted-foreground">No canonical settled report is available{selectedMonth ? ` for ${monthLong(selectedMonth)}` : " for this prime"}.</p>;
-  const selected = !selectedMonth || report.month === selectedMonth;
-  return <Panel title={selected ? "Canonical settled report" : "Latest available settled report"}
-    description={`${monthLong(report.month)} · committed settlement snapshot${selected ? " · authoritative for this month" : " · a different reporting month"}`}>
-    <div className="space-y-4"><dl className="grid grid-cols-2 gap-4">
-      <Metric label="Settled prime agent profit" value={formatUSD2(report.headline.primeAgentProfit)} />
-      <Metric label="Settled Sky revenue" value={formatUSD2(report.headline.skyRevenue)} />
-    </dl><Link className="text-sm underline" href={paths.ssrPartner(report.partner, report.month)}>Open {primeName(report.partner)}’s settled report</Link></div>
-  </Panel>;
+export function Unavailable({ read }: { read: ReadResult<unknown> }) {
+  return <Panel title="Allocation data unavailable" description="September data could not be established from the live API."><ReadNotice read={read} /><p className="mt-2 text-sm text-muted-foreground">No settlement snapshot or fixture is substituted for missing daily allocation data.</p></Panel>;
 }
-export function HistoryTable({ history }: { history: History }) {
-  return <Panel title="Daily MTD observations" description="Each row is a cumulative month-to-date estimate. Do not sum rows. Changes can include revisions to earlier days and are not necessarily that day’s earnings." flush>
-    <DataTable containerClassName="max-h-[36rem]"><TableHeader><TableRow>
-      <Th>Cutoff (UTC)</Th><Th numeric>Prime total · MTD</Th><Th numeric>Sky revenue · MTD</Th><Th>Publication</Th>
-    </TableRow></TableHeader><TableBody>
-      {historyDays(history).map(({ cutoff, estimate }) => <TableRow key={cutoff}>
-        <Td className="whitespace-nowrap">{cutoff}</Td>
-        <Td numeric>{estimate ? usd(metrics(estimate).prime) : "—"}</Td>
-        <Td numeric>{estimate ? usd(estimate.result.sky_revenue) : "—"}</Td>
-        <Td>{estimate ? <Provenance estimate={estimate} /> : <span className="text-muted-foreground">No published estimate</span>}</Td>
-      </TableRow>)}
-    </TableBody></DataTable>
+const value = (points: RevenuePoint[], key: "mtd" | "daily") => latestValue(points, key);
+export function PrimeAgentLauncher({ rows }: { rows: { series: PrimeSeries | null; read: ReadResult<unknown>; prime: DailyPrime }[] }) {
+  return <section aria-labelledby="choose-prime" className="space-y-4">
+    <div className="space-y-1"><h2 id="choose-prime" className="text-xl font-semibold">Choose a prime agent</h2>
+      <p className="text-sm text-muted-foreground">Open its September daily revenue and allocation breakdown.</p></div>
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{rows.map(({ prime, series, read }) => {
+      const mtd = series ? value(series.points, "mtd") : null;
+      return <Link key={prime} href={paths.dailyRevenue(SEPTEMBER_MONTH, prime)}
+        className="group flex min-h-28 items-center justify-between gap-4 rounded-xl bg-card p-5 shadow-sm ring-1 ring-border transition-[background-color,box-shadow] hover:bg-muted/50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <span className="min-w-0 space-y-2"><span className="block text-lg font-semibold">{primeName(prime)}</span>
+          <span className="block text-sm text-muted-foreground"><span className="font-medium tabular-nums text-foreground">{usd(mtd?.mtd ?? null)}</span> MTD
+            <span className="block">{mtd ? `through ${mtd.date} UTC · ${series?.allocations.length ?? 0} allocations` : "Allocation data unavailable"}{read.source === "cache" && <Badge className="ml-2" variant="secondary">cached</Badge>}</span>
+          </span></span>
+        <LinkAffordance className="size-5 shrink-0 text-muted-foreground opacity-100 transition-[color,opacity,transform] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-foreground group-focus-visible:text-foreground md:opacity-0 md:group-hover:opacity-100 md:group-focus-visible:opacity-100" />
+      </Link>;
+    })}</div>
+  </section>;
+}
+export function AllocationTable({ series }: { series: PrimeSeries }) {
+  const sorted = [...series.allocations].sort((a, b) => {
+    const av = value(a.points, "mtd")?.mtd, bv = value(b.points, "mtd")?.mtd;
+    if (av === null || av === undefined) return 1;
+    if (bv === null || bv === undefined) return -1;
+    return compareMoney(bv, av) || a.label.localeCompare(b.label);
+  });
+  return <>
+    <Panel title="September allocations" description="Revenue allocations remain listed if they close later in the month." flush>
+      <div className="divide-y md:hidden">{sorted.map((allocation) => {
+        const mtd = value(allocation.points, "mtd"), daily = value(allocation.points, "daily");
+        return <Link key={allocation.venueId} href={paths.dailyRevenue(SEPTEMBER_MONTH, series.prime, allocation.venueId)}
+          className="group block space-y-3 px-6 py-4 transition-colors hover:bg-muted/70 focus-visible:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">
+          <span className="flex items-start justify-between gap-3"><span className="min-w-0 break-words font-medium group-hover:underline">{allocation.label}</span>
+            <LinkAffordance className="mt-0.5 size-4 shrink-0 text-muted-foreground transition-[color,transform] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-foreground" /></span>
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+            <div className="min-w-0"><dt className="text-muted-foreground">Venue ID</dt><dd className="break-all font-mono">{allocation.venueId}</dd></div>
+            <div><dt className="text-muted-foreground">As of</dt><dd>{mtd?.date ?? "Unavailable"}</dd></div>
+            <div><dt className="text-muted-foreground">MTD revenue</dt><dd className="font-medium tabular-nums">{usd(mtd?.mtd ?? null)}</dd></div>
+            <div><dt className="text-muted-foreground">Latest daily change</dt><dd className="font-medium tabular-nums">{usd(daily?.daily ?? null)}</dd></div>
+          </dl>
+        </Link>;
+      })}</div>
+      <DataTable containerClassName="hidden md:block"><TableHeader><TableRow><Th>Allocation</Th><Th>Venue ID</Th><Th numeric>MTD revenue</Th><Th numeric>Latest daily change</Th><Th>As of</Th></TableRow></TableHeader>
+        <TableBody>{sorted.map((allocation) => {
+          const mtd = value(allocation.points, "mtd"), daily = value(allocation.points, "daily");
+          return <TableRow className="group relative cursor-pointer hover:bg-muted/70" key={allocation.venueId}><Td><Link
+            className="inline-flex items-center gap-1.5 font-medium after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-inset focus-visible:after:ring-ring group-hover:underline"
+            href={paths.dailyRevenue(SEPTEMBER_MONTH, series.prime, allocation.venueId)}>
+            {allocation.label}<LinkAffordance className="size-4 shrink-0 text-muted-foreground opacity-0 transition-[color,opacity,transform] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-foreground group-hover:opacity-100 group-focus-within:text-foreground group-focus-within:opacity-100" />
+          </Link></Td>
+            <Td className="font-mono">{allocation.venueId}</Td><Td numeric>{usd(mtd?.mtd ?? null)}</Td><Td numeric>{usd(daily?.daily ?? null)}</Td><Td>{mtd?.date ?? "Unavailable"}</Td></TableRow>;
+        })}</TableBody></DataTable>
+    </Panel>
+    {series.hidden.length > 0 && <details className="rounded-xl bg-muted/50 p-4 text-sm"><summary className="cursor-pointer font-medium">Position tracking only — revenue not displayed ({series.hidden.length})</summary>
+      <ul className="mt-3 space-y-1 text-muted-foreground">{series.hidden.map((a) => <li key={a.venueId}>{a.label} <span className="font-mono">{a.venueId}</span></li>)}</ul></details>}
+  </>;
+}
+export function DailyValues({ allocation }: { allocation: AllocationSeries }) {
+  return <Panel title="Daily values" description="Accessible table alternative to the chart. Missing values are unavailable, not zero." flush>
+    <DataTable containerClassName="max-h-[36rem]"><TableHeader><TableRow><Th>Date (UTC)</Th><Th numeric>Daily change</Th><Th numeric>MTD revenue</Th></TableRow></TableHeader>
+      <TableBody>{allocation.points.map((p) => <TableRow key={p.date}><Td>{p.date}</Td><Td numeric title={p.daily ?? undefined}>{usd(p.daily)}</Td><Td numeric title={p.mtd ?? undefined}>{usd(p.mtd)}</Td></TableRow>)}</TableBody></DataTable>
   </Panel>;
 }

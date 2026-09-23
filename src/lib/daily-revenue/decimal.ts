@@ -11,6 +11,12 @@ export function decimal(value: unknown): string {
 export function addMoney(values: string[]): string {
   return values.reduce((sum, value) => sum.plus(decimal(value)), new Money(0)).toFixed();
 }
+export function subtractMoney(a: string, b: string): string {
+  return new Money(decimal(a)).minus(decimal(b)).toFixed();
+}
+export function compareMoney(a: string, b: string): number {
+  return new Money(decimal(a)).comparedTo(decimal(b));
+}
 export function usd(value: string | null): string {
   if (value === null) return "—";
   const n = new Money(decimal(value));

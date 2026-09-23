@@ -1,5 +1,6 @@
 import { decimal } from "./decimal.ts";
-import { DAILY_PRIMES, MONEY_FIELDS, type Attempt, type DailyPrime, type DailyStatus, type Estimate, type Freshness, type History, type Latest } from "./types.ts";
+import { DAILY_PRIMES, type Allocation, type Attempt, type DailyPrime, type DailyStatus, type Estimate, type Freshness, type History, type Latest } from "./types.ts";
+
 function object(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("Expected an object");
   return value as Record<string, unknown>;
@@ -37,6 +38,22 @@ function envelope(value: unknown, prime: DailyPrime) {
   if (v.schema_version !== "1.0" || v.prime !== prime || v.cadence !== "daily" || v.estimate_basis !== "month_to_date") throw new Error("Unsupported daily revenue document");
   return v;
 }
+function allocations(value: unknown): Allocation[] | null {
+  if (value === undefined || value === null) return null;
+  if (!Array.isArray(value)) throw new Error("Expected venue breakdown");
+  const rows = value.map((item): Allocation => {
+    const v = object(item);
+    if (typeof v.hide_per_venue_pnl !== "boolean") throw new Error("Invalid allocation visibility");
+    return {
+      venue_id: str(v.venue_id), label: str(v.label), revenue: decimal(v.revenue),
+      actual_revenue: decimal(v.actual_revenue), external_revenue: decimal(v.external_revenue),
+      sd_revenue: decimal(v.sd_revenue), hide_per_venue_pnl: v.hide_per_venue_pnl,
+      pricing_category: v.pricing_category === undefined || v.pricing_category === null ? null : str(v.pricing_category),
+    };
+  });
+  if (new Set(rows.map((r) => r.venue_id)).size !== rows.length) throw new Error("Duplicate venue ID");
+  return rows;
+}
 export function validateEstimate(value: unknown, prime: DailyPrime): Estimate {
   const v = object(value), r = object(v.result), period = object(r.period), month = object(r.month);
   const cutoff = date(v.cutoff);
@@ -49,7 +66,7 @@ export function validateEstimate(value: unknown, prime: DailyPrime): Estimate {
     code_version: str(v.code_version), configuration_version: str(v.configuration_version), input_revision: str(v.input_revision),
     opening_pins: pins(v.opening_pins), closing_pins: pins(v.closing_pins), provisional: true,
     excluded_inputs: strings(v.excluded_inputs), input_provenance: object(v.input_provenance),
-    result: Object.fromEntries(MONEY_FIELDS.map((key) => [key, decimal(r[key])])) as Estimate["result"],
+    result: { venue_breakdown: allocations(r.venue_breakdown), prime_agent_revenue: decimal(r.prime_agent_revenue) },
   };
 }
 function attempt(value: unknown): Attempt | null {
@@ -65,14 +82,9 @@ function freshness(value: unknown): Freshness {
   if (typeof v.stale !== "boolean") throw new Error("Invalid freshness");
   return { expected_cutoff: date(v.expected_cutoff), actual_cutoff: v.actual_cutoff === null ? null : date(v.actual_cutoff), stale: v.stale };
 }
-/** The estimate and its freshness block can be assembled either side of a
- * revision publish. A disagreement between them is a freshness inconsistency,
- * not a reason to discard an estimate that is itself valid: report the cutoff
- * actually rendered, and hold it stale until it reaches the expected one. */
 export function validateLatest(value: unknown, prime: DailyPrime): Latest {
   const v = envelope(value, prime), data = validateEstimate(v.data, prime), f = freshness(v.freshness);
-  const reconciled = f.actual_cutoff === data.cutoff ? f
-    : { expected_cutoff: f.expected_cutoff, actual_cutoff: data.cutoff, stale: f.stale || data.cutoff < f.expected_cutoff };
+  const reconciled = f.actual_cutoff === data.cutoff ? f : { expected_cutoff: f.expected_cutoff, actual_cutoff: data.cutoff, stale: f.stale || data.cutoff < f.expected_cutoff };
   return { data, freshness: reconciled, latest_attempt: attempt(v.latest_attempt) };
 }
 export function validateHistory(value: unknown, prime: DailyPrime, start: string, end: string): History {
@@ -85,12 +97,8 @@ export function validateHistory(value: unknown, prime: DailyPrime, start: string
 export function validateStatus(value: unknown): DailyStatus {
   const v = object(value), primes = object(v.primes);
   if (v.cadence !== "daily" || typeof v.ready !== "boolean") throw new Error("Invalid revenue status");
-  // A malformed entry drops that prime alone. Six primes share this document
-  // and one bad state block is no reason to blank the other five.
   return Object.fromEntries(DAILY_PRIMES.flatMap((p) => {
-    try {
-      const state = object(primes[p]);
-      return [[p, { ...freshness(state), latest_attempt: attempt(state.latest_attempt) }]];
-    } catch { return []; }
+    try { const state = object(primes[p]); return [[p, { ...freshness(state), latest_attempt: attempt(state.latest_attempt) }]]; }
+    catch { return []; }
   }));
 }
