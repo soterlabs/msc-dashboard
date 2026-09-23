@@ -7,6 +7,12 @@ import { compareMoney, usd } from "@/lib/daily-revenue/decimal";
 import { primeName, SEPTEMBER_MONTH, type AllocationSeries, type DailyPrime, type PrimeSeries, type ReadResult, type RevenuePoint } from "@/lib/daily-revenue/types";
 import { CopyLink } from "./copy-link";
 
+function LinkAffordance({ className = "" }: { className?: string }) {
+  return <svg aria-hidden className={className} fill="none" viewBox="0 0 24 24">
+    <path d="M8 16 16 8M9 8h7v7" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" />
+  </svg>;
+}
+
 export function Breadcrumbs({ prime, allocation }: { prime?: DailyPrime; allocation?: string }) {
   return <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
     <Link className="hover:text-foreground hover:underline" href={paths.dailyRevenue()}>Daily Revenue</Link>
@@ -47,7 +53,7 @@ export function PrimeAgentLauncher({ rows }: { rows: { series: PrimeSeries | nul
           <span className="block text-sm text-muted-foreground"><span className="font-medium tabular-nums text-foreground">{usd(mtd?.mtd ?? null)}</span> MTD
             <span className="block">{mtd ? `through ${mtd.date} UTC · ${series?.allocations.length ?? 0} allocations` : "Allocation data unavailable"}{read.source === "cache" && <Badge className="ml-2" variant="secondary">cached</Badge>}</span>
           </span></span>
-        <span aria-hidden className="shrink-0 text-xl text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-foreground">→</span>
+        <LinkAffordance className="size-5 shrink-0 text-muted-foreground opacity-0 transition-[color,opacity,transform] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-foreground group-hover:opacity-100 group-focus-visible:text-foreground group-focus-visible:opacity-100" />
       </Link>;
     })}</div>
   </section>;
@@ -64,7 +70,11 @@ export function AllocationTable({ series }: { series: PrimeSeries }) {
       <DataTable><TableHeader><TableRow><Th>Allocation</Th><Th>Venue ID</Th><Th numeric>MTD revenue</Th><Th numeric>Latest daily change</Th><Th>As of</Th></TableRow></TableHeader>
         <TableBody>{sorted.map((allocation) => {
           const mtd = value(allocation.points, "mtd"), daily = value(allocation.points, "daily");
-          return <TableRow key={allocation.venueId}><Td><Link className="font-medium hover:underline" href={paths.dailyRevenue(SEPTEMBER_MONTH, series.prime, allocation.venueId)}>{allocation.label}</Link></Td>
+          return <TableRow className="group relative cursor-pointer hover:bg-muted/70" key={allocation.venueId}><Td><Link
+            className="inline-flex items-center gap-1.5 font-medium after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-inset focus-visible:after:ring-ring group-hover:underline"
+            href={paths.dailyRevenue(SEPTEMBER_MONTH, series.prime, allocation.venueId)}>
+            {allocation.label}<LinkAffordance className="size-4 shrink-0 text-muted-foreground opacity-0 transition-[color,opacity,transform] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-foreground group-hover:opacity-100 group-focus-within:text-foreground group-focus-within:opacity-100" />
+          </Link></Td>
             <Td className="font-mono">{allocation.venueId}</Td><Td numeric>{usd(mtd?.mtd ?? null)}</Td><Td numeric>{usd(daily?.daily ?? null)}</Td><Td>{mtd?.date ?? "Unavailable"}</Td></TableRow>;
         })}</TableBody></DataTable>
     </Panel>
