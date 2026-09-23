@@ -138,7 +138,7 @@ Three tabs sit behind feature flags and are **hidden unless switched on**
 
 | Variable | Tab |
 | --- | --- |
-| `NEXT_PUBLIC_SHOW_SKY_TOTAL_NET_REVENUE` | Sky Total Net Revenue |
+| `NEXT_PUBLIC_SHOW_SKY_TOTAL_NET_REVENUE` | Sky Net Revenue |
 | `NEXT_PUBLIC_SHOW_BUYBACKS` | Buybacks & Burn |
 | `NEXT_PUBLIC_SHOW_PRIME_PAYMENTS` | Prime Payments |
 
@@ -232,17 +232,42 @@ every column with it. The two do not add up: summing across the boundary either
 counts a cycle twice or skips one, which is why that tab headlines the latest
 month rather than a running total.
 
+## Prime Agent Revenues
+
+Settlement Revenues and Distribution Rewards share `/prime-agent-revenues`.
+The overview ends with the full distribution rewards summary and rate tables.
+The sidebar always lists the primes with settlement reports, with no nested
+collapse toggle. Each prime page is headed `Prime breakdown: <name>` and keeps
+its demand-side, supply-side and Sky-side accounting statements.
+
+The final section reuses the ref-code ledger, sliced on the server by the
+prime's DR group and selected settlement month (`src/lib/dr/scope.ts`). Its
+monthly values, totals, token details, token filters and CSV export all use that
+slice. Changing the month resets the ledger filters and expansion. A prime without DR shows an empty ledger, never another month's data.
+The month picker and generated routes use the union of settlement months and
+months with reported DR for that prime. DR-only months show the ledger with an
+explicit settlement-unavailable message; they do not invent zero settlement
+figures. Months present in neither source still 404.
+
+The ledger is labelled calculated DR, while the prime statement uses settled
+DR. A comparison above the ledger shows both full-month amounts and their
+difference when they disagree (for example, Keel in August 2026). Interactive
+ledger filters do not change this comparison or the published settlement total.
+Skybase stays in the overview summary but has no prime settlement link.
+The layout reads SSR to derive the navigation names; it passes only those names
+and keys to the shared shell, not the report dataset.
+
 ## URLs
 
 Every view has one, so it can be sent to someone:
 
 | | |
 | --- | --- |
-| `/distribution-rewards` | summary; `/refcodes` and `/rates` are the other tabs |
-| `/distribution-rewards/refcodes/128` | that code's token history, open |
-| `/settlement-revenues` | all primes |
-| `/settlement-revenues/grove` | Grove, its latest settlement |
-| `/settlement-revenues/grove/2026-08` | Grove, August |
+| `/prime-agent-revenues#distribution-rewards` | distribution reward summary, below the revenue overview |
+| `/prime-agent-revenues#distribution-rates` | distribution reward rates |
+| `/prime-agent-revenues` | all primes |
+| `/prime-agent-revenues/grove` | Grove, its latest settlement |
+| `/prime-agent-revenues/grove/2026-08` | Grove, August |
 | `/sky-total/2026-08` | that month's waterfall; bare `/sky-total` is the latest |
 | `/buybacks` | buybacks and burn, monthly; `/quarterly` and `/annual` regroup it |
 | `/prime-payments` | the payments ledger |
@@ -255,11 +280,12 @@ twice is a 404 nobody notices until they share the link.
 not the filters, sort or search, which are how a page is being read rather than
 which page it is, and would otherwise rewrite history on every keystroke.
 
-**A month is optional and pinned.** `/settlement-revenues/grove` keeps working
-as months are added; `/settlement-revenues/grove/2026-08` keeps showing August.
-The former `/supply-side-revenues/…` paths redirect here (`next.config.ts`).
-A month a prime never settled 404s — Osero has no January, and a link claiming
-otherwise should say so rather than quietly showing different figures.
+**A month is optional and pinned.** `/prime-agent-revenues/grove` keeps working
+as months are added; `/prime-agent-revenues/grove/2026-08` keeps showing August.
+The former `/supply-side-revenues/…` and `/settlement-revenues/…` paths redirect here (`next.config.ts`). Legacy `/distribution-rewards` links redirect to the merged report; prime-owned ref-code links open the latest month containing that code, with its token details expanded. Row selection is stored in a `#ref-code-<code>` fragment so copied links and browser Back/Forward preserve it.
+A month without settlement or DR data for that prime 404s. Osero's January
+2026 page is valid because it has DR, and explicitly says no settlement report
+has been published for that month.
 
 **A hidden report has no address.** With its flag off, the route 404s and its
 loader is never called, so the tab being unreachable and its numbers being
@@ -267,19 +293,18 @@ absent stay the same fact.
 
 ## How the app reads it
 
-Each route's `page.tsx` is a server component: it reads the one file it needs
+Each route's `page.tsx` is a server component: it reads the files it needs
 from `data/generated/` through `src/lib/load.ts` and hands it to its view
 through the matching provider, which the view reads with `useDr()` / `useSsr()`
 / `useSkyTotal()` / `usePrime()`. The loaders use `node:fs`, so importing one
 from a client component fails the build on purpose — the datasets are not meant
 to be part of the browser bundle.
 
-Because a route loads only its own dataset, opening Prime Payments no longer
+Because a route sends only its own report data, opening Prime Payments no longer
 ships the DR, SSR and Sky Total numbers with it; before the routes there was one
 page and every payload carried all four.
 
-The pages are statically prerendered — including one per prime, month and ref
-code, from `generateStaticParams` — so the numbers are fixed at build time.
+The pages are statically prerendered — including one per prime and month, from `generateStaticParams` — so the numbers are fixed at build time.
 
 `src/lib/dataset-schema.ts` validates each dataset against its TypeScript type
 on load and **fails the build** naming the offending field. That matters because
@@ -319,3 +344,48 @@ state, which is what lets client components use them without pulling the data in
   `schema/prime-payments.mjs` with the `Kind` it implies.
 
 Each of these fails loudly if skipped, which is deliberate.
+
+## Daily Revenue — September allocation revenue
+
+`NEXT_PUBLIC_SHOW_DAILY_REVENUE=true` enables the September 2026 supply-side
+allocation-revenue report. It is enabled on Railway **dev** and disabled on **production**.
+The flag is evaluated before any API read and is inlined at build time. The
+route returns 404 when disabled. No settled-data loader or refresh changes.
+
+The shareable route hierarchy is `/daily-revenue/2026-09`,
+`/daily-revenue/2026-09/<prime>`, and
+`/daily-revenue/2026-09/<prime>/<venue-id>`. The bare route and the previous
+prime-first routes redirect into it. Other months are deliberately unsupported.
+
+The metric is the sum of eligible `venue_breakdown[].revenue` rows: revenue
+attributable to the prime after SDE sharing, including the row's external income,
+and before prime-level borrowing costs. It does not use
+`prime_agent_revenue`, add `external_revenue` again, or include demand-side
+rewards and fees. Rows marked `hide_per_venue_pnl` are excluded and disclosed
+as position tracking only.
+
+API allocation observations are month-to-date. The daily chart differences
+consecutive September snapshots, with September 1 measured from zero. Missing
+snapshots or allocation membership remain gaps; the code never differences
+across a missing day, forward-fills, or sums MTD endpoints. A six-prime total is
+shown only at a cutoff where all six prime aggregates are complete.
+
+The source is the public settle-api (`SETTLE_API_URL`, with the same
+`NEXT_PUBLIC_SETTLE_API_URL` fallback as buybacks). The pipeline runs daily at
+20:17 UTC through the prior completed day. Being behind yesterday before that
+run or while official reference rates are pending is distinct from a failed
+attempt. Available primes remain visible when another prime fails.
+
+`src/lib/daily-revenue/api.ts` keeps up to 96 validated responses per process,
+respects API max-age (at most 300 seconds), and uses ETag revalidation after
+expiry. Revalidation completes before rendering; errors may retain the last
+successful response with an explicit cached/as-of label. A restart clears that
+cache. Cold outages and missing estimates are shown as unavailable; no fixture
+or monthly settlement is substituted. There is no browser polling or backend
+compute trigger.
+
+Decimal API strings use `decimal.js`; arithmetic never passes through JS
+`Number`. Conversion to `Number` happens only at the Recharts boundary.
+Monetary display is rounded to cents, with exact source values in tooltips.
+Live-response fixtures captured on 2026-09-16 live under
+`schema/fixtures/daily-revenue`; they are never production fallbacks.

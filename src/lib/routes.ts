@@ -11,9 +11,9 @@
  * are reading a page, not which page it is, and a URL that changes on every
  * keystroke is worse than one that does not.
  */
-import { FLAGS, type Flags } from "./flags";
+import { FLAGS, type Flags } from "./flags.ts";
 
-export type Section = "dr" | "ssr" | "sky-total" | "buybacks" | "prime";
+export type Section = "daily-revenue" | "ssr" | "sky-total" | "buybacks" | "prime";
 
 export interface SectionRoute {
   key: Section;
@@ -29,25 +29,22 @@ export interface SectionRoute {
 export const SECTIONS: SectionRoute[] = [
   {
     key: "ssr",
-    slug: "settlement-revenues",
-    /* Was "Supply Side Revenues", which named a third of what it shows: the
-       reports carry the demand side too (agent rate, distribution rewards) and
-       Sky's own side beside the prime's. The old paths still resolve — see the
-       redirects in next.config.ts. */
-    label: "Settlement Revenues",
-    source: "soter · settlement-reports",
+    slug: "prime-agent-revenues",
+    // Both settlement revenues and distribution rewards belong to this report.
+    label: "Prime Agent Revenues",
+    source: "soter · settlement-reports · distribution rewards",
   },
   {
-    key: "dr",
-    slug: "distribution-rewards",
-    label: "Distribution Rewards",
-    // The Dune workbook this used to name was retired in #22.
-    source: "dr_comparison_hypersync.xlsx",
+    key: "daily-revenue",
+    slug: "daily-revenue",
+    label: "Daily Revenue",
+    source: "settle-api · supply-side allocations",
+    flag: "dailyRevenue",
   },
   {
     key: "sky-total",
     slug: "sky-total",
-    label: "Sky Total Net Revenue",
+    label: "Sky Net Revenue",
     source: "soter · settlement-reports · sky_total",
     flag: "skyTotalNetRevenue",
   },
@@ -91,10 +88,6 @@ export const paths = {
    */
   home: `/${(VISIBLE_SECTIONS[0] ?? SECTIONS[0]).slug}`,
 
-  dr: (tab?: DrTab) => (tab && tab !== "summary" ? `/${slugOf("dr")}/${tab}` : `/${slugOf("dr")}`),
-  /** A single ref code's history, inside the ledger. */
-  drRefCode: (refCode: string) => `/${slugOf("dr")}/refcodes/${encodeURIComponent(refCode)}`,
-
   ssr: () => `/${slugOf("ssr")}`,
   /** A prime's settlement; without a month, its latest. */
   ssrPartner: (partner: string, month?: string) =>
@@ -109,13 +102,14 @@ export const paths = {
       ? `/${slugOf("buybacks")}/${granularity}`
       : `/${slugOf("buybacks")}`,
 
+  /** Fixed-month allocation revenue drill-down. */
+  dailyRevenue: (month = "2026-09", prime?: string, allocation?: string) =>
+    `/${slugOf("daily-revenue")}/${encodeURIComponent(month)}` +
+    (prime ? `/${encodeURIComponent(prime)}` : "") +
+    (prime && allocation ? `/${encodeURIComponent(allocation)}` : ""),
+
   prime: () => `/${slugOf("prime")}`,
 };
-
-export const DR_TABS = ["summary", "refcodes", "rates"] as const;
-export type DrTab = (typeof DR_TABS)[number];
-
-export const isDrTab = (v: string): v is DrTab => (DR_TABS as readonly string[]).includes(v);
 
 /** `YYYY-MM`, the shape every month segment takes. */
 export const isMonthSegment = (v: string) => /^\d{4}-\d{2}$/.test(v);
