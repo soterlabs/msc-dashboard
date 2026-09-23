@@ -36,7 +36,7 @@ export default async function Page({ params, searchParams }: {
   if (!route.prime) {
     return <div className="space-y-6">
       <Breadcrumbs />
-      <PageHeader title="Daily Revenue · September 2026" description={`Choose a prime agent to explore its supply-side allocation revenue · completed UTC days through ${end}`} />
+      <PageHeader title="Daily Revenue · September 2026" description="Choose a prime agent to explore its supply-side allocation revenue · data coverage is shown per prime" />
       <PrimeAgentLauncher rows={selected.map((prime, i) => ({ prime, series: series[i], read: reads[i] }))} />
       {reads.some((r) => r.error || r.source === "cache") && <Panel title="Data availability">{reads.map((read, i) => <div key={selected[i]} className="border-b py-2 last:border-0"><p className="font-medium">{primeName(selected[i])}</p><ReadNotice read={read} /></div>)}</Panel>}
       <Methodology />

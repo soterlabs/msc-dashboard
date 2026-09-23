@@ -147,7 +147,7 @@ function AppSidebar({ section, primes }: { section?: Section; primes: PrimeLink[
                     /* A real <a>: middle-click, cmd-click and "copy link
                        address" all have to work on a nav whose whole point is
                        that its destinations are shareable. */
-                    className={expandable ? "pr-8" : undefined}
+                    className={expandable ? "pr-12 max-md:h-11 md:pr-8" : undefined}
                     render={<Link href={s.key === "daily-revenue" ? paths.dailyRevenue() : `/${s.slug}`} onClick={() => setOpenMobile(false)} />}
                   >
                     <Icon weight={active ? "fill" : "regular"} />
@@ -156,6 +156,7 @@ function AppSidebar({ section, primes }: { section?: Section; primes: PrimeLink[
                   {expandable && <SidebarMenuAction
                     aria-label={`${open ? "Hide" : "Show"} ${s.label} prime agents`}
                     aria-expanded={open}
+                    className="max-md:top-0 max-md:right-0 max-md:size-11 max-md:after:hidden"
                     onClick={() => expandableKey && setExpanded((current) => ({ ...current, [expandableKey]: !current[expandableKey] }))}
                   >
                     <CaretRightIcon aria-hidden className={`transition-transform ${open ? "rotate-90" : ""}`} />

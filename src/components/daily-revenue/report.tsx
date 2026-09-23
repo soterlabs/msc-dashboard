@@ -53,7 +53,7 @@ export function PrimeAgentLauncher({ rows }: { rows: { series: PrimeSeries | nul
           <span className="block text-sm text-muted-foreground"><span className="font-medium tabular-nums text-foreground">{usd(mtd?.mtd ?? null)}</span> MTD
             <span className="block">{mtd ? `through ${mtd.date} UTC · ${series?.allocations.length ?? 0} allocations` : "Allocation data unavailable"}{read.source === "cache" && <Badge className="ml-2" variant="secondary">cached</Badge>}</span>
           </span></span>
-        <LinkAffordance className="size-5 shrink-0 text-muted-foreground opacity-0 transition-[color,opacity,transform] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-foreground group-hover:opacity-100 group-focus-visible:text-foreground group-focus-visible:opacity-100" />
+        <LinkAffordance className="size-5 shrink-0 text-muted-foreground opacity-100 transition-[color,opacity,transform] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-foreground group-focus-visible:text-foreground md:opacity-0 md:group-hover:opacity-100 md:group-focus-visible:opacity-100" />
       </Link>;
     })}</div>
   </section>;
@@ -67,7 +67,21 @@ export function AllocationTable({ series }: { series: PrimeSeries }) {
   });
   return <>
     <Panel title="September allocations" description="Revenue allocations remain listed if they close later in the month." flush>
-      <DataTable><TableHeader><TableRow><Th>Allocation</Th><Th>Venue ID</Th><Th numeric>MTD revenue</Th><Th numeric>Latest daily change</Th><Th>As of</Th></TableRow></TableHeader>
+      <div className="divide-y md:hidden">{sorted.map((allocation) => {
+        const mtd = value(allocation.points, "mtd"), daily = value(allocation.points, "daily");
+        return <Link key={allocation.venueId} href={paths.dailyRevenue(SEPTEMBER_MONTH, series.prime, allocation.venueId)}
+          className="group block space-y-3 px-6 py-4 transition-colors hover:bg-muted/70 focus-visible:bg-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">
+          <span className="flex items-start justify-between gap-3"><span className="min-w-0 break-words font-medium group-hover:underline">{allocation.label}</span>
+            <LinkAffordance className="mt-0.5 size-4 shrink-0 text-muted-foreground transition-[color,transform] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-foreground" /></span>
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+            <div className="min-w-0"><dt className="text-muted-foreground">Venue ID</dt><dd className="break-all font-mono">{allocation.venueId}</dd></div>
+            <div><dt className="text-muted-foreground">As of</dt><dd>{mtd?.date ?? "Unavailable"}</dd></div>
+            <div><dt className="text-muted-foreground">MTD revenue</dt><dd className="font-medium tabular-nums">{usd(mtd?.mtd ?? null)}</dd></div>
+            <div><dt className="text-muted-foreground">Latest daily change</dt><dd className="font-medium tabular-nums">{usd(daily?.daily ?? null)}</dd></div>
+          </dl>
+        </Link>;
+      })}</div>
+      <DataTable containerClassName="hidden md:block"><TableHeader><TableRow><Th>Allocation</Th><Th>Venue ID</Th><Th numeric>MTD revenue</Th><Th numeric>Latest daily change</Th><Th>As of</Th></TableRow></TableHeader>
         <TableBody>{sorted.map((allocation) => {
           const mtd = value(allocation.points, "mtd"), daily = value(allocation.points, "daily");
           return <TableRow className="group relative cursor-pointer hover:bg-muted/70" key={allocation.venueId}><Td><Link
