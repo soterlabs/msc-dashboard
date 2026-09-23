@@ -15,9 +15,13 @@ export const dynamic = "force-dynamic";
 const color = (prime: DailyPrime) => `var(--group-${prime})`;
 const unavailableRead = (): ReadResult<History> => ({ data: null, source: "missing", verifiedAt: null, error: "No completed September UTC day is available yet." });
 
-export default async function Page({ params }: { params: Promise<{ path?: string[] }> }) {
+export default async function Page({ params, searchParams }: {
+  params: Promise<{ path?: string[] }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   if (!FLAGS.dailyRevenue) notFound();
-  const route = parseDailyRoute((await params).path ?? []);
+  const [path, query] = await Promise.all([params, searchParams]);
+  const route = parseDailyRoute(path.path ?? [], query.month);
   if (!route) notFound();
   if ("redirectTo" in route) redirect(route.redirectTo);
 
@@ -68,7 +72,9 @@ export default async function Page({ params }: { params: Promise<{ path?: string
   const allocation = primeData.allocations.find((a) => a.venueId === route.allocation);
   const hidden = primeData.hidden.find((a) => a.venueId === route.allocation);
   if (!allocation && !hidden) {
-    if (!primeData.breakdownAvailable) return <div className="space-y-6"><Breadcrumbs prime={route.prime} allocation={route.allocation} /><PageHeader title={`${primeName(route.prime)} · ${route.allocation}`} actions={<PageActions />} /><Unavailable read={read} /></div>;
+    // A failed refresh can leave us with an older verified catalog. It proves
+    // what existed then, not that a venue does not exist now.
+    if (!primeData.breakdownAvailable || read.error) return <div className="space-y-6"><Breadcrumbs prime={route.prime} allocation={route.allocation} /><PageHeader title={`${primeName(route.prime)} · ${route.allocation}`} actions={<PageActions />} /><Unavailable read={read} /></div>;
     notFound();
   }
   const selectedAllocation = allocation ?? hidden!;

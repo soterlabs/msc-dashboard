@@ -1,6 +1,6 @@
 /** Server-side public API reads only. No request starts a backend calculation. */
 import { validateHistory, validateLatest, validateStatus } from "./schema.ts";
-import type { DailyPrime, ReadResult } from "./types";
+import type { DailyPrime, History, ReadResult } from "./types";
 
 const DEFAULT_REVENUE_API_URL = "https://settle-api-production.up.railway.app";
 const host = (value: string | undefined) => value?.trim().replace(/\/$/, "") || undefined;
@@ -19,6 +19,13 @@ export const REVENUE_PUBLIC_URL = host(process.env.NEXT_PUBLIC_SETTLE_API_URL) ?
  * and so the cause reaches the server log instead of being swallowed. */
 class InvalidResponse extends Error {}
 interface Entry { data: unknown; etag: string | null; expires: number; verifiedAt: string }
+interface RequestOptions<T> {
+  cache?: boolean;
+  statusEndpoint?: boolean;
+  /** A validated compatible response from a narrower/older history window. */
+  fallback?: Entry;
+  onVerified?: (entry: Entry, data: T) => void;
+}
 
 /** Bounded per-process cache. Expired entries are revalidated before rendering;
  * they are only served stale on an explicit error, with their original as-of.
@@ -26,8 +33,10 @@ interface Entry { data: unknown; etag: string | null; expires: number; verifiedA
 export function createRevenueClient(fetcher: typeof fetch = fetch, now: () => number = Date.now, base = REVENUE_API_URL,
   log: (message: string, cause: unknown) => void = console.error) {
   const entries = new Map<string, Entry>();
+  const historyFallbacks = new Map<string, Entry>();
   const pending = new Map<string, Promise<ReadResult<unknown>>>();
-  async function request<T>(path: string, validate: (value: unknown) => T, cache = true, statusEndpoint = false): Promise<ReadResult<T>> {
+  async function request<T>(path: string, validate: (value: unknown) => T, options: RequestOptions<T> = {}): Promise<ReadResult<T>> {
+    const { cache = true, statusEndpoint = false, fallback, onVerified } = options;
     const previous = entries.get(path);
     if (previous && previous.expires > now()) return { data: previous.data as T, source: "cache", verifiedAt: previous.verifiedAt, error: null };
     if (pending.has(path)) return pending.get(path)! as Promise<ReadResult<T>>;
@@ -38,7 +47,9 @@ export function createRevenueClient(fetcher: typeof fetch = fetch, now: () => nu
           headers: { accept: "application/json", ...(previous?.etag ? { "if-none-match": previous.etag } : {}) },
         });
         if (response.status === 404) {
-          entries.delete(path);
+          const retained = previous ?? fallback;
+          if (retained) return { data: retained.data as T, source: "cache", verifiedAt: retained.verifiedAt,
+            error: "Live API returned no publication; showing the last successfully verified response." };
           return { data: null, source: "missing", verifiedAt: new Date(now()).toISOString(), error: "No published estimate for this selection." };
         }
         const notModified = response.status === 304 && previous;
@@ -50,6 +61,7 @@ export function createRevenueClient(fetcher: typeof fetch = fetch, now: () => nu
           catch (cause) { throw new InvalidResponse(`${path} did not match the expected shape`, { cause }); }
         }
         const verifiedAt = new Date(now()).toISOString();
+        const verified = { data, etag: response.headers.get("etag") ?? (notModified ? previous.etag : null), expires: now(), verifiedAt };
         if (cache) {
           const control = response.headers.get("cache-control") ?? "";
           const maxAge = /(?:^|,)\s*max-age=(\d+)/i.exec(control)?.[1];
@@ -57,16 +69,19 @@ export function createRevenueClient(fetcher: typeof fetch = fetch, now: () => nu
             // Respect shorter API lifetimes, and never hide revisions >5 min.
             const seconds = /no-cache/i.test(control) ? 0 : Math.min(Number(maxAge ?? 0), 300);
             entries.delete(path);
-            entries.set(path, { data, etag: response.headers.get("etag") ?? (notModified ? previous.etag : null), expires: now() + seconds * 1000, verifiedAt });
+            verified.expires = now() + seconds * 1000;
+            entries.set(path, verified);
             if (entries.size > 96) entries.delete(entries.keys().next().value!);
           } else entries.delete(path);
         }
+        onVerified?.(verified, data);
         return { data, source: "api", verifiedAt, error: null };
       } catch (cause) {
         const invalid = cause instanceof InvalidResponse;
         log(`[daily-revenue] ${path}: ${invalid ? "invalid response" : "read failed"}`, cause);
-        return previous
-          ? { data: previous.data as T, source: "cache", verifiedAt: previous.verifiedAt,
+        const retained = previous ?? fallback;
+        return retained
+          ? { data: retained.data as T, source: "cache", verifiedAt: retained.verifiedAt,
               error: `Live API ${invalid ? "returned an unexpected response" : "unavailable"}; showing the last successfully verified response.` }
           : { data: null, source: "unavailable", verifiedAt: null,
               error: `Daily revenue API ${invalid ? "returned an unexpected response" : "unavailable"}. Settled reports remain available.` };
@@ -77,8 +92,17 @@ export function createRevenueClient(fetcher: typeof fetch = fetch, now: () => nu
   }
   return {
     latest: (prime: DailyPrime) => request(`/v1/revenue/${prime}/latest`, (v) => validateLatest(v, prime)),
-    history: (prime: DailyPrime, start: string, end: string) => request(`/v1/revenue/${prime}/history?start=${start}&end=${end}&limit=90`, (v) => validateHistory(v, prime, start, end)),
-    status: () => request("/v1/revenue/status", validateStatus, false, true),
+    history: (prime: DailyPrime, start: string, end: string) => {
+      const fallbackKey = `${prime}:${start}`;
+      return request(`/v1/revenue/${prime}/history?start=${start}&end=${end}&limit=90`, (v) => validateHistory(v, prime, start, end), {
+        fallback: historyFallbacks.get(fallbackKey),
+        onVerified: (entry, data: History) => {
+          const current = historyFallbacks.get(fallbackKey)?.data as History | undefined;
+          if (!current || data.end >= current.end) historyFallbacks.set(fallbackKey, entry);
+        },
+      });
+    },
+    status: () => request("/v1/revenue/status", validateStatus, { cache: false, statusEndpoint: true }),
   };
 }
 export const revenueClient = createRevenueClient();

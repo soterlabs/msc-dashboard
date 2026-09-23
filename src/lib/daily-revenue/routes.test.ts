@@ -13,7 +13,9 @@ test("canonical daily revenue paths carry month, prime and venue ID", () => {
 
 test("legacy paths redirect and unsupported or malformed paths fail", () => {
   assert.deepEqual(parseDailyRoute([]), { redirectTo: "/daily-revenue/2026-09" });
-  assert.deepEqual(parseDailyRoute(["spark"]), { redirectTo: "/daily-revenue/2026-09/spark" });
+  assert.deepEqual(parseDailyRoute(["spark"], "2026-09"), { redirectTo: "/daily-revenue/2026-09/spark" });
   assert.deepEqual(parseDailyRoute(["spark", "2026-09"]), { redirectTo: "/daily-revenue/2026-09/spark" });
   for (const path of [["2026-08"], ["2026-09", "unknown"], ["2026-09", "spark", "S1", "extra"]]) assert.equal(parseDailyRoute(path), null);
+  assert.equal(parseDailyRoute(["spark"], "2026-08"), null);
+  assert.equal(parseDailyRoute([], ["2026-09"]), null);
 });

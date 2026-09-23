@@ -14,6 +14,9 @@ export function addMoney(values: string[]): string {
 export function subtractMoney(a: string, b: string): string {
   return new Money(decimal(a)).minus(decimal(b)).toFixed();
 }
+export function compareMoney(a: string, b: string): number {
+  return new Money(decimal(a)).comparedTo(decimal(b));
+}
 export function usd(value: string | null): string {
   if (value === null) return "—";
   const n = new Money(decimal(value));

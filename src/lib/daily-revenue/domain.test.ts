@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import { allocationSeries, portfolioPoints, primeSeries } from "./domain.ts";
+import { compareMoney } from "./decimal.ts";
 import { validateLatest } from "./schema.ts";
 import type { Allocation, DailyPrime, Estimate, History } from "./types.ts";
 
@@ -45,6 +46,21 @@ test("hidden allocations and non-allocation prime fields never affect displayed 
   assert.equal(p.points[0].mtd, "100");
   assert.notEqual(p.points[0].mtd, h.results[0].result.prime_agent_revenue);
   assert.notEqual(p.points[0].mtd, "223"); // external_revenue was not added again
+});
+
+test("the newest visibility flag controls catalog membership", () => {
+  const h = history([
+    estimate("2026-09-02", [venue("A", "2", true)]),
+    estimate("2026-09-01", [venue("A", "1")]),
+  ]);
+  const catalog = allocationSeries(h, "grove");
+  assert.deepEqual(catalog.eligible, []);
+  assert.deepEqual(catalog.hidden.map((a) => a.venueId), ["A"]);
+});
+
+test("money comparison stays exact outside the chart boundary", () => {
+  assert.equal(compareMoney("9007199254740993.0000000001", "9007199254740993.0000000000"), 1);
+  assert.equal(compareMoney("-1E-19", "0"), -1);
 });
 
 test("portfolio totals require every prime on the same date", () => {

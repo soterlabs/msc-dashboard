@@ -33,6 +33,27 @@ test("an outage retains validated cached data with its original verification tim
   assert.equal(failed.verifiedAt, first.verifiedAt); assert.ok(failed.error); assert.equal(failed.source, "cache");
 });
 
+test("history retention survives a new requested end date and a transient 404", async () => {
+  let time = 0, calls = 0;
+  const history = fixture("history");
+  const client = createRevenueClient(async () => {
+    calls++;
+    if (calls === 1) return response(history);
+    if (calls === 2) throw new TypeError("fetch failed");
+    return response({}, 404);
+  }, () => time, undefined, silent);
+  const first = await client.history("grove", "2026-09-01", "2026-09-15");
+  time = 301000;
+  const rollover = await client.history("grove", "2026-09-01", "2026-09-16");
+  assert.equal(rollover.source, "cache");
+  assert.equal(rollover.data?.end, first.data?.end);
+  assert.equal(rollover.verifiedAt, first.verifiedAt);
+  const missing = await client.history("grove", "2026-09-01", "2026-09-17");
+  assert.equal(missing.source, "cache");
+  assert.equal(missing.data?.end, "2026-09-15");
+  assert.match(missing.error!, /last successfully verified/);
+});
+
 test("cold backend failure and 404 remain missing, not zero; one prime cannot blank others", async () => {
   const client = createRevenueClient(async (url) => {
     const prime = String(url).split("/").at(-2)!;

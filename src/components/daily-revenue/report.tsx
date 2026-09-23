@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { DataTable, Panel, TableBody, TableHeader, TableRow, Td, Th } from "@/components/kit";
 import { paths } from "@/lib/routes";
 import { latestValue } from "@/lib/daily-revenue/domain";
-import { usd } from "@/lib/daily-revenue/decimal";
+import { compareMoney, usd } from "@/lib/daily-revenue/decimal";
 import { primeName, SEPTEMBER_MONTH, type AllocationSeries, type DailyPrime, type PrimeSeries, type ReadResult, type RevenuePoint } from "@/lib/daily-revenue/types";
 import { CopyLink } from "./copy-link";
 
@@ -51,7 +51,7 @@ export function AllocationTable({ series }: { series: PrimeSeries }) {
     const av = value(a.points, "mtd")?.mtd, bv = value(b.points, "mtd")?.mtd;
     if (av === null || av === undefined) return 1;
     if (bv === null || bv === undefined) return -1;
-    return Number(bv) - Number(av) || a.label.localeCompare(b.label);
+    return compareMoney(bv, av) || a.label.localeCompare(b.label);
   });
   return <>
     <Panel title="September allocations" description="Revenue allocations remain listed if they close later in the month." flush>

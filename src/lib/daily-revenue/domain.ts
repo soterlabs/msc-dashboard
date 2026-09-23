@@ -23,12 +23,15 @@ const allocationAt = (estimate: Estimate | undefined, venueId: string): Allocati
 /** Catalog every selected September revision so closed allocations survive. */
 export function allocationSeries(history: History, prime: DailyPrime): { eligible: AllocationSeries[]; hidden: AllocationSeries[] } {
   const snapshots = new Map(history.results.map((e) => [e.cutoff, e]));
-  const catalog = new Map<string, { label: string; seen: number; visible: boolean }>();
+  const catalog = new Map<string, { label: string; seen: number; hidden: boolean }>();
   for (const estimate of [...history.results].sort(newestFirst)) {
     for (const venue of estimate.result.venue_breakdown ?? []) {
       const found = catalog.get(venue.venue_id);
-      if (found) { found.seen += 1; found.visible ||= !venue.hide_per_venue_pnl; }
-      else catalog.set(venue.venue_id, { label: venue.label, seen: 1, visible: !venue.hide_per_venue_pnl });
+      if (found) found.seen += 1;
+      // Iteration is newest-first, so the first occurrence is the allocation's
+      // current/closing display contract. Older visible history must not make
+      // a currently hidden position clickable again.
+      else catalog.set(venue.venue_id, { label: venue.label, seen: 1, hidden: venue.hide_per_venue_pnl });
     }
   }
   const all = [...catalog].map(([venueId, meta]): AllocationSeries => {
@@ -40,7 +43,7 @@ export function allocationSeries(history: History, prime: DailyPrime): { eligibl
       const previous = allocationAt(snapshots.get(priorDate), venueId);
       return { date, mtd: current.revenue, daily: previous ? subtractMoney(current.revenue, previous.revenue) : null };
     });
-    return { prime, venueId, label: meta.label, hidden: !meta.visible, points, observed: meta.seen };
+    return { prime, venueId, label: meta.label, hidden: meta.hidden, points, observed: meta.seen };
   }).sort((a, b) => a.label.localeCompare(b.label) || a.venueId.localeCompare(b.venueId));
   return { eligible: all.filter((a) => !a.hidden), hidden: all.filter((a) => a.hidden) };
 }
