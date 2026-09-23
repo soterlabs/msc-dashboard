@@ -11,7 +11,7 @@
  * are reading a page, not which page it is, and a URL that changes on every
  * keystroke is worse than one that does not.
  */
-import { FLAGS, type Flags } from "./flags";
+import { FLAGS, type Flags } from "./flags.ts";
 
 export type Section = "daily-revenue" | "ssr" | "sky-total" | "buybacks" | "prime";
 
@@ -37,8 +37,8 @@ export const SECTIONS: SectionRoute[] = [
   {
     key: "daily-revenue",
     slug: "daily-revenue",
-    label: "Daily MSC Revenue",
-    source: "settle-api",
+    label: "Daily Revenue",
+    source: "settle-api · supply-side allocations",
     flag: "dailyRevenue",
   },
   {
@@ -102,8 +102,11 @@ export const paths = {
       ? `/${slugOf("buybacks")}/${granularity}`
       : `/${slugOf("buybacks")}`,
 
-  dailyRevenue: (prime?: string, month?: string) =>
-    `/${slugOf("daily-revenue")}${prime ? `/${prime}` : ""}${month ? `?month=${encodeURIComponent(month)}` : ""}`,
+  /** Fixed-month allocation revenue drill-down. */
+  dailyRevenue: (month = "2026-09", prime?: string, allocation?: string) =>
+    `/${slugOf("daily-revenue")}/${encodeURIComponent(month)}` +
+    (prime ? `/${encodeURIComponent(prime)}` : "") +
+    (prime && allocation ? `/${encodeURIComponent(allocation)}` : ""),
 
   prime: () => `/${slugOf("prime")}`,
 };

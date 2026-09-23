@@ -699,7 +699,7 @@ export function moneyTooltip(
       <span
         aria-hidden
         className="size-2.5 shrink-0 rounded-[2px]"
-        style={{ background: (item.payload as { color?: string; fill?: string } | undefined)?.color ?? (item.payload as { fill?: string } | undefined)?.fill ?? item.color }}
+        style={{ background: (item as { color?: string })?.color }}
       />
       <span className="flex flex-1 items-center justify-between gap-4 leading-none">
         <span className="text-muted-foreground">

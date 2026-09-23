@@ -2,14 +2,25 @@ export const DAILY_PRIMES = ["spark", "grove", "obex", "keel", "skybase", "osero
 export type DailyPrime = (typeof DAILY_PRIMES)[number];
 export const primeName = (prime: DailyPrime) => prime[0].toUpperCase() + prime.slice(1);
 export const isDailyPrime = (value: string): value is DailyPrime => (DAILY_PRIMES as readonly string[]).includes(value);
-export const MONEY_FIELDS = ["sky_revenue", "agent_rate", "prime_agent_revenue", "monthly_pnl", "distribution_rewards", "chronicle_points", "gar"] as const;
-export type RevenueResult = Record<(typeof MONEY_FIELDS)[number], string>;
-export interface DailyRow {
-  date: string;
-  charge: string;
-  debt: string;
-  utilized: string;
-  rates: { ssr: number | null; base: number | null; subsidized: number | null; reference: number | null };
+
+export const SEPTEMBER_MONTH = "2026-09";
+export const SEPTEMBER_START = "2026-09-01";
+export const SEPTEMBER_END = "2026-09-30";
+
+export interface Allocation {
+  venue_id: string;
+  label: string;
+  revenue: string;
+  actual_revenue: string;
+  external_revenue: string;
+  sd_revenue: string;
+  hide_per_venue_pnl: boolean;
+  pricing_category: string | null;
+}
+export interface RevenueResult {
+  venue_breakdown: Allocation[] | null;
+  /** Retained for provenance/regression checks; never used as displayed revenue. */
+  prime_agent_revenue: string;
 }
 export interface Estimate {
   prime: DailyPrime;
@@ -26,7 +37,6 @@ export interface Estimate {
   excluded_inputs: string[];
   input_provenance: Record<string, unknown>;
   result: RevenueResult;
-  days: DailyRow[];
 }
 export interface Attempt {
   attempt_id: string;
@@ -38,11 +48,7 @@ export interface Attempt {
   revision_id: string | null;
 }
 export interface Freshness { expected_cutoff: string; actual_cutoff: string | null; stale: boolean }
-export interface Latest {
-  data: Estimate;
-  freshness: Freshness;
-  latest_attempt: Attempt | null;
-}
+export interface Latest { data: Estimate; freshness: Freshness; latest_attempt: Attempt | null }
 export interface History { results: Estimate[]; start: string; end: string }
 export type DailyStatus = Partial<Record<DailyPrime, Freshness & { latest_attempt: Attempt | null }>>;
 export interface ReadResult<T> {
@@ -50,4 +56,20 @@ export interface ReadResult<T> {
   source: "api" | "cache" | "missing" | "unavailable";
   verifiedAt: string | null;
   error: string | null;
+}
+export interface RevenuePoint { date: string; mtd: string | null; daily: string | null }
+export interface AllocationSeries {
+  prime: DailyPrime;
+  venueId: string;
+  label: string;
+  hidden: boolean;
+  points: RevenuePoint[];
+  observed: number;
+}
+export interface PrimeSeries {
+  prime: DailyPrime;
+  allocations: AllocationSeries[];
+  hidden: AllocationSeries[];
+  points: RevenuePoint[];
+  breakdownAvailable: boolean;
 }

@@ -65,7 +65,7 @@ import {
 } from "../kit";
 
 const chartConfig = {
-  total: { label: "Total DR", color: "var(--revenue-total)" },
+  total: { label: "Total DR", color: "var(--chart-1)" },
 } satisfies ChartConfig;
 
 /* the ranked bar paints itself per group, so the config only names the series */

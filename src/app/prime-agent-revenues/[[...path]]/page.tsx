@@ -1,9 +1,12 @@
 import { notFound } from "next/navigation";
 
+import { DrProvider, SsrProvider } from "@/components/data-context";
+import { SupplySideRevenues } from "@/components/ssr/supply-side-revenues";
 import { loadDr, loadSsr } from "@/lib/load";
 import { orderedPartners } from "@/lib/ssr/domain";
 import { isMonthSegment } from "@/lib/routes";
 import { revenueMonths } from "@/lib/ssr/revenue-context";
+import { scopeDr } from "@/lib/dr/scope";
 import { partnerMeta } from "@/lib/ssr/domain";
 import type { SsrPartner } from "@/lib/ssr/types";
 
@@ -35,7 +38,15 @@ export default async function Page({
   const path = (await params).path;
   const ssr = loadSsr();
 
-  if (!path?.length) return null;
+  if (!path?.length) {
+    return (
+      <SsrProvider value={ssr}>
+        <DrProvider value={loadDr()}>
+          <SupplySideRevenues partner={null} month={null} />
+        </DrProvider>
+      </SsrProvider>
+    );
+  }
 
   const [partner, month, ...rest] = path;
   if (rest.length) notFound();
@@ -46,5 +57,14 @@ export default async function Page({
   const group = partnerMeta(selectedPartner).label;
   const months = revenueMonths(ssr, sourceDr, selectedPartner, group);
   if (month !== undefined && (!isMonthSegment(month) || !months.includes(month))) notFound();
-  return null;
+  const selectedMonth = month ?? months.at(-1)!;
+  const dr = scopeDr(sourceDr, group, selectedMonth);
+
+  return (
+    <SsrProvider value={ssr}>
+      <DrProvider value={dr}>
+        <SupplySideRevenues partner={selectedPartner} month={selectedMonth} availableMonths={months} />
+      </DrProvider>
+    </SsrProvider>
+  );
 }
