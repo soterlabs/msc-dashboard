@@ -35,16 +35,22 @@ export function Unavailable({ read }: { read: ReadResult<unknown> }) {
   return <Panel title="Allocation data unavailable" description="September data could not be established from the live API."><ReadNotice read={read} /><p className="mt-2 text-sm text-muted-foreground">No settlement snapshot or fixture is substituted for missing daily allocation data.</p></Panel>;
 }
 const value = (points: RevenuePoint[], key: "mtd" | "daily") => latestValue(points, key);
-export function PrimeTable({ rows }: { rows: { series: PrimeSeries | null; read: ReadResult<unknown>; prime: DailyPrime }[] }) {
-  return <Panel title="Prime agents" description="Each row uses that prime’s latest available September observation; dates can differ." flush>
-    <DataTable><TableHeader><TableRow><Th>Prime</Th><Th numeric>MTD allocation revenue</Th><Th numeric>Latest daily change</Th><Th>Coverage / as of</Th></TableRow></TableHeader>
-      <TableBody>{rows.map(({ prime, series, read }) => {
-        const mtd = series ? value(series.points, "mtd") : null, daily = series ? value(series.points, "daily") : null;
-        return <TableRow key={prime}><Td><Link className="font-medium hover:underline" href={paths.dailyRevenue(SEPTEMBER_MONTH, prime)}>{primeName(prime)}</Link></Td>
-          <Td numeric>{usd(mtd?.mtd ?? null)}</Td><Td numeric>{usd(daily?.daily ?? null)}</Td>
-          <Td><span className="text-sm">{mtd?.date ?? "Unavailable"}{series ? ` · ${series.allocations.length} allocations` : ""}</span>{read.source === "cache" && <Badge className="ml-2" variant="secondary">cached</Badge>}</Td></TableRow>;
-      })}</TableBody></DataTable>
-  </Panel>;
+export function PrimeAgentLauncher({ rows }: { rows: { series: PrimeSeries | null; read: ReadResult<unknown>; prime: DailyPrime }[] }) {
+  return <section aria-labelledby="choose-prime" className="space-y-4">
+    <div className="space-y-1"><h2 id="choose-prime" className="text-xl font-semibold">Choose a prime agent</h2>
+      <p className="text-sm text-muted-foreground">Open its September daily revenue and allocation breakdown.</p></div>
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{rows.map(({ prime, series, read }) => {
+      const mtd = series ? value(series.points, "mtd") : null;
+      return <Link key={prime} href={paths.dailyRevenue(SEPTEMBER_MONTH, prime)}
+        className="group flex min-h-28 items-center justify-between gap-4 rounded-xl bg-card p-5 shadow-sm ring-1 ring-border transition-[background-color,box-shadow] hover:bg-muted/50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <span className="min-w-0 space-y-2"><span className="block text-lg font-semibold">{primeName(prime)}</span>
+          <span className="block text-sm text-muted-foreground"><span className="font-medium tabular-nums text-foreground">{usd(mtd?.mtd ?? null)}</span> MTD
+            <span className="block">{mtd ? `through ${mtd.date} UTC · ${series?.allocations.length ?? 0} allocations` : "Allocation data unavailable"}{read.source === "cache" && <Badge className="ml-2" variant="secondary">cached</Badge>}</span>
+          </span></span>
+        <span aria-hidden className="shrink-0 text-xl text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-foreground">→</span>
+      </Link>;
+    })}</div>
+  </section>;
 }
 export function AllocationTable({ series }: { series: PrimeSeries }) {
   const sorted = [...series.allocations].sort((a, b) => {

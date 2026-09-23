@@ -1,14 +1,14 @@
 import { notFound, redirect } from "next/navigation";
 import { PageHeader, Panel, StatCard } from "@/components/kit";
 import { RevenueChart } from "@/components/daily-revenue/charts";
-import { AllocationTable, Breadcrumbs, DailyValues, Methodology, PageActions, PrimeTable, ReadNotice, Unavailable } from "@/components/daily-revenue/report";
+import { AllocationTable, Breadcrumbs, DailyValues, Methodology, PageActions, PrimeAgentLauncher, ReadNotice, Unavailable } from "@/components/daily-revenue/report";
 import { FLAGS } from "@/lib/flags";
 import { revenueClient } from "@/lib/daily-revenue/api";
 import { yesterday } from "@/lib/daily-revenue/calendar";
-import { latestValue, portfolioPoints, primeSeries } from "@/lib/daily-revenue/domain";
+import { latestValue, primeSeries } from "@/lib/daily-revenue/domain";
 import { parseDailyRoute } from "@/lib/daily-revenue/routes";
 import { usd } from "@/lib/daily-revenue/decimal";
-import { DAILY_PRIMES, primeName, SEPTEMBER_END, SEPTEMBER_START, type DailyPrime, type PrimeSeries, type ReadResult, type History } from "@/lib/daily-revenue/types";
+import { DAILY_PRIMES, primeName, SEPTEMBER_END, SEPTEMBER_START, type DailyPrime, type ReadResult, type History } from "@/lib/daily-revenue/types";
 
 export const dynamic = "force-dynamic";
 
@@ -34,20 +34,10 @@ export default async function Page({ params, searchParams }: {
   const series = selected.map((prime, index) => reads[index].data ? primeSeries(reads[index].data!, prime) : null);
 
   if (!route.prime) {
-    const available = series.filter((s): s is PrimeSeries => s !== null);
-    const portfolio = available.length === DAILY_PRIMES.length ? portfolioPoints(available) : [];
-    const common = latestValue(portfolio, "mtd");
-    const lines = [
-      ...available.map((s) => ({ key: s.prime, label: primeName(s.prime), color: color(s.prime), points: s.points })),
-      ...(portfolio.length ? [{ key: "complete-total", label: "Complete total", color: "var(--foreground)", points: portfolio }] : []),
-    ];
     return <div className="space-y-6">
       <Breadcrumbs />
-      <PageHeader title="Daily Revenue · September 2026" description={`Supply-side allocation revenue · completed UTC days through ${end}`} />
-      <div className="grid gap-4 sm:grid-cols-2"><StatCard label="Six-prime MTD total" value={usd(common?.mtd ?? null)} note={common ? `Latest common complete cutoff · ${common.date} UTC` : "Unavailable until all six primes have complete allocation observations on one cutoff."} />
-        <StatCard label="Prime coverage" value={`${available.length} / ${DAILY_PRIMES.length}`} note="A complete total never combines different cutoffs." /></div>
-      <RevenueChart lines={lines} />
-      <PrimeTable rows={selected.map((prime, i) => ({ prime, series: series[i], read: reads[i] }))} />
+      <PageHeader title="Daily Revenue · September 2026" description={`Choose a prime agent to explore its supply-side allocation revenue · completed UTC days through ${end}`} />
+      <PrimeAgentLauncher rows={selected.map((prime, i) => ({ prime, series: series[i], read: reads[i] }))} />
       {reads.some((r) => r.error || r.source === "cache") && <Panel title="Data availability">{reads.map((read, i) => <div key={selected[i]} className="border-b py-2 last:border-0"><p className="font-medium">{primeName(selected[i])}</p><ReadNotice read={read} /></div>)}</Panel>}
       <Methodology />
     </div>;
