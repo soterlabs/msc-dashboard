@@ -76,3 +76,21 @@ test("September reconciliation figures are available for Grove, Spark and Skybas
     );
   }
 });
+
+test("Grove September demand-side revenue includes Chronicle points", () => {
+  const headline = ssr.reports.find(
+    (r) => r.partner === "grove" && r.month === "2026-09",
+  )!.headline;
+
+  assert.equal(headline.chroniclePoints, 10959.43);
+  assert.equal(
+    Number(
+      (
+        (headline.agentRate ?? 0) +
+        (headline.distributionRewards ?? 0) +
+        (headline.chroniclePoints ?? 0)
+      ).toFixed(2),
+    ),
+    headline.demandSideRevenue,
+  );
+});
