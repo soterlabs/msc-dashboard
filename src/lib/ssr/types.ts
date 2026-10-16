@@ -1,12 +1,14 @@
 /** A `YYYY-MM` month with settlement reports (driven by `months` in SsrDataset). */
 export type SsrMonth = string;
 
-export type SsrPartner = "grove" | "keel" | "obex" | "osero" | "spark";
+export type SsrPartner = "grove" | "keel" | "obex" | "osero" | "skybase" | "spark";
 
 /** Mirrors the summary.md headline: prime side (demand + supply) and sky side. */
 export interface SsrHeadline {
   agentRate: number | null;
   distributionRewards: number | null;
+  /** Optional demand-side component currently reported by Grove. */
+  chroniclePoints: number | null;
   /** Prime demand-side revenue (= agent rate + distribution rewards). */
   demandSideRevenue: number | null;
   /** Prime supply-side revenue. */
@@ -82,6 +84,19 @@ export interface SsrExcludedVenue {
   valueEom: number;
 }
 
+export interface SsrReconciliationItem {
+  label: string;
+  value: number;
+  detail: string;
+}
+
+/** Key figures and accounting treatment from an optional reconciliation.md. */
+export interface SsrReconciliation {
+  summary: string;
+  items: SsrReconciliationItem[];
+  note: string;
+}
+
 export interface SsrReport {
   partner: SsrPartner;
   month: SsrMonth;
@@ -93,6 +108,7 @@ export interface SsrReport {
   skyDirect: SsrSkyDirectExposure[];
   debtDaily: SsrDebtDay[];
   excludedVenues: SsrExcludedVenue[];
+  reconciliation: SsrReconciliation | null;
 }
 
 /**

@@ -51,8 +51,6 @@ import { readPrimePayments } from "./lib/prime-payments.mjs";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const CACHE = path.join(ROOT, ".data-sources");
 
-/** Partners intentionally excluded from the SSR section. */
-const SSR_EXCLUDED_PARTNERS = new Set(["skybase"]);
 /**
  * Directories under reports/ that are not partner reports at all: protocol-wide
  * aggregates, published alongside the per-partner ones. They carry no .xlsx and
@@ -66,7 +64,7 @@ const SSR_NON_PARTNER_DIRS = new Set([
   "tmf", // Smart Burn Engine history — a data/ folder, not a settlement report
 ]);
 /** Known partners — a new one needs SSR_PARTNER_META (label/color) added by hand. */
-const SSR_KNOWN_PARTNERS = new Set(["grove", "keel", "obex", "osero", "spark"]);
+const SSR_KNOWN_PARTNERS = new Set(["grove", "keel", "obex", "osero", "skybase", "spark"]);
 
 // ---------------------------------------------------------------- sources
 
@@ -479,12 +477,117 @@ function mdTables(md) {
   return tables;
 }
 
+function reconciliationAmount(md, label, column = 1) {
+  for (const table of mdTables(md)) {
+    const row = table.rows.find((cells) => cells[0].replaceAll("**", "").trim() === label);
+    if (!row) continue;
+    const value = money(row[column]);
+    if (value !== null) return value;
+  }
+  throw new Error(`reconciliation.md is missing the numeric row "${label}"`);
+}
+
+function reconciliationMatchAmount(md, description, pattern) {
+  const raw = md.match(pattern)?.[1];
+  const value = money(raw);
+  if (value === null) {
+    throw new Error(`reconciliation.md is missing ${description}`);
+  }
+  return value;
+}
+
+/**
+ * Reconciliation documents are narrative accounting records, not a shared
+ * schema. Keep the supported layouts explicit: a wording/layout change must
+ * fail the refresh rather than silently move or omit a correction.
+ */
+function parseReconciliationMd(partner, month, md) {
+  if (partner === "grove" && month === "2026-09") {
+    return {
+      summary: "Historical redemption-fee credits and September cash realization costs.",
+      items: [
+        {
+          label: "Historical fees and CoF credit",
+          value: reconciliationAmount(md, "January-August fees and CoF correction (unchanged)"),
+          detail: "Reduces Grove's September MSC debt mint.",
+        },
+        {
+          label: "September cash realization cost",
+          value: reconciliationAmount(md, "September-settled August 31 redemption"),
+          detail: "Current-period E10 revenue cost, borne by Sky.",
+        },
+        {
+          label: "Historical + boundary credit",
+          value: reconciliationAmount(md, "Combined historical and boundary credit"),
+          detail: "Reduction in MSC mint before whole-USDS rounding.",
+        },
+        {
+          label: "Embedded exit-cost markdown",
+          value: reconciliationMatchAmount(
+            md,
+            "the one-time September markdown",
+            /one-time September markdown of \$([\d,]+\.\d+)/,
+          ),
+          detail: "Separate one-time mark on the remaining E10 position.",
+        },
+      ],
+      note: "The historical sky_adj remains $165,013.90; September's cash cost is already recognized in E10 revenue and must not be deducted twice.",
+    };
+  }
+
+  if (partner === "spark" && month === "2026-09") {
+    return {
+      summary: "Prior-period SparkLend reserve-factor income recognized in September.",
+      items: [
+        {
+          label: "January-August true-up",
+          value: reconciliationAmount(md, "2026-01 through 2026-08"),
+          detail: "Prime-side supply-side revenue paid to Spark.",
+        },
+      ],
+      note: "The true-up increases MSC debt and send-to-prime equally, so Sky's net revenue is unchanged.",
+    };
+  }
+
+  if (partner === "skybase" && month === "2026-09") {
+    return {
+      summary: "Final September earnings plus separately identified historical DR true-ups.",
+      items: [
+        {
+          label: "September-earned revenue",
+          value: reconciliationAmount(md, "September-earned revenue"),
+          detail: "Updated agent-rate and distribution-reward earnings.",
+        },
+        {
+          label: "Historical true-ups",
+          value: reconciliationAmount(md, "Separately identified historical true-ups"),
+          detail: "January-August corrections carried as September payment items.",
+        },
+        {
+          label: "Total September payment",
+          value: reconciliationAmount(md, "Total September payment"),
+          detail: "Unrounded Skybase payment bridge total.",
+        },
+        {
+          label: "Corrected Sky net revenue",
+          value: reconciliationAmount(md, "Corrected September Sky net revenue"),
+          detail: "Consolidated result after recognizing the true-ups once.",
+        },
+      ],
+      note: "The consolidated preview rounds normal September accrual to whole USDS; historical true-ups retain six-decimal precision.",
+    };
+  }
+
+  throw new Error(`unsupported reconciliation.md for ${partner}/${month} — add an explicit parser`);
+}
+
 // summary.md headline labels → SsrHeadline fields. "supply-side revenue"
 // appears on both sides, so the enclosing "### Prime side"/"### Sky side"
 // section disambiguates.
 const PRIME_KEYS = {
   "agent rate": "agentRate",
   "distribution rewards": "distributionRewards",
+  "chronicle points": "chroniclePoints",
   "demand-side revenue": "demandSideRevenue",
   "supply-side revenue": "primeSupplySideRevenue",
 };
@@ -494,6 +597,7 @@ const SKY_KEYS = {
   "supply-side revenue": "skyRevenue",
 };
 const HEADLINE_FIELDS = [...new Set([...Object.values(PRIME_KEYS), ...Object.values(SKY_KEYS)])];
+const OPTIONAL_HEADLINE_FIELDS = new Set(["chroniclePoints"]);
 
 /**
  * Per-venue table columns → SsrVenue fields, with how each is read.
@@ -569,6 +673,10 @@ function parseSummaryMd(md) {
         if (code === "Total") continue;
         refCodes.push({ refCode: code, dr: money(r[1]), notes: r[2] ?? "" });
       }
+    } else if (t.header.join("|") === "Venue|Cash date|Carrying value|Cash received|Revenue variance") {
+      // Informational cash-settlement audit table. Its variances are already
+      // included in the venue revenue table and must not be counted twice.
+      continue;
     } else if (t.header[0] === "Venue" && t.header.length === 4) {
       /* "Off-protocol holdings" / "Position-only venues" — Venue, Label and the
          two value columns, nothing else. Told apart by that arity rather than
@@ -620,7 +728,7 @@ function parseSummaryMd(md) {
 
   // Fail loudly if the headline format changed: a missing LABEL is a format
   // change (a missing VALUE, e.g. "TBD", is data and stays null).
-  const missing = HEADLINE_FIELDS.filter((k) => !seen.has(k));
+  const missing = HEADLINE_FIELDS.filter((k) => !OPTIONAL_HEADLINE_FIELDS.has(k) && !seen.has(k));
   if (missing.length) {
     throw new Error(`summary.md headline format changed — fields not found: ${missing.join(", ")}`);
   }
@@ -742,8 +850,7 @@ function generateSsr(reportsDir) {
     .filter(
       (p) =>
         fs.statSync(path.join(base, p)).isDirectory() &&
-        !SSR_NON_PARTNER_DIRS.has(p) &&
-        !SSR_EXCLUDED_PARTNERS.has(p),
+        !SSR_NON_PARTNER_DIRS.has(p),
     )
     .sort();
   // Report every unknown directory, not just the first: they tend to arrive in
@@ -770,6 +877,10 @@ function generateSsr(reportsDir) {
         if (!xlsxFile) throw new Error("no .xlsx settlement workbook in the report directory");
         const wb = XLSX.read(fs.readFileSync(path.join(dir, xlsxFile)), { cellDates: false });
         const { periodDays, headline, venues, refCodes, excludedVenues } = parseSummaryMd(md);
+        const reconciliationFile = path.join(dir, "reconciliation.md");
+        const reconciliation = fs.existsSync(reconciliationFile)
+          ? parseReconciliationMd(partner, month, fs.readFileSync(reconciliationFile, "utf8"))
+          : null;
         monthSet.add(month);
         reports.push({
           partner,
@@ -782,6 +893,7 @@ function generateSsr(reportsDir) {
           skyDirect: parseSkyDirect(wb.Sheets["Sky Direct"]),
           debtDaily: parseDebtDaily(wb.Sheets["Debt"]),
           excludedVenues,
+          reconciliation,
         });
       } catch (e) {
         throw new Error(`settlement-reports ${partner}/${month}: ${e.message}`, { cause: e });
