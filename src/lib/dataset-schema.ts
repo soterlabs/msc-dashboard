@@ -223,11 +223,12 @@ export function validateDr(data: unknown): DrDataset {
 /* ------------------------------------------------------------------ SSR */
 
 /** Mirrors SsrPartner. Kept in step with SSR_KNOWN_PARTNERS in generate-data.mjs. */
-const SSR_PARTNERS: readonly SsrPartner[] = ["grove", "keel", "obex", "osero", "spark"];
+const SSR_PARTNERS: readonly SsrPartner[] = ["grove", "keel", "obex", "osero", "skybase", "spark"];
 
 const HEADLINE_FIELDS = [
   "agentRate",
   "distributionRewards",
+  "chroniclePoints",
   "demandSideRevenue",
   "primeSupplySideRevenue",
   "primeAgentProfit",
@@ -274,6 +275,21 @@ export function validateSsr(data: unknown): SsrDataset {
     oneOf(p, `${at}.partner`, r.partner, SSR_PARTNERS);
     str(p, `${at}.month`, r.month);
     num(p, `${at}.periodDays`, r.periodDays);
+
+    if (r.reconciliation !== null) {
+      if (!isObj(r.reconciliation)) {
+        p.push(`${at}.reconciliation should be an object or null, got ${show(r.reconciliation)}`);
+      } else {
+        str(p, `${at}.reconciliation.summary`, r.reconciliation.summary);
+        str(p, `${at}.reconciliation.note`, r.reconciliation.note);
+        rowsOf(p, r.reconciliation, "items", `${at}.reconciliation`).forEach((item, j) => {
+          const iat = `${at}.reconciliation.items[${j}]`;
+          str(p, `${iat}.label`, item.label);
+          num(p, `${iat}.value`, item.value);
+          str(p, `${iat}.detail`, item.detail);
+        });
+      }
+    }
 
     if (!isObj(r.headline)) p.push(`${at}.headline should be an object, got ${show(r.headline)}`);
     else for (const f of HEADLINE_FIELDS) num(p, `${at}.headline.${f}`, r.headline[f], true);

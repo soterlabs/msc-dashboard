@@ -411,6 +411,15 @@ test("ssr: a null rateBuild is accepted", () => {
   assert.ok(validateSsr(ssr));
 });
 
+test("ssr: reconciliation numbers are validated", () => {
+  const ssr = fixture("ssr");
+  const report = ssr.reports.find(
+    (r: { reconciliation: unknown }) => r.reconciliation !== null,
+  );
+  report.reconciliation.items[0].value = "$123";
+  rejects(validateSsr, ssr, ".reconciliation.items[0].value");
+});
+
 test("prime: a stringified usds is rejected", () => {
   const prime = fixture("prime");
   prime.payments[0].usds = String(prime.payments[0].usds);
