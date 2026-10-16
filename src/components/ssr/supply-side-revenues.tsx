@@ -99,6 +99,7 @@ export function SupplySideRevenues({
   const partners = orderedPartners(ssr);
 
   const meta = openPartner ? partnerMeta(openPartner) : null;
+  const demandOnly = openPartner === "skybase";
 
   return (
     <div className="flex flex-col gap-6">
@@ -110,8 +111,10 @@ export function SupplySideRevenues({
         <PageHeader
           title={`Prime breakdown: ${meta.label}`}
           description={`${meta.label} · ${formatCompactUSD(
-            partnerSkyRevenue(ssr, openPartner),
-          )} Sky revenue over ${monthRangeLabel(
+            demandOnly
+              ? partnerPrimeProfit(ssr, openPartner)
+              : partnerSkyRevenue(ssr, openPartner),
+          )} ${demandOnly ? "prime revenue" : "Sky revenue"} over ${monthRangeLabel(
             reportsFor(ssr, openPartner).map((r) => r.month),
           )}`}
         />
@@ -395,6 +398,7 @@ function PartnerBreakdown({
   const { monthLabels } = ssr;
   const month = monthFromUrl ?? months[months.length - 1];
   const [onlyEarning, setOnlyEarning] = React.useState(true);
+  const demandOnly = partner === "skybase";
 
   const report = reportFor(ssr, partner, month);
   const h = report?.headline;
@@ -436,29 +440,36 @@ function PartnerBreakdown({
       </div>
 
       {report ? <>
-      <div className="grid grid-cols-1 gap-4 @4xl/main:grid-cols-2">
+      <div className={cn("grid grid-cols-1 gap-4", !demandOnly && "@4xl/main:grid-cols-2")}>
         <HeadlinePanel
-          title="Prime side"
+          title={demandOnly ? "Demand side" : "Prime side"}
           swatch={partnerColor(partner)}
-          rows={[
-            ["Demand-side revenue", h?.demandSideRevenue, "sum"],
-            ["Agent rate", h?.agentRate, "sub"],
-            ["Distribution rewards (settled)", h?.distributionRewards, "sub"],
-            ...(h?.chroniclePoints != null
-              ? [["Chronicle points", h.chroniclePoints, "sub"] as [string, number, "sub"]]
-              : []),
-            ["+ Supply-side revenue", h?.primeSupplySideRevenue, "sum"],
-          ]}
-          total={["Prime agent profit", h?.primeAgentProfit]}
+          rows={demandOnly
+            ? [
+                ["Agent rate", h?.agentRate],
+                ["Distribution rewards (settled)", h?.distributionRewards],
+              ]
+            : [
+                ["Demand-side revenue", h?.demandSideRevenue, "sum"],
+                ["Agent rate", h?.agentRate, "sub"],
+                ["Distribution rewards (settled)", h?.distributionRewards, "sub"],
+                ...(h?.chroniclePoints != null
+                  ? [["Chronicle points", h.chroniclePoints, "sub"] as [string, number, "sub"]]
+                  : []),
+                ["+ Supply-side revenue", h?.primeSupplySideRevenue, "sum"],
+              ]}
+          total={demandOnly
+            ? ["Demand-side revenue", h?.demandSideRevenue]
+            : ["Prime agent profit", h?.primeAgentProfit]}
         />
-        <HeadlinePanel
+        {!demandOnly ? <HeadlinePanel
           title="Sky side"
           rows={[
             ["Prime cost of funds", h?.primeCostOfFunds, "sum"],
             ["Sky direct exposure", h?.skyDirectExposure, "sum"],
           ]}
           total={["Sky revenue", h?.skyRevenue]}
-        />
+        /> : null}
       </div>
 
       {report.reconciliation ? (
@@ -470,11 +481,13 @@ function PartnerBreakdown({
       ) : null}
 
       <Panel
-        title="Prime & Sky revenue"
-        description="Stacked per settlement month. A negative prime revenue is drawn below the axis. Select a bar to change the month above."
+        title={demandOnly ? "Prime revenue" : "Prime & Sky revenue"}
+        description={demandOnly
+          ? "Demand-side revenue per settlement month. Select a bar to change the month above."
+          : "Stacked per settlement month. A negative prime revenue is drawn below the axis. Select a bar to change the month above."}
         action={
           <div className="flex flex-wrap gap-4">
-            <LegendItem color="var(--sky-revenue)">Sky revenue</LegendItem>
+            {!demandOnly ? <LegendItem color="var(--sky-revenue)">Sky revenue</LegendItem> : null}
             <LegendItem color={partnerColor(partner)}>Prime revenue</LegendItem>
           </div>
         }
@@ -509,7 +522,7 @@ function PartnerBreakdown({
                 />
               }
             />
-            <RBar
+            {!demandOnly ? <RBar
               dataKey="sky"
               stackId="rev"
               fill="var(--color-sky)"
@@ -520,12 +533,12 @@ function PartnerBreakdown({
                 router.push(paths.ssrPartner(partner, d.payload.key))
               }
               cursor="pointer"
-            />
+            /> : null}
             <RBar
               dataKey="prime"
               stackId="rev"
               fill="var(--color-prime)"
-              radius={[4, 4, 0, 0]}
+              radius={demandOnly ? 4 : [4, 4, 0, 0]}
               maxBarSize={64}
               onClick={(d: { payload?: { key?: string } }) =>
                 d?.payload?.key &&
@@ -541,8 +554,8 @@ function PartnerBreakdown({
         <Panel title="Per-venue breakdown" description={monthLong(month)}>
           <Prose className="max-w-3xl">
             {partnerMeta(partner).label} is a bridge / aggregator — it reports
-            no venue-level deployments. Its contribution is distribution-rewards
-            attribution only (see the distribution rewards below).
+            no venue-level deployments. Its contribution is demand-side
+            attribution only (see the agent rate and distribution rewards above).
           </Prose>
         </Panel>
       ) : (

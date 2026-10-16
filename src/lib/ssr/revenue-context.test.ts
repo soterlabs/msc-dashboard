@@ -3,6 +3,8 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import { validateDr, validateSsr } from "../dataset-schema.ts";
 import { scopeDr } from "../dr/scope.ts";
+import { paths } from "../routes.ts";
+import { orderedPartners } from "./domain.ts";
 import { compareRewards, revenueMonths } from "./revenue-context.ts";
 
 const dr = validateDr(JSON.parse(readFileSync("data/generated/dr.json", "utf8")));
@@ -93,4 +95,23 @@ test("Grove September demand-side revenue includes Chronicle points", () => {
     ),
     headline.demandSideRevenue,
   );
+});
+
+test("Skybase has a complete demand-side history for its bare prime page", () => {
+  assert.ok(orderedPartners(ssr).includes("skybase"));
+  assert.equal(paths.ssrPartner("skybase"), "/prime-agent-revenues/skybase");
+
+  const months = revenueMonths(ssr, dr, "skybase", "Skybase");
+  assert.deepEqual(months, [
+    "2026-01", "2026-02", "2026-03", "2026-04", "2026-05",
+    "2026-06", "2026-07", "2026-08", "2026-09",
+  ]);
+
+  const reports = ssr.reports.filter((r) => r.partner === "skybase");
+  assert.equal(reports.length, months.length);
+  for (const report of reports) {
+    assert.equal(report.headline.primeSupplySideRevenue, 0);
+    assert.equal(report.headline.skyRevenue, 0);
+    assert.notEqual(report.headline.demandSideRevenue, null);
+  }
 });
