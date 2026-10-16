@@ -18,7 +18,14 @@ export interface SsrPartnerMeta {
   blurb: string;
 }
 
-export const SSR_PARTNER_ORDER: SsrPartner[] = ["spark", "grove", "obex", "osero", "keel"];
+export const SSR_PARTNER_ORDER: SsrPartner[] = [
+  "spark",
+  "grove",
+  "skybase",
+  "obex",
+  "osero",
+  "keel",
+];
 
 export const SSR_PARTNER_META: Record<SsrPartner, SsrPartnerMeta> = {
   spark: {
@@ -30,6 +37,11 @@ export const SSR_PARTNER_META: Record<SsrPartner, SsrPartnerMeta> = {
     label: "Grove",
     colorVar: "--group-grove",
     blurb: "RWA / CLO funds, Aave Horizon, Steakhouse Morpho",
+  },
+  skybase: {
+    label: "Skybase",
+    colorVar: "--group-skybase",
+    blurb: "Pendle, Flagship, Risk Capital & Grove Farm distribution rewards",
   },
   obex: {
     label: "Obex",

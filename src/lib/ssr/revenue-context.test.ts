@@ -47,3 +47,50 @@ test("missing calculated or settled data cannot become a zero discrepancy", () =
   scoped.refCodeRows.forEach((r) => { r.total = 0; });
   assert.deepEqual(compareRewards(scoped, 0), { calculated: 0, settled: 0, difference: 0 });
 });
+
+test("September reconciliation figures are available for Grove, Spark and Skybase", () => {
+  const reconciliations = Object.fromEntries(
+    ["grove", "spark", "skybase"].map((partner) => [
+      partner,
+      ssr.reports.find((r) => r.partner === partner && r.month === "2026-09")?.reconciliation,
+    ]),
+  );
+
+  assert.deepEqual(
+    reconciliations.grove?.items.map((item) => item.value),
+    [165013.9, 12499.85, 177513.75, 321627.21],
+  );
+  assert.deepEqual(
+    reconciliations.spark?.items.map((item) => item.value),
+    [2392354.07],
+  );
+  assert.deepEqual(
+    reconciliations.skybase?.items.map((item) => item.value),
+    [143811.76, 177113.78, 320925.54, 14635947.43],
+  );
+
+  for (const partner of ["keel", "obex", "osero"] as const) {
+    assert.equal(
+      ssr.reports.find((r) => r.partner === partner && r.month === "2026-09")?.reconciliation,
+      null,
+    );
+  }
+});
+
+test("Grove September demand-side revenue includes Chronicle points", () => {
+  const headline = ssr.reports.find(
+    (r) => r.partner === "grove" && r.month === "2026-09",
+  )!.headline;
+
+  assert.equal(headline.chroniclePoints, 10959.43);
+  assert.equal(
+    Number(
+      (
+        (headline.agentRate ?? 0) +
+        (headline.distributionRewards ?? 0) +
+        (headline.chroniclePoints ?? 0)
+      ).toFixed(2),
+    ),
+    headline.demandSideRevenue,
+  );
+});

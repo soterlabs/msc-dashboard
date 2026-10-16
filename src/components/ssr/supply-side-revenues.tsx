@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeftIcon, ArrowRightIcon } from "@phosphor-icons/react";
+import { ArrowLeftIcon, ArrowRightIcon, ArrowSquareOutIcon } from "@phosphor-icons/react";
 import {
   Bar as RBar,
   BarChart,
@@ -40,6 +40,7 @@ import type {
   SsrVenue,
   SsrPartner,
   SsrRateBuild,
+  SsrReconciliation,
   SsrSkyDirectExposure,
 } from "@/lib/ssr/types";
 import {
@@ -443,6 +444,9 @@ function PartnerBreakdown({
             ["Demand-side revenue", h?.demandSideRevenue, "sum"],
             ["Agent rate", h?.agentRate, "sub"],
             ["Distribution rewards (settled)", h?.distributionRewards, "sub"],
+            ...(h?.chroniclePoints != null
+              ? [["Chronicle points", h.chroniclePoints, "sub"] as [string, number, "sub"]]
+              : []),
             ["+ Supply-side revenue", h?.primeSupplySideRevenue, "sum"],
           ]}
           total={["Prime agent profit", h?.primeAgentProfit]}
@@ -456,6 +460,14 @@ function PartnerBreakdown({
           total={["Sky revenue", h?.skyRevenue]}
         />
       </div>
+
+      {report.reconciliation ? (
+        <ReconciliationPanel
+          reconciliation={report.reconciliation}
+          partner={partner}
+          month={month}
+        />
+      ) : null}
 
       <Panel
         title="Prime & Sky revenue"
@@ -898,6 +910,46 @@ function HeadlinePanel({
             <dd className={cn("tabular-nums", kind === "sum" && "font-medium")}>
               {headline(value)}
             </dd>
+          </div>
+        ))}
+      </dl>
+    </Panel>
+  );
+}
+
+function ReconciliationPanel({
+  reconciliation,
+  partner,
+  month,
+}: {
+  reconciliation: SsrReconciliation;
+  partner: SsrPartner;
+  month: string;
+}) {
+  const source = `https://github.com/soterlabs/settlement-reports/blob/main/reports/${partner}/${month}/reconciliation.md`;
+
+  return (
+    <Panel
+      title="Reconciliation"
+      description={reconciliation.summary}
+      action={
+        <ActionButton render={<a href={source} target="_blank" rel="noreferrer" />}>
+          Source report
+          <ArrowSquareOutIcon data-icon="inline-end" aria-hidden />
+        </ActionButton>
+      }
+      footer={<span>{reconciliation.note}</span>}
+    >
+      <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {reconciliation.items.map((item) => (
+          <div key={item.label} className="min-w-0 rounded-xl bg-muted/50 p-4">
+            <dt className="text-sm text-muted-foreground">{item.label}</dt>
+            <dd className="mt-1 break-words text-xl font-semibold tabular-nums sm:text-2xl">
+              {formatUSD2(item.value)}
+            </dd>
+            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+              {item.detail}
+            </p>
           </div>
         ))}
       </dl>
