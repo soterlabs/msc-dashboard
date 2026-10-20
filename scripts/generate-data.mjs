@@ -1033,7 +1033,14 @@ function parseBufferMscLeg(rows) {
       mscNet = value;
     }
   }
-  return { primes: mergePrimes(minted, sent), mintedTotal, sentTotal, mscNet };
+  return {
+    primes: mergePrimes(minted, sent),
+    mintedTotal,
+    sentTotal,
+    historicalPayments: [],
+    historicalPaymentsTotal: 0,
+    mscNet,
+  };
 }
 
 /**
@@ -1046,16 +1053,29 @@ function parseAccrualMscLeg(rows) {
   let mintedTotal = null;
   let sentTotal = null;
   let mscNet = null;
+  const historicalPayments = [];
+  const historicalPrimeKeys = new Set();
 
   for (const [rawPrime, rawMint, rawSend] of rows.slice(1)) {
     const label = plain(rawPrime);
     if (!label) continue;
-    if (label === "total") {
+    if (label === "total" || label.startsWith("subtotal")) {
       mintedTotal = money(rawMint);
       sentTotal = money(rawSend);
     } else if (label.startsWith("MSC net")) {
       // The figure sits in the last column, the mint column being blank.
       mscNet = money(rawSend) ?? money(rawMint);
+    } else if (label.includes(":")) {
+      const key = primeKey(label.split(":", 1)[0], "MSC leg historical catch-up");
+      const amount = money(rawSend) ?? money(rawMint);
+      if (!key || amount === null) {
+        throw new Error(`MSC leg historical catch-up "${label}" has no amount`);
+      }
+      if (historicalPrimeKeys.has(key)) {
+        throw new Error(`MSC leg has duplicate historical catch-up for "${key}"`);
+      }
+      historicalPrimeKeys.add(key);
+      historicalPayments.push({ key, label: primeLabel(key), amount });
     } else {
       const key = primeKey(label, "MSC leg (accrual)");
       if (!key) continue;
@@ -1063,7 +1083,55 @@ function parseAccrualMscLeg(rows) {
       sent.set(key, money(rawSend) ?? 0);
     }
   }
-  return { primes: mergePrimes(minted, sent), mintedTotal, sentTotal, mscNet };
+  return {
+    primes: mergePrimes(minted, sent),
+    mintedTotal,
+    sentTotal,
+    historicalPayments,
+    historicalPaymentsTotal: sum(historicalPayments.map((p) => p.amount)),
+    mscNet,
+  };
+}
+
+/** Optional audit table that repeats accrual catch-ups as positive payments. */
+function parseHistoricalPaymentDisclosure(rows) {
+  if (!rows) return null;
+  const payments = [];
+  const paymentKeys = new Set();
+  let reportedTotal = null;
+  for (const [rawPrime, rawAmount] of rows.slice(1)) {
+    const label = plain(rawPrime);
+    const amount = money(rawAmount);
+    if (label === "Total historical payments") {
+      if (reportedTotal !== null) {
+        throw new Error("Additional prior-period payments has duplicate total rows");
+      }
+      if (amount === null) {
+        throw new Error("Additional prior-period payments total has no amount");
+      }
+      reportedTotal = amount;
+      continue;
+    }
+    const key = primeKey(label, "Additional prior-period payments");
+    if (!key) continue;
+    if (amount === null) {
+      throw new Error(`Additional prior-period payment for "${key}" has no amount`);
+    }
+    if (paymentKeys.has(key)) {
+      throw new Error(`Additional prior-period payments has duplicate row for "${key}"`);
+    }
+    paymentKeys.add(key);
+    payments.push({ key, label: primeLabel(key), amount: -Math.abs(amount) });
+  }
+  if (reportedTotal === null) {
+    throw new Error("Additional prior-period payments has no total row");
+  }
+  reconcile(
+    "historical payments disclosure",
+    sum(payments.map((p) => Math.abs(p.amount))),
+    reportedTotal,
+  );
+  return payments;
 }
 
 /**
@@ -1139,6 +1207,24 @@ function parseSkyTotalMd(md) {
 
   const msc =
     leg.basis === "buffer" ? parseBufferMscLeg(leg.rows) : parseAccrualMscLeg(leg.rows);
+  const disclosedHistorical = parseHistoricalPaymentDisclosure(
+    sections["Additional prior-period payments"],
+  );
+  if (disclosedHistorical) {
+    const mscByPrime = new Map(msc.historicalPayments.map((p) => [p.key, p.amount]));
+    for (const payment of disclosedHistorical) {
+      reconcile(
+        `historical payment (${payment.key})`,
+        mscByPrime.get(payment.key) ?? 0,
+        payment.amount,
+      );
+    }
+    if (mscByPrime.size !== disclosedHistorical.length) {
+      throw new Error("historical payment rows differ between the MSC leg and disclosure");
+    }
+  } else if (msc.historicalPayments.length) {
+    throw new Error("MSC leg has historical catch-ups but no additional-payments disclosure");
+  }
 
   // Non-MSC leg: `| Line | USDS |`.
   let nonMscIncome = null;
@@ -1182,7 +1268,11 @@ function parseSkyTotalMd(md) {
   // Reconcile against the report's own printed figures, on both bases.
   reconcile("minted total", sum(msc.primes.map((p) => p.minted)), msc.mintedTotal);
   reconcile("sent total", sum(msc.primes.map((p) => p.sent)), msc.sentTotal);
-  reconcile("MSC net", msc.mintedTotal + msc.sentTotal, msc.mscNet);
+  reconcile(
+    "MSC net",
+    msc.mintedTotal + msc.sentTotal + msc.historicalPaymentsTotal,
+    msc.mscNet,
+  );
   reconcile("non-MSC net", nonMscIncome + nonMscExpense, nonMscNet);
   reconcile("Sky Net Revenue", msc.mscNet + nonMscNet, skyNetRevenue);
 
@@ -1205,6 +1295,8 @@ function parseSkyTotalMd(md) {
     primes: msc.primes,
     mintedTotal: msc.mintedTotal,
     sentTotal: msc.sentTotal,
+    historicalPayments: msc.historicalPayments,
+    historicalPaymentsTotal: msc.historicalPaymentsTotal,
     mscNet: msc.mscNet,
     nonMscIncome,
     nonMscExpense,
