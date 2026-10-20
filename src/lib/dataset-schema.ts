@@ -397,6 +397,14 @@ export function validateSkyTotal(data: unknown): SkyTotalDataset {
       num(p, `${lat}.sent`, line.sent);
     });
 
+    rowsOf(p, r, "historicalPayments", at).forEach((line, j) => {
+      const lat = `${at}.historicalPayments[${j}]`;
+      str(p, `${lat}.key`, line.key);
+      str(p, `${lat}.label`, line.label);
+      num(p, `${lat}.amount`, line.amount);
+    });
+    num(p, `${at}.historicalPaymentsTotal`, r.historicalPaymentsTotal);
+
     // The report reconciles against these, so the refresh cannot emit a null.
     for (const f of SKY_TOTAL_NUMBERS) num(p, `${at}.${f}`, r[f]);
     num(p, `${at}.demandSideBuffer`, r.demandSideBuffer, true);

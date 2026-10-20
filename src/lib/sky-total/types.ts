@@ -29,6 +29,13 @@ export interface SkyTotalPrimeLine {
   sent: number;
 }
 
+/** Prior-period prime payment carried by this month's settlement, as an outflow. */
+export interface SkyTotalHistoricalPayment {
+  key: string;
+  label: string;
+  amount: number;
+}
+
 /**
  * Deductions the report prints below Sky Net Revenue rather than inside it.
  * Buffer months only: on the accrual basis these are unknown until the
@@ -57,6 +64,8 @@ export interface SkyTotalReport {
   primes: SkyTotalPrimeLine[];
   mintedTotal: number;
   sentTotal: number;
+  historicalPayments: SkyTotalHistoricalPayment[];
+  historicalPaymentsTotal: number;
   mscNet: number;
 
   // Non-MSC leg

@@ -7,7 +7,8 @@
     "2026-05",
     "2026-06",
     "2026-07",
-    "2026-08"
+    "2026-08",
+    "2026-09"
   ],
   "monthLabels": {
     "2026-01": "Jan",
@@ -17,7 +18,8 @@
     "2026-05": "May",
     "2026-06": "Jun",
     "2026-07": "Jul",
-    "2026-08": "Aug"
+    "2026-08": "Aug",
+    "2026-09": "Sep"
   },
   "reports": [
     {
@@ -70,6 +72,8 @@
       ],
       "mintedTotal": 0,
       "sentTotal": 0,
+      "historicalPayments": [],
+      "historicalPaymentsTotal": 0,
       "mscNet": 0,
       "nonMscIncome": 25259561.59,
       "nonMscExpense": -16040847.78,
@@ -131,6 +135,8 @@
       ],
       "mintedTotal": 41627896,
       "sentTotal": -7513666,
+      "historicalPayments": [],
+      "historicalPaymentsTotal": 0,
       "mscNet": 34114230,
       "nonMscIncome": 15153981.13,
       "nonMscExpense": -16126768.01,
@@ -201,6 +207,8 @@
       ],
       "mintedTotal": 32422367,
       "sentTotal": -3004871,
+      "historicalPayments": [],
+      "historicalPaymentsTotal": 0,
       "mscNet": 29417496,
       "nonMscIncome": 13303732.59,
       "nonMscExpense": -20880323.41,
@@ -271,6 +279,8 @@
       ],
       "mintedTotal": 16028671,
       "sentTotal": -2189471,
+      "historicalPayments": [],
+      "historicalPaymentsTotal": 0,
       "mscNet": 13839200,
       "nonMscIncome": 18294454.47,
       "nonMscExpense": -19645151.42,
@@ -338,6 +348,8 @@
       ],
       "mintedTotal": 20534506,
       "sentTotal": -2073698,
+      "historicalPayments": [],
+      "historicalPaymentsTotal": 0,
       "mscNet": 18460808,
       "nonMscIncome": 15022235.5,
       "nonMscExpense": -19416950.31,
@@ -405,6 +417,8 @@
       ],
       "mintedTotal": 24767542,
       "sentTotal": -6841799,
+      "historicalPayments": [],
+      "historicalPaymentsTotal": 0,
       "mscNet": 17925743,
       "nonMscIncome": 15881199.53,
       "nonMscExpense": -18931867.9,
@@ -464,6 +478,8 @@
       ],
       "mintedTotal": 21687322,
       "sentTotal": -7589604,
+      "historicalPayments": [],
+      "historicalPaymentsTotal": 0,
       "mscNet": 14097718,
       "nonMscIncome": 15638940.23,
       "nonMscExpense": -19219232.42,
@@ -517,6 +533,8 @@
       ],
       "mintedTotal": 17571361,
       "sentTotal": -2900976,
+      "historicalPayments": [],
+      "historicalPaymentsTotal": 0,
       "mscNet": 14670385,
       "nonMscIncome": 16063850.25,
       "nonMscExpense": -14988939.18,
@@ -526,6 +544,69 @@
       "belowTheLine": null,
       "notes": [
         "⚠ msc_preview: no entry for 2026-08 in config/sky_total.yaml — every prime's mint/send is DERIVED from the monthly reports and cross-checks against nothing. Pin the MSC post's published figures (and any prior-cycle corrections riding the settlement) before treating this month as reconciled."
+      ]
+    },
+    {
+      "month": "2026-09",
+      "basis": "accrual",
+      "blocks": [],
+      "primes": [
+        {
+          "key": "spark",
+          "label": "Spark",
+          "minted": 11627438,
+          "sent": -4218121
+        },
+        {
+          "key": "grove",
+          "label": "Grove",
+          "minted": 6806996,
+          "sent": -1148408
+        },
+        {
+          "key": "obex",
+          "label": "Obex",
+          "minted": 1643358,
+          "sent": -480680
+        },
+        {
+          "key": "osero",
+          "label": "Osero",
+          "minted": 76824,
+          "sent": -27661
+        },
+        {
+          "key": "keel",
+          "label": "Keel",
+          "minted": 0,
+          "sent": -31472
+        },
+        {
+          "key": "skybase",
+          "label": "Skybase",
+          "minted": 0,
+          "sent": -143812
+        }
+      ],
+      "mintedTotal": 20154616,
+      "sentTotal": -6050154,
+      "historicalPayments": [
+        {
+          "key": "skybase",
+          "label": "Skybase",
+          "amount": -177113.78
+        }
+      ],
+      "historicalPaymentsTotal": -177113.78,
+      "mscNet": 13927348.22,
+      "nonMscIncome": 14938630.49,
+      "nonMscExpense": -14230031.28,
+      "nonMscNet": 708599.21,
+      "demandSideBuffer": null,
+      "skyNetRevenue": 14635947.43,
+      "belowTheLine": null,
+      "notes": [
+        "⚠ msc_preview: 2026-09 contains adjustments or partial pins, but not published mint/send figures for every prime. Unpinned amounts are DERIVED from monthly reports; this is not a fully reconciled MSC preview."
       ]
     }
   ]
