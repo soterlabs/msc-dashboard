@@ -235,6 +235,33 @@ test("sky-total: a missing nested array is rejected (regression)", () => {
   rejects(validateSkyTotal, st, "reports[0].primes");
 });
 
+test("sky-total: historical payment rows and totals are validated", () => {
+  const st = fixture("sky-total");
+  const report = st.reports.find(
+    (r: { historicalPayments: unknown[] }) => r.historicalPayments.length > 0,
+  );
+  assert.ok(report, "fixture has no historical-payment month");
+  report.historicalPayments[0].amount = "-177113.78";
+  rejects(validateSkyTotal, st, ".historicalPayments[0].amount");
+});
+
+test("sky-total: September reconciles the Skybase catch-up exactly once", () => {
+  const st = validateSkyTotal(read("sky-total"));
+  const september = st.reports.find((r) => r.month === "2026-09");
+  assert.ok(september, "September report is missing");
+  assert.deepEqual(september.historicalPayments, [
+    { key: "skybase", label: "Skybase", amount: -177113.78 },
+  ]);
+  assert.equal(
+    september.mintedTotal +
+      september.sentTotal +
+      september.historicalPaymentsTotal,
+    september.mscNet,
+  );
+  assert.equal(september.mscNet + september.nonMscNet, september.skyNetRevenue);
+  assert.equal(september.skyNetRevenue, 14635947.43);
+});
+
 // The series spans two methodologies and the reader is told which one each
 // month is on, so an unrecognised basis has to fail rather than render blank.
 test("sky-total: an unknown basis is rejected", () => {

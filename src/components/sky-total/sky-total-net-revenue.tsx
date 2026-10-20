@@ -142,10 +142,10 @@ type Step = {
 };
 
 /**
- * The waterfall is the same on both bases — minted, less what went out, gives
- * MSC net; plus the non-MSC leg gives Sky Net Revenue. Only the wording of the
- * first two changes, because on the accrual basis they preview a settlement
- * that has not run yet.
+ * The waterfall is the same on both bases — minted, less current-period sends
+ * and any prior-period catch-ups, gives MSC net; plus the non-MSC leg gives Sky
+ * Net Revenue. Only the wording of the first two changes, because on the
+ * accrual basis they preview a settlement that has not run yet.
  *
  * The Core Council transfer and the Grove TGE penalty used to appear here. They
  * are not deductions from net revenue and the reports now print them below the
@@ -167,6 +167,14 @@ function stepsFor(r: SkyTotalReport): Step[] {
       kind: "flow",
       value: r.sentTotal,
     },
+    ...(r.historicalPaymentsTotal !== 0
+      ? [{
+          key: "historical",
+          label: "Historical catch-ups",
+          kind: "flow" as const,
+          value: r.historicalPaymentsTotal,
+        }]
+      : []),
     { key: "msc", label: "MSC net", kind: "total", value: r.mscNet },
     {
       key: "nonmsc",
@@ -264,7 +272,7 @@ function Waterfall({
   return (
     <Panel
       title="How the month reconciles"
-      hint="Debt minted, less what goes back out to the primes, gives MSC net; adding the non-MSC leg gives Sky Net Revenue. The Core Council transfer and the capital seedings sit below that line — see the statement below."
+      hint="Debt minted, less current-period sends and any historical catch-ups, gives MSC net; adding the non-MSC leg gives Sky Net Revenue. The Core Council transfer and capital seedings sit below that line — see the statement below."
       description={`Every figure in USDS · ${BASIS_META[report.basis].label} basis — ${BASIS_META[report.basis].blurb.toLowerCase()}`}
       action={
         <MonthPicker
@@ -401,6 +409,17 @@ function unionPrimes(reports: SkyTotalReport[]) {
   return [...seen].map(([key, label]) => ({ key, label }));
 }
 
+/** First-seen union of primes receiving separately disclosed catch-ups. */
+function unionHistoricalPayments(reports: SkyTotalReport[]) {
+  const seen = new Map<string, string>();
+  for (const r of reports) {
+    for (const line of r.historicalPayments) {
+      if (!seen.has(line.key)) seen.set(line.key, line.label);
+    }
+  }
+  return [...seen].map(([key, label]) => ({ key, label }));
+}
+
 function ReconciliationTable({
   reports,
   monthLabels,
@@ -416,6 +435,7 @@ function ReconciliationTable({
   // Only worth a section if some month actually reports it: the accrual months
   // cannot, and a block of dashes says nothing.
   const anyBelow = reports.some((r) => r.belowTheLine);
+  const historicalPrimes = unionHistoricalPayments(reports);
   const below =
     (field: keyof NonNullable<SkyTotalReport["belowTheLine"]>) =>
     (r: SkyTotalReport) =>
@@ -447,6 +467,18 @@ function ReconciliationTable({
       label: "Sent to primes — total",
       value: (r) => r.sentTotal,
     },
+    ...historicalPrimes.map((p): Row => ({
+      kind: "detail",
+      label: `Historical catch-up — ${p.label}`,
+      value: (r) => r.historicalPayments.find((line) => line.key === p.key)?.amount ?? null,
+    })),
+    ...(historicalPrimes.length
+      ? ([{
+          kind: "subtotal",
+          label: "Historical catch-ups — total",
+          value: (r) => r.historicalPaymentsTotal || null,
+        }] as Row[])
+      : []),
     { kind: "subtotal", label: "MSC net", value: (r) => r.mscNet },
     { kind: "group", label: "Non-MSC leg" },
     { kind: "detail", label: "non-MSC income", value: (r) => r.nonMscIncome },
