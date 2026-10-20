@@ -1054,6 +1054,7 @@ function parseAccrualMscLeg(rows) {
   let sentTotal = null;
   let mscNet = null;
   const historicalPayments = [];
+  const historicalPrimeKeys = new Set();
 
   for (const [rawPrime, rawMint, rawSend] of rows.slice(1)) {
     const label = plain(rawPrime);
@@ -1070,6 +1071,10 @@ function parseAccrualMscLeg(rows) {
       if (!key || amount === null) {
         throw new Error(`MSC leg historical catch-up "${label}" has no amount`);
       }
+      if (historicalPrimeKeys.has(key)) {
+        throw new Error(`MSC leg has duplicate historical catch-up for "${key}"`);
+      }
+      historicalPrimeKeys.add(key);
       historicalPayments.push({ key, label: primeLabel(key), amount });
     } else {
       const key = primeKey(label, "MSC leg (accrual)");
@@ -1092,18 +1097,31 @@ function parseAccrualMscLeg(rows) {
 function parseHistoricalPaymentDisclosure(rows) {
   if (!rows) return null;
   const payments = [];
+  const paymentKeys = new Set();
   let reportedTotal = null;
   for (const [rawPrime, rawAmount] of rows.slice(1)) {
     const label = plain(rawPrime);
     const amount = money(rawAmount);
     if (label === "Total historical payments") {
+      if (reportedTotal !== null) {
+        throw new Error("Additional prior-period payments has duplicate total rows");
+      }
+      if (amount === null) {
+        throw new Error("Additional prior-period payments total has no amount");
+      }
       reportedTotal = amount;
       continue;
     }
     const key = primeKey(label, "Additional prior-period payments");
-    if (key && amount !== null) {
-      payments.push({ key, label: primeLabel(key), amount: -Math.abs(amount) });
+    if (!key) continue;
+    if (amount === null) {
+      throw new Error(`Additional prior-period payment for "${key}" has no amount`);
     }
+    if (paymentKeys.has(key)) {
+      throw new Error(`Additional prior-period payments has duplicate row for "${key}"`);
+    }
+    paymentKeys.add(key);
+    payments.push({ key, label: primeLabel(key), amount: -Math.abs(amount) });
   }
   if (reportedTotal === null) {
     throw new Error("Additional prior-period payments has no total row");
