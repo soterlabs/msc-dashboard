@@ -52,6 +52,7 @@ import { ThemeToggle } from "./theme-toggle";
 
 /** Icons live here, not in the route map: nothing on the server needs them. */
 const ICONS: Record<Section, Icon> = {
+  "monthly-allocations": TrendUpIcon,
   "daily-revenue": CalendarIcon,
   ssr: TrendUpIcon,
   "sky-total": BankIcon,
