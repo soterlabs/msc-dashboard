@@ -170,7 +170,7 @@ function AppSidebar({ section, primes }: { section?: Section; primes: PrimeLink[
                       </SidebarMenuSubItem>}
                       {nestedPrimes.map((prime) => {
                         const href = s.key === "daily-revenue"
-                          ? paths.dailyRevenue("2026-09", prime.key)
+                          ? paths.dailyRevenue(pathname.match(/^\/daily-revenue\/(2026-(?:09|10))(?:\/|$)/)?.[1], prime.key)
                           : paths.ssrPartner(prime.key);
                         const selected = pathname === href || pathname.startsWith(`${href}/`);
                         return (
