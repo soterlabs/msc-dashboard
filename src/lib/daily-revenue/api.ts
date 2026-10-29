@@ -1,4 +1,5 @@
 /** Server-side public API reads only. No request starts a backend calculation. */
+import { validateMonthly } from "../monthly-allocations/model.ts";
 import { validateHistory, validateLatest, validateStatus } from "./schema.ts";
 import type { DailyPrime, History, ReadResult } from "./types";
 
@@ -84,13 +85,14 @@ export function createRevenueClient(fetcher: typeof fetch = fetch, now: () => nu
           ? { data: retained.data as T, source: "cache", verifiedAt: retained.verifiedAt,
               error: `Live API ${invalid ? "returned an unexpected response" : "unavailable"}; showing the last successfully verified response.` }
           : { data: null, source: "unavailable", verifiedAt: null,
-              error: `Daily revenue API ${invalid ? "returned an unexpected response" : "unavailable"}. Settled reports remain available.` };
+              error: `Revenue API ${invalid ? "returned an unexpected response" : "unavailable"}. Settled reports remain available.` };
       }
     })();
     pending.set(path, work);
     try { return await work; } finally { pending.delete(path); }
   }
   return {
+    monthly: (prime: DailyPrime, month: string) => request(`/v1/revenue/${prime}/monthly/${month}/allocations`, (v) => validateMonthly(v, prime, month)),
     latest: (prime: DailyPrime) => request(`/v1/revenue/${prime}/latest`, (v) => validateLatest(v, prime)),
     history: (prime: DailyPrime, start: string, end: string) => {
       const fallbackKey = `${prime}:${start}`;

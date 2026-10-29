@@ -389,3 +389,27 @@ Decimal API strings use `decimal.js`; arithmetic never passes through JS
 Monetary display is rounded to cents, with exact source values in tooltips.
 Live-response fixtures captured on 2026-09-16 live under
 `schema/fixtures/daily-revenue`; they are never production fallbacks.
+
+### Monthly allocation borrowing costs and yields
+
+The **Allocation Costs & Yields** tab reads the settlement API's monthly
+allocation endpoint on the server. It is independent of the daily-revenue flag.
+The initial published coverage is **August 2026, Spark and Grove**; unavailable
+months/primes are shown as missing, never as zero. Completed 2026 months can be
+selected. Shareable routes include:
+
+- `/monthly-allocations/2026-08`
+- `/monthly-allocations/2026-08/spark`
+- `/monthly-allocations/2026-08/spark/S18`
+
+Monthly borrowing costs use Sky-funded principal, excluding gains. Unresolved
+Savings-funded mixtures have null costs and net yields. Gross APY uses gross
+investment revenue; net APY uses prime-retained revenue after SDE less borrowing
+costs, excluding prime-level adjustments. Monthly returns and exposure/principal
+are shown on allocation detail pages. No costs or yields are recomputed in the
+browser, and no dashboard request starts a backfill.
+
+Reads use the same server/public URL settings and bounded ETag cache as daily
+revenue. Stale responses retain their verification timestamp and are labelled.
+Each detail/table page links to its exact API revision. Known-cost subtotals are
+partial allocation analytics, not total ilk financing costs or settlement figures.
