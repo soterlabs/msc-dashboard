@@ -60,7 +60,16 @@ export function validateMonthly(value: unknown, prime: DailyPrime, month: string
     if (!/^[A-Za-z0-9_-]{1,80}$/.test(row.venue_id) || known.has(row.borrowing_cost_status) !== (row.borrowing_cost_usd !== null)) throw new Error("Inconsistent borrowing cost status");
     if (row.borrowing_cost_usd === null && [row.net_pnl_usd, row.net_apy, row.net_monthly_return].some(x => x !== null)) throw new Error("Unknown costs cannot have net yields");
     for (const amount of [row.borrowing_cost_usd, row.average_original_principal_usd, row.average_yield_exposure_usd]) {
-      if (amount !== null && new Decimal(amount).isNegative()) throw new Error("Negative capital or cost");
+      if (amount !== null && new Decimal(amount).lt(0)) throw new Error("Negative capital or cost");
+    }
+    if (["excluded_from_cost", "no_principal_in_period"].includes(row.borrowing_cost_status) && !new Decimal(row.borrowing_cost_usd!).isZero()) throw new Error("Exempt allocation has a cost");
+    if (row.net_pnl_usd !== null) {
+      if (row.prime_retained_revenue_usd === null || row.borrowing_cost_usd === null) throw new Error("Net PnL lacks inputs");
+      const Exact = Decimal.clone({ precision: 80 });
+      // Backend arithmetic uses 28 significant digits. Permit only tiny
+      // decimal-context noise; never reconcile by rounding to cents.
+      const expected = new Exact(row.prime_retained_revenue_usd).minus(row.borrowing_cost_usd);
+      if (expected.minus(row.net_pnl_usd).abs().gt("1e-18")) throw new Error("Net PnL contradicts retained revenue minus cost");
     }
     return row;
   });

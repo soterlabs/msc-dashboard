@@ -70,3 +70,23 @@ test("sub-cent borrowing costs and losses never look like exact zero", () => {
   assert.equal(monthlyUsd("-0.009"), "−<$0.01");
   assert.equal(monthlyUsd("62109.95550631129475086343449"), "$62 109.96");
 });
+
+
+test("contradictory exemption and net amounts are rejected rather than displayed", () => {
+  const exempt = fixture(); exempt.allocations[0].borrowing_cost_status = "excluded_from_cost";
+  assert.throws(() => validateMonthly(exempt, "spark", "2026-08"), /Exempt allocation/);
+  const net = fixture(); net.allocations[0].net_pnl_usd = "123";
+  assert.throws(() => validateMonthly(net, "spark", "2026-08"), /Net PnL contradicts/);
+});
+
+test("a failed monthly refresh retains only the same verified selection and labels it stale", async () => {
+  let now = 0, fail = false;
+  const client = createRevenueClient(async () => fail ? new Response(null, { status: 503 }) : new Response(JSON.stringify(fixture()), { headers: { "cache-control": "max-age=1" } }), () => now, "https://example.test", () => {});
+  const first = await client.monthly("spark", "2026-08");
+  now = 2000; fail = true;
+  const stale = await client.monthly("spark", "2026-08");
+  assert.equal(stale.source, "cache"); assert.equal(stale.verifiedAt, first.verifiedAt);
+  assert.match(stale.error!, /last successfully verified/);
+  assert.equal(stale.data?.revision_id, first.data?.revision_id);
+  assert.equal((await client.monthly("spark", "2026-09")).data, null);
+});
