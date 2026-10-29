@@ -38,12 +38,22 @@ export default async function Page({ params }: { params: Promise<{ path?: string
     <nav aria-label="Report month" className="flex flex-wrap gap-3 text-sm">
       {months.map(m => <Link key={m} href={paths.monthlyAllocations(m, prime, venue)} aria-current={m === month ? "page" : undefined} className={m === month ? "font-semibold underline" : "text-muted-foreground hover:underline"}>{m}</Link>)}
     </nav>
+    <nav aria-label="Yield report prime agent" className="flex flex-wrap gap-3 text-sm">
+      <Link href={paths.monthlyAllocations(month)} aria-current={!prime ? "page" : undefined} className={!prime ? "font-semibold underline" : "hover:underline"}>All primes</Link>
+      {DAILY_PRIMES.map(p => <Link key={p} href={paths.monthlyAllocations(month, p)} aria-current={prime === p ? "page" : undefined}
+        className={prime === p ? "font-semibold underline" : "text-muted-foreground hover:underline"}>{primeName(p)}</Link>)}
+    </nav>
     <p className="text-sm text-muted-foreground">Availability is shown for the selected month. A dash means unavailable, never zero; funding or capital gaps can leave net yields pending even when gross yields are available.</p>
     {!prime ? <div className="grid gap-4 md:grid-cols-2">{selected.map((p, i) => {
       const read = reads[i], data = read.data, known = knownCosts(data?.allocations ?? []);
       return <Panel key={p} title={<Link className="hover:underline" href={paths.monthlyAllocations(month, p)}>{primeName(p)} →</Link>}>
         {data ? <><p className="text-2xl font-semibold tabular-nums">{known.length ? monthlyUsd(addMoney(known.map(r => r.borrowing_cost_usd!))) : "—"}</p>
-          <p className="text-sm text-muted-foreground">Known allocation costs · {known.length} of {data.allocations.length} rows have a cost. This subtotal is not the prime’s total financing charge.</p></> : <p className="text-sm">{read.source === "missing" ? "No published monthly allocation data." : "Monthly data temporarily unavailable."}</p>}
+          <p className="text-sm text-muted-foreground">Known allocation costs · {known.length} of {data.allocations.length} rows have a cost. This subtotal is not the prime’s total financing charge.</p>
+          <DataTable><TableHeader><TableRow><Th>Allocation</Th><Th>Gross APY</Th><Th>Net APY</Th></TableRow></TableHeader>
+            <TableBody>{data.allocations.map(row => <TableRow key={row.venue_id}>
+              <Td><Link className="hover:underline" href={paths.monthlyAllocations(month, p, row.venue_id)}>{row.label}</Link></Td>
+              <Td className="tabular-nums whitespace-nowrap">{percent(row.gross_apy)}</Td><Td className="tabular-nums whitespace-nowrap">{percent(row.net_apy)}</Td>
+            </TableRow>)}</TableBody></DataTable></> : <p className="text-sm">{read.source === "missing" ? "No published monthly allocation data." : "Monthly data temporarily unavailable."}</p>}
         <ReadNotice read={read} />
       </Panel>;
     })}</div> : !doc || (venue && !allocation) ? <Panel title="Monthly allocation data unavailable"><p>No verified data is available for this selection.</p><ReadNotice read={reads[0]} /></Panel> : <>
