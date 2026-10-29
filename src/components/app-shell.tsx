@@ -163,6 +163,11 @@ function AppSidebar({ section, primes }: { section?: Section; primes: PrimeLink[
                   </SidebarMenuAction>}
                   {expandable && open && (
                     <SidebarMenuSub>
+                      {s.key === "ssr" && <SidebarMenuSubItem>
+                        <SidebarMenuSubButton render={<Link href={paths.monthlyAllocations()} onClick={() => setOpenMobile(false)} />}
+                          isActive={pathname.startsWith("/prime-agent-revenues/yields")}
+                          aria-current={pathname.startsWith("/prime-agent-revenues/yields") ? "page" : undefined}>Yields per venue</SidebarMenuSubButton>
+                      </SidebarMenuSubItem>}
                       {nestedPrimes.map((prime) => {
                         const href = s.key === "daily-revenue"
                           ? paths.dailyRevenue("2026-09", prime.key)

@@ -108,6 +108,11 @@ export const paths = {
     (prime ? `/${encodeURIComponent(prime)}` : "") +
     (prime && allocation ? `/${encodeURIComponent(allocation)}` : ""),
 
+  monthlyAllocations: (month = "2026-09", prime?: string, venue?: string) =>
+    `/prime-agent-revenues/yields/${encodeURIComponent(month)}` +
+    (prime ? `/${encodeURIComponent(prime)}` : "") +
+    (prime && venue ? `/${encodeURIComponent(venue)}` : ""),
+
   prime: () => `/${slugOf("prime")}`,
 };
 
