@@ -46,7 +46,7 @@ import {
   sectionFromPath,
   type Section,
 } from "@/lib/routes";
-import { DAILY_PRIMES, primeName } from "@/lib/daily-revenue/types";
+import { DAILY_PRIMES, isDailyMonth, primeName } from "@/lib/daily-revenue/types";
 import { SoterLabsMark } from "./soter-labs";
 import { ThemeToggle } from "./theme-toggle";
 
@@ -91,6 +91,8 @@ export function AppShell({ children, primes }: { children: React.ReactNode; prim
 
 function AppSidebar({ section, primes }: { section?: Section; primes: PrimeLink[] }) {
   const pathname = usePathname();
+  const pathMonth = pathname.startsWith("/daily-revenue/") ? pathname.split("/")[2] : undefined;
+  const dailyMonth = isDailyMonth(pathMonth) ? pathMonth : undefined;
   const { setOpenMobile } = useSidebar();
   const [expanded, setExpanded] = React.useState<Record<"ssr" | "daily-revenue", boolean>>({
     ssr: false,
@@ -148,7 +150,7 @@ function AppSidebar({ section, primes }: { section?: Section; primes: PrimeLink[
                        address" all have to work on a nav whose whole point is
                        that its destinations are shareable. */
                     className={expandable ? "pr-12 max-md:h-11 md:pr-8" : undefined}
-                    render={<Link href={s.key === "daily-revenue" ? paths.dailyRevenue() : `/${s.slug}`} onClick={() => setOpenMobile(false)} />}
+                    render={<Link href={s.key === "daily-revenue" ? paths.dailyRevenue(dailyMonth) : `/${s.slug}`} onClick={() => setOpenMobile(false)} />}
                   >
                     <Icon weight={active ? "fill" : "regular"} />
                     <span>{s.label}</span>
@@ -170,7 +172,7 @@ function AppSidebar({ section, primes }: { section?: Section; primes: PrimeLink[
                       </SidebarMenuSubItem>}
                       {nestedPrimes.map((prime) => {
                         const href = s.key === "daily-revenue"
-                          ? paths.dailyRevenue(pathname.match(/^\/daily-revenue\/(2026-(?:09|10))(?:\/|$)/)?.[1], prime.key)
+                          ? paths.dailyRevenue(dailyMonth, prime.key)
                           : paths.ssrPartner(prime.key);
                         const selected = pathname === href || pathname.startsWith(`${href}/`);
                         return (
