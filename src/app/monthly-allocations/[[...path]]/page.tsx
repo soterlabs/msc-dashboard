@@ -4,9 +4,9 @@ import { DataTable, PageHeader, Panel, StatCard, TableBody, TableHeader, TableRo
 import { ReadNotice } from "@/components/daily-revenue/report";
 import { CopyLink } from "@/components/daily-revenue/copy-link";
 import { revenueClient, REVENUE_PUBLIC_URL } from "@/lib/daily-revenue/api";
-import { addMoney, compareMoney, usd } from "@/lib/daily-revenue/decimal";
+import { addMoney, compareMoney } from "@/lib/daily-revenue/decimal";
 import { DAILY_PRIMES, primeName } from "@/lib/daily-revenue/types";
-import { completedMonth, costReason, parseMonthlyRoute, percent, type MonthlyAllocation } from "@/lib/monthly-allocations/model";
+import { completedMonth, costReason, monthlyUsd, parseMonthlyRoute, percent, type MonthlyAllocation } from "@/lib/monthly-allocations/model";
 import { paths } from "@/lib/routes";
 
 export const dynamic = "force-dynamic";
@@ -41,27 +41,27 @@ export default async function Page({ params }: { params: Promise<{ path?: string
     {!prime ? <div className="grid gap-4 md:grid-cols-2">{selected.map((p, i) => {
       const read = reads[i], data = read.data, known = knownCosts(data?.allocations ?? []);
       return <Panel key={p} title={<Link className="hover:underline" href={paths.monthlyAllocations(month, p)}>{primeName(p)} →</Link>}>
-        {data ? <><p className="text-2xl font-semibold tabular-nums">{known.length ? usd(addMoney(known.map(r => r.borrowing_cost_usd!))) : "—"}</p>
+        {data ? <><p className="text-2xl font-semibold tabular-nums">{known.length ? monthlyUsd(addMoney(known.map(r => r.borrowing_cost_usd!))) : "—"}</p>
           <p className="text-sm text-muted-foreground">Known allocation costs · {known.length} of {data.allocations.length} rows have a cost. This subtotal is not the prime’s total financing charge.</p></> : <p className="text-sm">{read.source === "missing" ? "No published monthly allocation data." : "Monthly data temporarily unavailable."}</p>}
         <ReadNotice read={read} />
       </Panel>;
     })}</div> : !doc || (venue && !allocation) ? <Panel title="Monthly allocation data unavailable"><p>No verified data is available for this selection.</p><ReadNotice read={reads[0]} /></Panel> : <>
       {allocation ? <>
         <p className="text-sm text-muted-foreground">{allocation.venue_id} · {costReason(allocation)}</p>
-        <div className="grid gap-4 sm:grid-cols-3"><StatCard label="Monthly borrowing cost" value={usd(allocation.borrowing_cost_usd)} />
+        <div className="grid gap-4 sm:grid-cols-3"><StatCard label="Monthly borrowing cost" value={monthlyUsd(allocation.borrowing_cost_usd)} />
           <StatCard label="Gross yield · annualized (APY)" value={percent(allocation.gross_apy)} />
           <StatCard label="Net yield · annualized (APY)" value={percent(allocation.net_apy)} /></div>
         <Panel title="Monthly return and capital"><dl className="grid gap-4 sm:grid-cols-2">
           {[["Gross monthly return", percent(allocation.gross_monthly_return)], ["Net monthly return", percent(allocation.net_monthly_return)],
-            ["Gross revenue", usd(allocation.gross_revenue_usd)], ["Prime-retained revenue", usd(allocation.prime_retained_revenue_usd)],
-            ["Net PnL", usd(allocation.net_pnl_usd)], ["Average original principal", usd(allocation.average_original_principal_usd)],
-            ["Average yield exposure", usd(allocation.average_yield_exposure_usd)]].map(([label, value]) => <div key={label}><dt className="text-sm text-muted-foreground">{label}</dt><dd className="font-medium tabular-nums">{value}</dd></div>)}
+            ["Gross revenue", monthlyUsd(allocation.gross_revenue_usd)], ["Prime-retained revenue", monthlyUsd(allocation.prime_retained_revenue_usd)],
+            ["Net PnL", monthlyUsd(allocation.net_pnl_usd)], ["Average original principal", monthlyUsd(allocation.average_original_principal_usd)],
+            ["Average yield exposure", monthlyUsd(allocation.average_yield_exposure_usd)]].map(([label, value]) => <div key={label}><dt className="text-sm text-muted-foreground">{label}</dt><dd className="font-medium tabular-nums">{value}</dd></div>)}
         </dl><p className="mt-4 text-sm text-muted-foreground">Yield denominator: {allocation.yield_denominator ?? "Unavailable"}.</p></Panel>
       </> : <Panel title="Borrowing costs and yields per allocation">
         <DataTable><TableHeader><TableRow><Th>Allocation</Th><Th>Monthly borrowing cost</Th><Th>Gross APY</Th><Th>Net APY</Th><Th>Funding / availability</Th></TableRow></TableHeader>
           <TableBody>{sorted.map(r => <TableRow key={r.venue_id}>
             <Td><Link className="font-medium hover:underline" href={paths.monthlyAllocations(month, prime, r.venue_id)}>{r.label}</Link><div className="text-xs text-muted-foreground">{r.venue_id}</div></Td>
-            <Td className="tabular-nums whitespace-nowrap">{usd(r.borrowing_cost_usd)}</Td><Td className="tabular-nums whitespace-nowrap">{percent(r.gross_apy)}</Td><Td className="tabular-nums whitespace-nowrap">{percent(r.net_apy)}</Td><Td>{costReason(r)}</Td>
+            <Td className="tabular-nums whitespace-nowrap">{monthlyUsd(r.borrowing_cost_usd)}</Td><Td className="tabular-nums whitespace-nowrap">{percent(r.gross_apy)}</Td><Td className="tabular-nums whitespace-nowrap">{percent(r.net_apy)}</Td><Td>{costReason(r)}</Td>
           </TableRow>)}</TableBody></DataTable>
       </Panel>}
       <ReadNotice read={reads[0]} />

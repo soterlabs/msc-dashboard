@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { validateMonthly, parseMonthlyRoute, percent, costReason } from "./model.ts";
+import { validateMonthly, parseMonthlyRoute, percent, costReason, monthlyUsd } from "./model.ts";
 import { createRevenueClient } from "../daily-revenue/api.ts";
 const fixture = (name = "spark-S18") => JSON.parse(readFileSync(`schema/fixtures/monthly-allocations/${name}.json`, "utf8"));
 
@@ -60,4 +60,13 @@ test("monthly client uses correct endpoint, revalidates revisions and distinguis
     const bad = createRevenueClient(async () => new Response(null, { status }), () => now, "https://example.test", () => {});
     const read = await bad.monthly("grove", "2026-09"); assert.equal(read.source, source); assert.equal(read.data, null);
   }
+});
+
+
+test("sub-cent borrowing costs and losses never look like exact zero", () => {
+  assert.equal(monthlyUsd(null), "—");
+  assert.equal(monthlyUsd("0"), "$0.00");
+  assert.equal(monthlyUsd("0.0000001"), "<$0.01");
+  assert.equal(monthlyUsd("-0.009"), "−<$0.01");
+  assert.equal(monthlyUsd("62109.95550631129475086343449"), "$62 109.96");
 });

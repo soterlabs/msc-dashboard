@@ -1,5 +1,5 @@
 import { Decimal } from "decimal.js";
-import { decimal } from "../daily-revenue/decimal.ts";
+import { decimal, usd } from "../daily-revenue/decimal.ts";
 import { isDailyPrime, type DailyPrime } from "../daily-revenue/types.ts";
 
 export const INITIAL_MONTH = "2026-08";
@@ -83,4 +83,12 @@ export function costReason(row: MonthlyAllocation): string {
     missing_capital_history: "Capital history unavailable", savings_liability: "Savings liability, not an allocation", income_only: "Income only",
   };
   return reasons[row.borrowing_cost_status] ?? "Borrowing cost unavailable";
+}
+
+/** Do not display a nonzero cost or loss as an exemption/zero. */
+export function monthlyUsd(value: string | null): string {
+  if (value === null) return "—";
+  const amount = new Decimal(decimal(value));
+  if (!amount.isZero() && amount.abs().lt("0.01")) return `${amount.isNegative() ? "−" : ""}<$0.01`;
+  return usd(value);
 }
