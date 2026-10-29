@@ -13,7 +13,7 @@
  */
 import { FLAGS, type Flags } from "./flags.ts";
 
-export type Section = "monthly-allocations" | "daily-revenue" | "ssr" | "sky-total" | "buybacks" | "prime";
+export type Section = "daily-revenue" | "ssr" | "sky-total" | "buybacks" | "prime";
 
 export interface SectionRoute {
   key: Section;
@@ -41,7 +41,6 @@ export const SECTIONS: SectionRoute[] = [
     source: "settle-api · supply-side allocations",
     flag: "dailyRevenue",
   },
-  { key: "monthly-allocations", slug: "monthly-allocations", label: "Allocation Costs & Yields", source: "settle-api · monthly allocation analytics" },
   {
     key: "sky-total",
     slug: "sky-total",
@@ -109,8 +108,8 @@ export const paths = {
     (prime ? `/${encodeURIComponent(prime)}` : "") +
     (prime && allocation ? `/${encodeURIComponent(allocation)}` : ""),
 
-  monthlyAllocations: (month = "2026-08", prime?: string, venue?: string) =>
-    `/monthly-allocations/${encodeURIComponent(month)}` +
+  monthlyAllocations: (month = "2026-09", prime?: string, venue?: string) =>
+    `/prime-agent-revenues/yields/${encodeURIComponent(month)}` +
     (prime ? `/${encodeURIComponent(prime)}` : "") +
     (prime && venue ? `/${encodeURIComponent(venue)}` : ""),
 

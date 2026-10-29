@@ -52,7 +52,6 @@ import { ThemeToggle } from "./theme-toggle";
 
 /** Icons live here, not in the route map: nothing on the server needs them. */
 const ICONS: Record<Section, Icon> = {
-  "monthly-allocations": TrendUpIcon,
   "daily-revenue": CalendarIcon,
   ssr: TrendUpIcon,
   "sky-total": BankIcon,
@@ -164,6 +163,11 @@ function AppSidebar({ section, primes }: { section?: Section; primes: PrimeLink[
                   </SidebarMenuAction>}
                   {expandable && open && (
                     <SidebarMenuSub>
+                      {s.key === "ssr" && <SidebarMenuSubItem>
+                        <SidebarMenuSubButton render={<Link href={paths.monthlyAllocations()} onClick={() => setOpenMobile(false)} />}
+                          isActive={pathname.startsWith("/prime-agent-revenues/yields")}
+                          aria-current={pathname.startsWith("/prime-agent-revenues/yields") ? "page" : undefined}>Yields per venue</SidebarMenuSubButton>
+                      </SidebarMenuSubItem>}
                       {nestedPrimes.map((prime) => {
                         const href = s.key === "daily-revenue"
                           ? paths.dailyRevenue("2026-09", prime.key)

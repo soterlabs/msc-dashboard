@@ -392,15 +392,15 @@ Live-response fixtures captured on 2026-09-16 live under
 
 ### Monthly allocation borrowing costs and yields
 
-The **Allocation Costs & Yields** tab reads the settlement API's monthly
-allocation endpoint on the server. It is independent of the daily-revenue flag.
+The **Yields per venue** page under **Prime Agent Revenues** reads the settlement API's monthly
+allocation endpoint on the server. It is independent of the daily-revenue flag. The default month is September.
 The initial published coverage is **August 2026, Spark and Grove**; unavailable
 months/primes are shown as missing, never as zero. Completed 2026 months can be
 selected. Shareable routes include:
 
-- `/monthly-allocations/2026-08`
-- `/monthly-allocations/2026-08/spark`
-- `/monthly-allocations/2026-08/spark/S18`
+- `/prime-agent-revenues/yields/2026-08`
+- `/prime-agent-revenues/yields/2026-08/spark`
+- `/prime-agent-revenues/yields/2026-08/spark/S18`
 
 Monthly borrowing costs use Sky-funded principal, excluding gains. Unresolved
 Savings-funded mixtures have null costs and net yields. Gross APY uses gross
@@ -413,3 +413,6 @@ Reads use the same server/public URL settings and bounded ETag cache as daily
 revenue. Stale responses retain their verification timestamp and are labelled.
 Each detail/table page links to its exact API revision. Known-cost subtotals are
 partial allocation analytics, not total ilk financing costs or settlement figures.
+
+Old `/monthly-allocations/...` URLs redirect to the matching yields page.
+Links from a prime settlement retain its selected month and prime.
