@@ -6,7 +6,7 @@ import { CopyLink } from "@/components/daily-revenue/copy-link";
 import { revenueClient, REVENUE_PUBLIC_URL } from "@/lib/daily-revenue/api";
 import { addMoney, compareMoney } from "@/lib/daily-revenue/decimal";
 import { DAILY_PRIMES, primeName } from "@/lib/daily-revenue/types";
-import { completedMonth, costReason, monthlyUsd, parseMonthlyRoute, percent, type MonthlyAllocation } from "@/lib/monthly-allocations/model";
+import { completedMonth, costReason, monthlyUsd, overviewYields, parseMonthlyRoute, percent, type MonthlyAllocation } from "@/lib/monthly-allocations/model";
 import { paths } from "@/lib/routes";
 
 export const dynamic = "force-dynamic";
@@ -49,8 +49,9 @@ export default async function Page({ params }: { params: Promise<{ path?: string
       return <Panel key={p} title={<Link className="hover:underline" href={paths.monthlyAllocations(month, p)}>{primeName(p)} →</Link>}>
         {data ? <><p className="text-2xl font-semibold tabular-nums">{known.length ? monthlyUsd(addMoney(known.map(r => r.borrowing_cost_usd!))) : "—"}</p>
           <p className="text-sm text-muted-foreground">Known allocation costs · {known.length} of {data.allocations.length} rows have a cost. This subtotal is not the prime’s total financing charge.</p>
+          <p className="mt-3 text-xs text-muted-foreground">Up to three allocations by gross APY · open the prime for all allocations.</p>
           <DataTable><TableHeader><TableRow><Th>Allocation</Th><Th>Gross APY</Th><Th>Net APY</Th></TableRow></TableHeader>
-            <TableBody>{data.allocations.map(row => <TableRow key={row.venue_id}>
+            <TableBody>{overviewYields(data.allocations).map(row => <TableRow key={row.venue_id}>
               <Td><Link className="hover:underline" href={paths.monthlyAllocations(month, p, row.venue_id)}>{row.label}</Link></Td>
               <Td className="tabular-nums whitespace-nowrap">{percent(row.gross_apy)}</Td><Td className="tabular-nums whitespace-nowrap">{percent(row.net_apy)}</Td>
             </TableRow>)}</TableBody></DataTable></> : <p className="text-sm">{read.source === "missing" ? "No published monthly allocation data." : "Monthly data temporarily unavailable."}</p>}

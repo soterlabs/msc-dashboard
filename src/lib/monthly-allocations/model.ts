@@ -101,3 +101,9 @@ export function monthlyUsd(value: string | null): string {
   if (!amount.isZero() && amount.abs().lt("0.01")) return `${amount.isNegative() ? "−" : ""}<$0.01`;
   return usd(value);
 }
+
+/** Keep overview cards compact; the prime page retains every allocation. */
+export function overviewYields(rows: MonthlyAllocation[]): MonthlyAllocation[] {
+  return rows.filter(row => row.gross_apy !== null).sort((a, b) =>
+    new Decimal(b.gross_apy!).comparedTo(a.gross_apy!) || a.venue_id.localeCompare(b.venue_id)).slice(0, 3);
+}
