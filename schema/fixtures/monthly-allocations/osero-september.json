@@ -1,0 +1,83 @@
+{
+  "count": 2,
+  "month": "2026-09",
+  "prime": "osero",
+  "scope": "allocation analytics; not a settlement restatement",
+  "units": {
+    "amounts": "USD",
+    "returns": "decimal ratio; 0.05 means 5%"
+  },
+  "period": {
+    "end": "2026-09-30",
+    "days": 30,
+    "start": "2026-09-01"
+  },
+  "cadence": "monthly",
+  "apy_method": "(1 + period revenue / average exposure) ** (365 / days) - 1",
+  "allocations": [
+    {
+      "label": "Spark USDS (SparkLend spToken)",
+      "net_apy": "-0.0012870331863803836667682624128138418131",
+      "venue_id": "O1",
+      "gross_apy": "0.024046165042713571737789361955707921865",
+      "net_pnl_usd": "-3945.14674934437903547457718",
+      "yield_status": "available",
+      "gross_revenue_usd": "72864.63184908031158322300",
+      "yield_denominator": "published time-weighted position value",
+      "borrowing_cost_usd": "76809.77859842469061869757718",
+      "net_monthly_return": "-0.0001058460794083513769796359107",
+      "cost_reported_under": null,
+      "gross_monthly_return": "0.001954917294278021026191383697",
+      "borrowing_cost_status": "calculable_under_assumption",
+      "savings_dependency_days": [],
+      "average_yield_exposure_usd": "37272488.23382590432787303767",
+      "prime_retained_revenue_usd": "72864.63184908031158322300",
+      "excess_deduction_credit_usd": "0E-23",
+      "average_original_principal_usd": "37266269.46666666666666666597",
+      "closing_original_principal_usd": "49999502.99999999999999999947",
+      "spread_reimbursement_excluded_from_net_usd": "0"
+    },
+    {
+      "label": "USDS raw (Diamond PAU ALM idle)",
+      "net_apy": null,
+      "venue_id": "O2",
+      "gross_apy": null,
+      "net_pnl_usd": "0",
+      "yield_status": "no_positive_exposure",
+      "gross_revenue_usd": "0",
+      "yield_denominator": "published notional (position value unavailable)",
+      "borrowing_cost_usd": "0",
+      "net_monthly_return": null,
+      "cost_reported_under": null,
+      "gross_monthly_return": null,
+      "borrowing_cost_status": "excluded_from_cost",
+      "savings_dependency_days": [],
+      "average_yield_exposure_usd": "0",
+      "prime_retained_revenue_usd": "0",
+      "excess_deduction_credit_usd": null,
+      "average_original_principal_usd": "0",
+      "closing_original_principal_usd": "0",
+      "spread_reimbursement_excluded_from_net_usd": "0"
+    }
+  ],
+  "limitations": [
+    "Assumption-based diagnostic; not a new production charge or a certified global debt reconciliation.",
+    "Potential Savings dependencies propagate conservatively across mixed transactions, not quantified Savings balances.",
+    "Refinancing Savings and debt repayments need separate attribution; original capital is not outstanding ilk debt.",
+    "Uses normalized history through 2026-09-30 and published 2026-09 revenue/rates; no revenue regeneration.",
+    "Costs reuse the existing daily effective blended rate and exact available dollar deductions.",
+    "Deductions are capped at allocation principal for its charge; excess deduction credit remains explicitly separate for the global bridge."
+  ],
+  "provisional": true,
+  "source_hashes": {
+    "publisher": "7d998a240c6809b477167165fbc3e16f1edb1847a68cefe2772988b36e708cd3",
+    "yield_artifact": "b0ac41e0ba91890540b6ce0a88b081ce69538ce4a501deee1db2c39c41f88f5d",
+    "capital_artifact": "9b4921bf54aa4c5ebf5ba10bd33d3a678822982d5c20be051fd6de7d02c52ffc"
+  },
+  "capital_method": "Original capital carried through normalized transactions, weighted-average source basis; end-of-day convention.",
+  "funding_policy": "Operator-confirmed Sky funding except Spark Savings; exclude classified income and reinvested gains.",
+  "net_definition": "Prime-retained venue revenue minus modeled allocation borrowing costs; excludes Prime-level adjustments/spread reimbursements.",
+  "schema_version": "1.0",
+  "revision_id": "1c4734c3f174d633cec6211bb717258ee4e9e321ed9786a1f714e1466445dab3",
+  "published_at": "2026-10-29T19:29:48.072134+00:00"
+}

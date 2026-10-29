@@ -1,0 +1,61 @@
+{
+  "count": 1,
+  "month": "2026-09",
+  "prime": "obex",
+  "scope": "allocation analytics; not a settlement restatement",
+  "units": {
+    "amounts": "USD",
+    "returns": "decimal ratio; 0.05 means 5%"
+  },
+  "period": {
+    "end": "2026-09-30",
+    "days": 30,
+    "start": "2026-09-01"
+  },
+  "cadence": "monthly",
+  "apy_method": "(1 + period revenue / average exposure) ** (365 / days) - 1",
+  "allocations": [
+    {
+      "label": "Maple syrupUSDC (Category B \u2014 ERC-4626 vault)",
+      "net_apy": "0.013471613174383144666354245895985941143",
+      "venue_id": "V1",
+      "gross_apy": "0.050643891589717003914877295984578420591",
+      "net_pnl_usd": "444471.936626811074382739814",
+      "yield_status": "available",
+      "gross_revenue_usd": "1643357.64938440313000",
+      "yield_denominator": "published time-weighted position value",
+      "borrowing_cost_usd": "1198885.712757592055617260186",
+      "net_monthly_return": "0.001100469001700634471248708685",
+      "cost_reported_under": null,
+      "gross_monthly_return": "0.004068792656697207309431469846",
+      "borrowing_cost_status": "calculable_under_assumption",
+      "savings_dependency_days": [],
+      "average_yield_exposure_usd": "403893190.9394416300400",
+      "prime_retained_revenue_usd": "1643357.64938440313000",
+      "excess_deduction_credit_usd": "0E-21",
+      "average_original_principal_usd": "390349308.4423310228877614447",
+      "closing_original_principal_usd": "390349308.4423310228877614450",
+      "spread_reimbursement_excluded_from_net_usd": "0"
+    }
+  ],
+  "limitations": [
+    "Assumption-based diagnostic; not a new production charge or a certified global debt reconciliation.",
+    "Potential Savings dependencies propagate conservatively across mixed transactions, not quantified Savings balances.",
+    "Refinancing Savings and debt repayments need separate attribution; original capital is not outstanding ilk debt.",
+    "Uses normalized history through 2026-09-30 and published 2026-09 revenue/rates; no revenue regeneration.",
+    "Costs reuse the existing daily effective blended rate and exact available dollar deductions.",
+    "Deductions are capped at allocation principal for its charge; excess deduction credit remains explicitly separate for the global bridge."
+  ],
+  "provisional": true,
+  "source_hashes": {
+    "publisher": "7d998a240c6809b477167165fbc3e16f1edb1847a68cefe2772988b36e708cd3",
+    "yield_artifact": "390bc305bdc6c31fb546ba312a18ec5b6e3cb6712decd518b9be5e644d470bcb",
+    "capital_artifact": "638ed9d517dbaa990b3b0e1d4241bc7e33ae9a8b62044c1e5af6f6a093f6e579"
+  },
+  "capital_method": "Original capital carried through normalized transactions, weighted-average source basis; end-of-day convention.",
+  "funding_policy": "Operator-confirmed Sky funding except Spark Savings; exclude classified income and reinvested gains.",
+  "net_definition": "Prime-retained venue revenue minus modeled allocation borrowing costs; excludes Prime-level adjustments/spread reimbursements.",
+  "schema_version": "1.0",
+  "revision_id": "901157e3255b6935d992080f6a25f796b21a9e61e58e6ad3bbcb3d4afc034096",
+  "published_at": "2026-10-29T19:29:58.116113+00:00"
+}
