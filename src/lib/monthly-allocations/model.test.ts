@@ -90,3 +90,12 @@ test("a failed monthly refresh retains only the same verified selection and labe
   assert.equal(stale.data?.revision_id, first.data?.revision_id);
   assert.equal((await client.monthly("spark", "2026-09")).data, null);
 });
+
+test("venue yields live under Prime Agent Revenues with a September default", async () => {
+  const { paths, sectionFromPath } = await import("../routes.ts");
+  assert.equal(paths.monthlyAllocations(), "/prime-agent-revenues/yields/2026-09");
+  const path = paths.monthlyAllocations("2026-09", "grove", "E10");
+  assert.equal(path, "/prime-agent-revenues/yields/2026-09/grove/E10");
+  assert.equal(sectionFromPath(path)?.key, "ssr");
+  assert.equal(parseMonthlyRoute([], new Date("2026-10-29T00:00:00Z"))?.month, "2026-09");
+});

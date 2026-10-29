@@ -2,7 +2,7 @@ import { Decimal } from "decimal.js";
 import { decimal, usd } from "../daily-revenue/decimal.ts";
 import { isDailyPrime, type DailyPrime } from "../daily-revenue/types.ts";
 
-export const INITIAL_MONTH = "2026-08";
+export const INITIAL_MONTH = "2026-09";
 export interface MonthlyAllocation {
   venue_id: string; label: string;
   borrowing_cost_usd: string | null; borrowing_cost_status: string;

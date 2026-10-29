@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeftIcon, ArrowRightIcon, ArrowSquareOutIcon } from "@phosphor-icons/react";
 import {
@@ -131,6 +132,10 @@ export function SupplySideRevenues({
         />
       )}
 
+      <nav aria-label="Prime revenue views" className="flex gap-4 text-sm">
+        <span aria-current="page" className="font-semibold">Settlement reports</span>
+        <Link className="underline" href={paths.monthlyAllocations(month ?? "2026-09", openPartner ?? undefined)}>Yields per venue</Link>
+      </nav>
       {openPartner ? (
         <PartnerBreakdown
           partner={openPartner}
