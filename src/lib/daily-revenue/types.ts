@@ -3,9 +3,9 @@ export type DailyPrime = (typeof DAILY_PRIMES)[number];
 export const primeName = (prime: DailyPrime) => prime[0].toUpperCase() + prime.slice(1);
 export const isDailyPrime = (value: string): value is DailyPrime => (DAILY_PRIMES as readonly string[]).includes(value);
 
-export const SEPTEMBER_MONTH = "2026-09";
-export const SEPTEMBER_START = "2026-09-01";
-export const SEPTEMBER_END = "2026-09-30";
+export const DAILY_MONTHS = ["2026-09", "2026-10"] as const;
+export type DailyMonth = (typeof DAILY_MONTHS)[number];
+export const isDailyMonth = (value: unknown): value is DailyMonth => typeof value === "string" && (DAILY_MONTHS as readonly string[]).includes(value);
 
 export interface Allocation {
   venue_id: string;

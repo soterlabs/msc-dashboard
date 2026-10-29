@@ -17,3 +17,5 @@ export function monthWindow(month: string, now: Date): { start: string; end: str
 /** An API instant as "2026-09-15 20:22:05 UTC". Never the reader's local zone:
  * these are pipeline times, read against a cutoff that is itself UTC. */
 export const utcStamp = (value: string) => `${new Date(value).toISOString().slice(0, 19).replace("T", " ")} UTC`;
+
+export const monthLabel = (month: string) => new Intl.DateTimeFormat("en", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${month}-01T00:00:00Z`));
