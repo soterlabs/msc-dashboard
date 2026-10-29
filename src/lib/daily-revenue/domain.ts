@@ -1,5 +1,5 @@
 import { addMoney, subtractMoney } from "./decimal.ts";
-import { SEPTEMBER_START, type Allocation, type AllocationSeries, type DailyPrime, type Estimate, type History, type PrimeSeries, type RevenuePoint } from "./types.ts";
+import { type Allocation, type AllocationSeries, type DailyPrime, type Estimate, type History, type PrimeSeries, type RevenuePoint } from "./types.ts";
 
 const rank = (e: Estimate): [string, number, number] => [e.cutoff, e.publication_order ?? -1, Date.parse(e.computed_at)];
 function newestFirst(a: Estimate, b: Estimate): number {
@@ -20,7 +20,7 @@ function dates(start: string, end: string): string[] {
 const allocationAt = (estimate: Estimate | undefined, venueId: string): Allocation | undefined =>
   estimate?.result.venue_breakdown?.find((v) => v.venue_id === venueId && !v.hide_per_venue_pnl);
 
-/** Catalog every selected September revision so closed allocations survive. */
+/** Catalog every selected monthly revision so closed allocations survive. */
 export function allocationSeries(history: History, prime: DailyPrime): { eligible: AllocationSeries[]; hidden: AllocationSeries[] } {
   const snapshots = new Map(history.results.map((e) => [e.cutoff, e]));
   const catalog = new Map<string, { label: string; seen: number; hidden: boolean }>();
@@ -38,7 +38,7 @@ export function allocationSeries(history: History, prime: DailyPrime): { eligibl
     const points = dates(history.start, history.end).map((date): RevenuePoint => {
       const current = allocationAt(snapshots.get(date), venueId);
       if (!current) return { date, mtd: null, daily: null };
-      if (date === SEPTEMBER_START) return { date, mtd: current.revenue, daily: current.revenue };
+      if (date.endsWith("-01")) return { date, mtd: current.revenue, daily: current.revenue };
       const priorDate = new Date(Date.parse(date) - 86_400_000).toISOString().slice(0, 10);
       const previous = allocationAt(snapshots.get(priorDate), venueId);
       return { date, mtd: current.revenue, daily: previous ? subtractMoney(current.revenue, previous.revenue) : null };
@@ -57,7 +57,7 @@ export function primeSeries(history: History, prime: DailyPrime): PrimeSeries {
     if (eligible.length === 0) {
       const current = snapshots.get(date)?.result.venue_breakdown;
       if (current === null || current === undefined) return { date, mtd: null, daily: null };
-      if (date === SEPTEMBER_START) return { date, mtd: "0", daily: "0" };
+      if (date.endsWith("-01")) return { date, mtd: "0", daily: "0" };
       const priorDate = new Date(Date.parse(date) - 86_400_000).toISOString().slice(0, 10);
       const previous = snapshots.get(priorDate)?.result.venue_breakdown;
       return { date, mtd: "0", daily: previous === null || previous === undefined ? null : "0" };

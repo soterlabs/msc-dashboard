@@ -4,7 +4,7 @@ import { paths } from "../routes.ts";
 import { parseDailyRoute } from "./routes.ts";
 
 test("canonical daily revenue paths carry month, prime and venue ID", () => {
-  assert.equal(paths.dailyRevenue(), "/daily-revenue/2026-09");
+  assert.equal(paths.dailyRevenue(), "/daily-revenue/2026-10");
   assert.equal(paths.dailyRevenue("2026-09", "spark"), "/daily-revenue/2026-09/spark");
   assert.equal(paths.dailyRevenue("2026-09", "spark", "S1/a"), "/daily-revenue/2026-09/spark/S1%2Fa");
   assert.deepEqual(parseDailyRoute(["2026-09"]), { month: "2026-09", prime: undefined, allocation: undefined });
@@ -12,10 +12,19 @@ test("canonical daily revenue paths carry month, prime and venue ID", () => {
 });
 
 test("legacy paths redirect and unsupported or malformed paths fail", () => {
-  assert.deepEqual(parseDailyRoute([]), { redirectTo: "/daily-revenue/2026-09" });
+  assert.deepEqual(parseDailyRoute([]), { redirectTo: "/daily-revenue/2026-10" });
   assert.deepEqual(parseDailyRoute(["spark"], "2026-09"), { redirectTo: "/daily-revenue/2026-09/spark" });
   assert.deepEqual(parseDailyRoute(["spark", "2026-09"]), { redirectTo: "/daily-revenue/2026-09/spark" });
   for (const path of [["2026-08"], ["2026-09", "unknown"], ["2026-09", "spark", "S1", "extra"]]) assert.equal(parseDailyRoute(path), null);
   assert.equal(parseDailyRoute(["spark"], "2026-08"), null);
   assert.equal(parseDailyRoute([], ["2026-09"]), null);
+});
+
+test("October routes preserve month and reject conflicting legacy queries", () => {
+  assert.deepEqual(parseDailyRoute(["2026-10", "grove", "E42"]), { month: "2026-10", prime: "grove", allocation: "E42" });
+  assert.deepEqual(parseDailyRoute(["spark"], "2026-10"), { redirectTo: "/daily-revenue/2026-10/spark" });
+  assert.deepEqual(parseDailyRoute([], "2026-09"), { redirectTo: "/daily-revenue/2026-09" });
+  assert.deepEqual(parseDailyRoute(["grove", "2026-10"]), { redirectTo: "/daily-revenue/2026-10/grove" });
+  assert.equal(parseDailyRoute(["2026-10"], "2026-09"), null);
+  assert.equal(parseDailyRoute(["2026-11"]), null);
 });

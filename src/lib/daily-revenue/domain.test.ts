@@ -93,3 +93,18 @@ test("an absent breakdown is unavailable rather than an empty zero book", () => 
   assert.equal(p.breakdownAvailable, false);
   assert.equal(p.points.every((point) => point.mtd === null), true);
 });
+
+test("October resets MTD at month start and keeps missing daily observations as gaps", () => {
+  const h: History = { start: "2026-10-01", end: "2026-10-04", results: [
+    estimate("2026-10-01", [venue("A", "12")]),
+    estimate("2026-10-02", [venue("A", "20")]),
+    estimate("2026-10-04", [venue("A", "40")]),
+  ] };
+  assert.deepEqual(primeSeries(h, "grove").points.map(p => p.daily), ["12", "8", null, null]);
+  const partial = { ...h, start: "2026-10-02" };
+  assert.equal(primeSeries(partial, "grove").points[0].daily, "8");
+  const noPrior = { ...partial, results: h.results.filter(r => r.cutoff !== "2026-10-01") };
+  assert.equal(primeSeries(noPrior, "grove").points[0].daily, null);
+  const empty = { ...h, results: [estimate("2026-10-01", [])] };
+  assert.equal(primeSeries(empty, "grove").points[0].daily, "0");
+});

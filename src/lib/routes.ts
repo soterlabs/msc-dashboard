@@ -103,7 +103,7 @@ export const paths = {
       : `/${slugOf("buybacks")}`,
 
   /** Fixed-month allocation revenue drill-down. */
-  dailyRevenue: (month = "2026-09", prime?: string, allocation?: string) =>
+  dailyRevenue: (month = "2026-10", prime?: string, allocation?: string) =>
     `/${slugOf("daily-revenue")}/${encodeURIComponent(month)}` +
     (prime ? `/${encodeURIComponent(prime)}` : "") +
     (prime && allocation ? `/${encodeURIComponent(allocation)}` : ""),
