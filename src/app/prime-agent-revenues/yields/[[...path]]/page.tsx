@@ -6,7 +6,7 @@ import { CopyLink } from "@/components/daily-revenue/copy-link";
 import { revenueClient, REVENUE_PUBLIC_URL } from "@/lib/daily-revenue/api";
 import { addMoney, compareMoney } from "@/lib/daily-revenue/decimal";
 import { DAILY_PRIMES, primeName } from "@/lib/daily-revenue/types";
-import { completedMonth, costReason, monthlyUsd, parseMonthlyRoute, percent, type MonthlyAllocation } from "@/lib/monthly-allocations/model";
+import { completedMonth, costReason, monthlyUsd, overviewYields, parseMonthlyRoute, percent, type MonthlyAllocation } from "@/lib/monthly-allocations/model";
 import { paths } from "@/lib/routes";
 
 export const dynamic = "force-dynamic";
@@ -38,12 +38,23 @@ export default async function Page({ params }: { params: Promise<{ path?: string
     <nav aria-label="Report month" className="flex flex-wrap gap-3 text-sm">
       {months.map(m => <Link key={m} href={paths.monthlyAllocations(m, prime, venue)} aria-current={m === month ? "page" : undefined} className={m === month ? "font-semibold underline" : "text-muted-foreground hover:underline"}>{m}</Link>)}
     </nav>
+    <nav aria-label="Yield report prime agent" className="flex flex-wrap gap-3 text-sm">
+      <Link href={paths.monthlyAllocations(month)} aria-current={!prime ? "page" : undefined} className={!prime ? "font-semibold underline" : "hover:underline"}>All primes</Link>
+      {DAILY_PRIMES.map(p => <Link key={p} href={paths.monthlyAllocations(month, p)} aria-current={prime === p ? "page" : undefined}
+        className={prime === p ? "font-semibold underline" : "text-muted-foreground hover:underline"}>{primeName(p)}</Link>)}
+    </nav>
     <p className="text-sm text-muted-foreground">Availability is shown for the selected month. A dash means unavailable, never zero; funding or capital gaps can leave net yields pending even when gross yields are available.</p>
     {!prime ? <div className="grid gap-4 md:grid-cols-2">{selected.map((p, i) => {
       const read = reads[i], data = read.data, known = knownCosts(data?.allocations ?? []);
       return <Panel key={p} title={<Link className="hover:underline" href={paths.monthlyAllocations(month, p)}>{primeName(p)} →</Link>}>
         {data ? <><p className="text-2xl font-semibold tabular-nums">{known.length ? monthlyUsd(addMoney(known.map(r => r.borrowing_cost_usd!))) : "—"}</p>
-          <p className="text-sm text-muted-foreground">Known allocation costs · {known.length} of {data.allocations.length} rows have a cost. This subtotal is not the prime’s total financing charge.</p></> : <p className="text-sm">{read.source === "missing" ? "No published monthly allocation data." : "Monthly data temporarily unavailable."}</p>}
+          <p className="text-sm text-muted-foreground">Known allocation costs · {known.length} of {data.allocations.length} rows have a cost. This subtotal is not the prime’s total financing charge.</p>
+          <p className="mt-3 text-xs text-muted-foreground">Up to three allocations by gross APY · open the prime for all allocations.</p>
+          <DataTable><TableHeader><TableRow><Th>Allocation</Th><Th>Gross APY</Th><Th>Net APY</Th></TableRow></TableHeader>
+            <TableBody>{overviewYields(data.allocations).map(row => <TableRow key={row.venue_id}>
+              <Td><Link className="hover:underline" href={paths.monthlyAllocations(month, p, row.venue_id)}>{row.label}</Link></Td>
+              <Td className="tabular-nums whitespace-nowrap">{percent(row.gross_apy)}</Td><Td className="tabular-nums whitespace-nowrap">{percent(row.net_apy)}</Td>
+            </TableRow>)}</TableBody></DataTable></> : <p className="text-sm">{read.source === "missing" ? "No published monthly allocation data." : "Monthly data temporarily unavailable."}</p>}
         <ReadNotice read={read} />
       </Panel>;
     })}</div> : !doc || (venue && !allocation) ? <Panel title="Monthly allocation data unavailable"><p>No verified data is available for this selection.</p><ReadNotice read={reads[0]} /></Panel> : <>
@@ -69,10 +80,10 @@ export default async function Page({ params }: { params: Promise<{ path?: string
       <p className="text-xs text-muted-foreground">Published {doc.published_at} · <a className="underline" href={`${REVENUE_PUBLIC_URL}/v1/revenue/${prime}/monthly/${month}/allocations?revision=${doc.revision_id}${venue ? `&venue=${encodeURIComponent(venue)}` : ""}`} target="_blank" rel="noreferrer">View this API revision</a></p>
     </>}
     <Panel title="How to read these figures"><div className="space-y-2 text-sm text-muted-foreground">
-      <p>Borrowing costs apply to original Sky-funded principal, excluding retained and reinvested gains. Principal is assumed Sky-funded except Spark Savings. Unresolved funding splits have no borrowing-cost or net-yield estimate.</p>
+      <p>Borrowing costs apply to original Sky-funded principal, excluding retained and reinvested gains. Where indicated, Spark uses estimated Sky / Savings funding proportions. Unresolved positions without a reviewed estimate retain unavailable costs and net yields.</p>
       <p>Gross yield uses investment revenue before SDE sharing. Net yield uses prime-retained venue revenue after SDE sharing, less allocation borrowing cost; it excludes prime-level adjustments and spread reimbursements. Net is therefore not simply gross minus borrowing cost.</p>
       <p>APY annualizes the selected month’s return using average exposure. It is not a contracted or forecast rate. Monthly returns are available on each allocation page. Cash-recognized revenue can be lumpy.</p>
-      <p>These analytics do not replace settlement reports. Known-cost subtotals exclude unresolved rows and prime-level financing adjustments; they should not be read as total ilk borrowing costs.</p>
+      <p>These analytics do not replace settlement reports. Known-cost subtotals exclude unresolved rows and prime-level financing adjustments; they should not be read as total ilk borrowing costs. Deferred funding differences are not spread across allocations.</p>
     </div></Panel>
   </div>;
 }
