@@ -6,6 +6,7 @@ export const INITIAL_MONTH = "2026-09";
 export interface MonthlyAllocation {
   venue_id: string; label: string;
   borrowing_cost_usd: string | null; borrowing_cost_status: string;
+  borrowing_cost_method?: "proportional_sky_savings";
   gross_revenue_usd: string | null; prime_retained_revenue_usd: string | null;
   net_pnl_usd: string | null;
   gross_monthly_return: string | null; net_monthly_return: string | null;
@@ -48,6 +49,7 @@ export function validateMonthly(value: unknown, prime: DailyPrime, month: string
     const r = obj(raw);
     const row: MonthlyAllocation = {
       venue_id: text(r.venue_id), label: text(r.label), borrowing_cost_status: text(r.borrowing_cost_status),
+      ...(r.borrowing_cost_method === "proportional_sky_savings" ? { borrowing_cost_method: "proportional_sky_savings" as const } : {}),
       borrowing_cost_usd: nullable(r.borrowing_cost_usd), gross_revenue_usd: nullable(r.gross_revenue_usd),
       prime_retained_revenue_usd: nullable(r.prime_retained_revenue_usd), net_pnl_usd: nullable(r.net_pnl_usd),
       gross_monthly_return: nullable(r.gross_monthly_return), net_monthly_return: nullable(r.net_monthly_return),
@@ -84,6 +86,7 @@ export function percent(value: string | null): string {
 }
 export function costReason(row: MonthlyAllocation): string {
   if (row.cost_reported_under) return `Included under ${row.cost_reported_under}`;
+  if (row.borrowing_cost_method === "proportional_sky_savings" && row.borrowing_cost_usd !== null) return "Sky / Savings funding estimate";
   const reasons: Record<string, string> = {
     calculable_under_assumption: "Sky-funded principal assumed",
     excluded_from_cost: "Exempt from borrowing cost", no_principal_in_period: "No principal this month",
