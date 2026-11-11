@@ -80,10 +80,10 @@ export default async function Page({ params }: { params: Promise<{ path?: string
       <p className="text-xs text-muted-foreground">Published {doc.published_at} · <a className="underline" href={`${REVENUE_PUBLIC_URL}/v1/revenue/${prime}/monthly/${month}/allocations?revision=${doc.revision_id}${venue ? `&venue=${encodeURIComponent(venue)}` : ""}`} target="_blank" rel="noreferrer">View this API revision</a></p>
     </>}
     <Panel title="How to read these figures"><div className="space-y-2 text-sm text-muted-foreground">
-      <p>Borrowing costs apply to original Sky-funded principal, excluding retained and reinvested gains. Principal is assumed Sky-funded except Spark Savings. Unresolved funding splits have no borrowing-cost or net-yield estimate.</p>
+      <p>Borrowing costs apply to original Sky-funded principal, excluding retained and reinvested gains. Where indicated, Spark uses estimated Sky / Savings funding proportions. Unresolved positions without a reviewed estimate retain unavailable costs and net yields.</p>
       <p>Gross yield uses investment revenue before SDE sharing. Net yield uses prime-retained venue revenue after SDE sharing, less allocation borrowing cost; it excludes prime-level adjustments and spread reimbursements. Net is therefore not simply gross minus borrowing cost.</p>
       <p>APY annualizes the selected month’s return using average exposure. It is not a contracted or forecast rate. Monthly returns are available on each allocation page. Cash-recognized revenue can be lumpy.</p>
-      <p>These analytics do not replace settlement reports. Known-cost subtotals exclude unresolved rows and prime-level financing adjustments; they should not be read as total ilk borrowing costs.</p>
+      <p>These analytics do not replace settlement reports. Known-cost subtotals exclude unresolved rows and prime-level financing adjustments; they should not be read as total ilk borrowing costs. Deferred funding differences are not spread across allocations.</p>
     </div></Panel>
   </div>;
 }

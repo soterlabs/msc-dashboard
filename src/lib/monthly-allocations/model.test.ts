@@ -127,3 +127,13 @@ test("overview shows the top three measured yields without mutating or hiding ze
   assert.deepEqual(overviewYields(rows).map(r => r.venue_id), ["V3", "V4", "V2"]);
   assert.equal(rows[0].gross_apy, null);
 });
+
+test("reviewed mixed funding is labelled explicitly while legacy responses still work", () => {
+  const input = fixture();
+  input.allocations[0].borrowing_cost_method = "proportional_sky_savings";
+  const row = validateMonthly(input, "spark", "2026-08").allocations[0];
+  assert.equal(costReason(row), "Sky / Savings funding estimate");
+  assert.equal(row.borrowing_cost_usd, input.allocations[0].borrowing_cost_usd);
+  delete input.allocations[0].borrowing_cost_method;
+  assert.equal(costReason(validateMonthly(input, "spark", "2026-08").allocations[0]), "Sky-funded principal assumed");
+});
