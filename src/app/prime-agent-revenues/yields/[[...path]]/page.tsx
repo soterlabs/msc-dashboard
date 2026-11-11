@@ -77,7 +77,7 @@ export default async function Page({ params }: { params: Promise<{ path?: string
           </TableRow>)}</TableBody></DataTable>
       </Panel>}
       <ReadNotice read={reads[0]} />
-      <p className="text-xs text-muted-foreground">Published {doc.published_at} · <a className="underline" href={`${REVENUE_PUBLIC_URL}/v1/revenue/${prime}/monthly/${month}/allocations?revision=${doc.revision_id}${venue ? `&venue=${encodeURIComponent(venue)}` : ""}`} target="_blank" rel="noreferrer">View this API revision</a></p>
+      <p className="text-xs text-muted-foreground">Published {doc.published_at} · <a className="underline" href={`${REVENUE_PUBLIC_URL}/v3/reporting/allocation-yields?prime=${prime}&month=${month}&revision=${doc.revision_id}${venue ? `&venue=${encodeURIComponent(venue)}` : ""}`} target="_blank" rel="noreferrer">View this API revision</a></p>
     </>}
     <Panel title="How to read these figures"><div className="space-y-2 text-sm text-muted-foreground">
       {doc?.revenue_basis && <p>{doc.revenue_basis}. This attribution does not change MSC settlement amounts.</p>}
