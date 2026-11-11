@@ -92,7 +92,7 @@ export function createRevenueClient(fetcher: typeof fetch = fetch, now: () => nu
     try { return await work; } finally { pending.delete(path); }
   }
   return {
-    monthly: (prime: DailyPrime, month: string) => request(`/v1/revenue/${prime}/monthly/${month}/allocations`, (v) => validateMonthly(v, prime, month)),
+    monthly: (prime: DailyPrime, month: string) => request(`/v3/reporting/allocation-yields?prime=${prime}&month=${month}`, (v) => validateMonthly(v, prime, month)),
     latest: (prime: DailyPrime) => request(`/v1/revenue/${prime}/latest`, (v) => validateLatest(v, prime)),
     history: (prime: DailyPrime, start: string, end: string) => {
       const fallbackKey = `${prime}:${start}`;
