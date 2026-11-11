@@ -44,7 +44,7 @@ test("shareable routes reject incomplete or invalid months and malformed venues"
 test("monthly client uses correct endpoint, revalidates revisions and distinguishes 404 from outage", async () => {
   let now = 0, calls = 0;
   const client = createRevenueClient(async (url, options) => {
-    calls++; assert.equal(url, "https://example.test/v1/revenue/spark/monthly/2026-08/allocations");
+    calls++; assert.equal(url, "https://example.test/v3/reporting/allocation-yields?prime=spark&month=2026-08");
     if (calls === 2) {
       assert.equal((options?.headers as Record<string, string>)["if-none-match"], "v1");
       return new Response(null, { status: 304 });
@@ -104,7 +104,7 @@ test("Osero and Obex September API yields retain costs, negative returns and idl
   for (const [prime, gross, net] of [["osero", "2.40%", "-0.13%"], ["obex", "5.06%", "1.35%"]] as const) {
     const payload = fixture(`${prime}-september`);
     const client = createRevenueClient(async (url) => {
-      assert.equal(url, `https://example.test/v1/revenue/${prime}/monthly/2026-09/allocations`);
+      assert.equal(url, `https://example.test/v3/reporting/allocation-yields?prime=${prime}&month=2026-09`);
       return new Response(JSON.stringify(payload));
     }, () => 0, "https://example.test");
     const read = await client.monthly(prime, "2026-09");
@@ -146,4 +146,11 @@ test("monthly revenue basis is preserved without changing legacy responses", () 
   assert.equal(validateMonthly(input, "spark", "2026-08").revenue_basis, input.revenue_basis);
   input.revenue_basis = 123;
   assert.throws(() => validateMonthly(input, "spark", "2026-08"));
+});
+
+
+test("yield page links to the same reporting revision that its client reads", () => {
+  const page = readFileSync('src/app/prime-agent-revenues/yields/[[...path]]/page.tsx', 'utf8');
+  assert.match(page, /v3\/reporting\/allocation-yields\?prime=/);
+  assert.doesNotMatch(page, /v1\/revenue\/.*monthly/);
 });
