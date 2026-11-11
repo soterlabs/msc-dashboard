@@ -16,7 +16,7 @@ export interface MonthlyAllocation {
 }
 export interface MonthlyDocument {
   prime: DailyPrime; month: string; revision_id: string; published_at: string;
-  allocations: MonthlyAllocation[]; provisional: true;
+  allocations: MonthlyAllocation[]; provisional: true; revenue_basis?: string;
 }
 const known = new Set(["calculable_under_assumption", "excluded_from_cost", "no_principal_in_period"]);
 const obj = (v: unknown): Record<string, unknown> => {
@@ -76,7 +76,7 @@ export function validateMonthly(value: unknown, prime: DailyPrime, month: string
     return row;
   });
   if (new Set(allocations.map(r => r.venue_id)).size !== allocations.length) throw new Error("Duplicate allocation");
-  return { prime, month, revision_id: text(v.revision_id), published_at: text(v.published_at), provisional: true, allocations };
+  return { ...(v.revenue_basis === undefined ? {} : { revenue_basis: text(v.revenue_basis) }), prime, month, revision_id: text(v.revision_id), published_at: text(v.published_at), provisional: true, allocations };
 }
 export function percent(value: string | null): string {
   if (value === null) return "—";
