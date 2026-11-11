@@ -137,3 +137,13 @@ test("reviewed mixed funding is labelled explicitly while legacy responses still
   delete input.allocations[0].borrowing_cost_method;
   assert.equal(costReason(validateMonthly(input, "spark", "2026-08").allocations[0]), "Sky-funded principal assumed");
 });
+
+
+test("monthly revenue basis is preserved without changing legacy responses", () => {
+  const input = fixture();
+  assert.equal(validateMonthly(input, "spark", "2026-08").revenue_basis, undefined);
+  input.revenue_basis = "Investment revenue plus accrued issuer incentives; cash excluded";
+  assert.equal(validateMonthly(input, "spark", "2026-08").revenue_basis, input.revenue_basis);
+  input.revenue_basis = 123;
+  assert.throws(() => validateMonthly(input, "spark", "2026-08"));
+});
