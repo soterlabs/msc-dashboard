@@ -120,8 +120,8 @@ const KICKS_FALLBACK = "per-kick data unavailable, the daily series will be omit
  * its own. The tab's figures all come from the document, and losing this costs
  * the daily granularity and the 24-hour card — not the page.
  *
- * Amounts arrive as decimal strings and are parsed here; a row that does not
- * parse to finite numbers is dropped rather than poisoning a sum with NaN.
+ * Amounts arrive as decimal strings and are parsed here. Invalid or truncated
+ * responses are unavailable rather than silently understating daily totals.
  */
 export async function fetchTmfKicks(since: Date): Promise<TmfKick[] | null> {
   const url = `${SETTLE_API_URL}/v1/tmf/kicks?from=${since.toISOString()}&limit=${KICK_LIMIT}`;
@@ -154,7 +154,7 @@ export async function fetchTmfKicks(since: Date): Promise<TmfKick[] | null> {
         // A timestamp this code can actually order and bucket by. Both the
         // 24-hour filter and the day bucketing are string operations, so a
         // change of format upstream would silently regroup rows rather than
-        // fail; parsing it here turns that into a dropped row and a warning.
+        // fail; validating it here rejects an incomplete series.
         Number.isFinite(Date.parse(row.ts)) &&
         row.usds_total !== null &&
         row.usds_buyback !== null &&
@@ -165,18 +165,11 @@ export async function fetchTmfKicks(since: Date): Promise<TmfKick[] | null> {
       }
     }
     if (kicks.length !== body.kicks.length) {
-      console.warn(
-        `[tmf] ${body.kicks.length - kicks.length} kick row(s) did not parse and were dropped`,
-      );
+      return warn(`${url} contains invalid kick rows; refusing to undercount`, KICKS_FALLBACK);
     }
-    // The window is bounded by a row count, so a faster kick cadence — `hop` is
-    // a governance parameter this very tab tracks — would quietly shorten it
-    // while the chart still captions itself "last 90 days".
+    // A capped response cannot establish zero activity on missing dates.
     if (body.kicks.length >= KICK_LIMIT) {
-      console.warn(
-        `[tmf] the per-kick response hit its ${KICK_LIMIT}-row limit, so the daily ` +
-          `series may not reach back the full ${TMF_DAILY_WINDOW_DAYS} days`,
-      );
+      return warn(`${url} reached its ${KICK_LIMIT}-row limit; coverage is incomplete`, KICKS_FALLBACK);
     }
     return kicks;
   } catch (e) {

@@ -182,8 +182,7 @@ export interface TmfLoad {
   fetchedAt: string;
   /**
    * Daily rows aggregated from the per-kick endpoint, newest last. Empty when
-   * that call failed — the tab then drops the daily option rather than showing
-   * an empty chart.
+   * that call failed — the tab then shows daily data as unavailable.
    */
   daily: TmfPeriod[];
   /** Null means unavailable; an empty event response produces zero-valued days. */

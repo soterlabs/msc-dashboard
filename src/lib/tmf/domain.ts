@@ -158,6 +158,8 @@ export function dailyBurnPeriods(burns: TmfBurn[], since: Date, through: Date): 
     days.set(day, zeroPeriod(day));
   }
   for (const burn of burns) {
+    const timestamp = Date.parse(burn.ts);
+    if (timestamp < since.getTime() || timestamp > through.getTime()) continue;
     const row = days.get(burn.ts.slice(0, 10));
     if (!row) continue;
     row.burn_events++;

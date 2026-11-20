@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { dailyBurnPeriods, dailyActivityPeriods } from '../src/lib/tmf/domain.ts';
-import { fetchTmfBurns } from '../src/lib/tmf/api.ts';
+import { fetchTmfBurns, fetchTmfKicks } from '../src/lib/tmf/api.ts';
 const since = new Date('2026-11-01T00:00:00Z');
 const through = new Date('2026-11-03T08:40:59Z');
 test('daily burns retain zero days and separate actual engine, correction and third-party burns', () => {
@@ -58,4 +58,24 @@ test('daily buyback and burn graphs share dates/cutoff; the table retains burn-o
  assert.deepEqual(rows.map(r=>r.sky_burn_engine),[0,42,0]);
  assert.equal(rows[1].burn_events,1);
  assert.equal(rows[0].usds_buyback,3300);
+});
+
+test('incomplete kick responses cannot become zero-filled daily activity', async () => {
+ const original=globalThis.fetch;
+ const kick={ts:'2026-11-02T00:00:00Z',usds_total:'6000',usds_buyback:'3300',usds_to_stakers:'2700',sky_bought:'100'};
+ try {
+  for (const kicks of [Array(5000).fill(kick), [kick,{...kick,sky_bought:null}]]) {
+   globalThis.fetch=async()=>({ok:true,json:async()=>({kicks})});
+   assert.equal(await fetchTmfKicks(since),null);
+  }
+  globalThis.fetch=async()=>({ok:true,json:async()=>({kicks:[kick]})});
+  assert.equal((await fetchTmfKicks(since)).length,1);
+ } finally {globalThis.fetch=original;}
+});
+test('daily burn aggregation excludes events after the cutoff even on its last calendar day', () => {
+ const rows=dailyBurnPeriods([
+  {ts:through.toISOString(),sky_amount:1,kind:'engine'},
+  {ts:'2026-11-03T09:00:00Z',sky_amount:100,kind:'engine'},
+ ],since,through);
+ assert.equal(rows.at(-1).sky_burn_engine,1);
 });
