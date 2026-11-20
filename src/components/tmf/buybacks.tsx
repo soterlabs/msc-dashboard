@@ -32,7 +32,6 @@ import { Badge } from "@/components/ui/badge";
 import {
   TMF_DAILY_WINDOW_DAYS,
   TMF_GRANULARITIES,
-  type TmfDocumentGranularity,
   type TmfGranularity,
   type TmfParameterChange,
   type TmfPeriod,
@@ -150,6 +149,7 @@ export function Buybacks({
   source,
   fetchedAt,
   daily,
+  dailyBurns,
   last24h,
 }: {
   granularity: TmfGranularity;
@@ -159,6 +159,7 @@ export function Buybacks({
   fetchedAt: string;
   /** Aggregated from the per-kick endpoint; empty when it was unreachable. */
   daily: TmfPeriod[];
+  dailyBurns: TmfPeriod[] | null;
   last24h: TmfPeriod | null;
 }) {
   const tmf = useTmf();
@@ -182,21 +183,12 @@ export function Buybacks({
   }, [tmf, granularity, daily]);
   const rows = React.useMemo(() => [...series].reverse(), [series]);
 
-  /* Burns come from the history document, which has no sub-monthly rows — a
-     daily series built from kick events carries none by construction. Driving
-     the burn panel off the selected granularity therefore made it vanish on
-     Daily, which reads as "no SKY has been burned" rather than "not available
-     at this granularity". It falls back to the monthly series instead. */
-  const burnGranularity: TmfGranularity = granularity === "daily" ? "monthly" : granularity;
-  const burnSeries = React.useMemo(
-    () => fillGaps(tmf.periods[burnGranularity as TmfDocumentGranularity], burnGranularity),
-    [tmf, burnGranularity],
-  );
-  /* Both figures come classified from the API, which is why there is no date
-     in this file any more. `sky_burn_protocol` sums the two and is therefore
-     the wrong number for anything about buyback policy — 429M against the
-     engine's 2.9M. */
-  const burnTotal = totals.sky_burn_engine;
+  // The URL is the single source of truth for every chart and the period table.
+  const burnSeries = React.useMemo(() => granularity === "daily"
+    ? dailyBurns ?? []
+    : fillGaps(tmf.periods[granularity], granularity),
+    [tmf, granularity, dailyBurns]);
+  const burnTotal = burnSeries.reduce((sum, row) => sum + row.sky_burn_engine, 0);
   const correction = totals.sky_burn_supply_correction;
   /* Named by the period that carries it rather than by a literal date, so the
      footnote keeps describing whatever the API classifies this way. */
@@ -207,7 +199,6 @@ export function Buybacks({
         .map((r) => monthLong(r.period)),
     [tmf],
   );
-  const anyBurn = burnSeries.some((r) => r.sky_burn_engine > 0);
 
   return (
     <div className="flex flex-col gap-6">
@@ -314,10 +305,8 @@ export function Buybacks({
               onValueChange={(v) => v[0] && router.push(paths.buybacks(v[0]))}
               aria-label="Granularity"
             >
-              {/* Daily is aggregated from the per-kick endpoint, so it is
-                  offered only when that call succeeded — an empty chart behind
-                  a chip is worse than no chip. */}
-              {TMF_GRANULARITIES.filter((g) => g !== "daily" || daily.length > 0).map((g) => (
+              {/* Every filter updates the shared route, even during an API outage. */}
+              {TMF_GRANULARITIES.map((g) => (
                 <FilterItem key={g} value={g}>
                   {GRANULARITY_LABEL[g]}
                 </FilterItem>
@@ -390,24 +379,19 @@ export function Buybacks({
         )}
       </Panel>
 
-      {anyBurn && (
-        <BurnChart
+      <BurnChart
           series={burnSeries}
-          granularity={burnGranularity}
+          granularity={granularity}
           chain={sourceMeta.chain}
           total={burnTotal}
           correction={correction}
           correctionPeriods={correctionPeriods}
           effectiveFrom={sourceMeta.tmf_effective_from}
-          note={
-            granularity === "daily"
-              ? "Burns are published monthly at the finest — the daily view above has none to show."
-              : undefined
-          }
+          onGranularityChange={(value) => router.push(paths.buybacks(value))}
+          unavailable={granularity === "daily" && dailyBurns === null}
         />
-      )}
 
-      <PeriodTable rows={rows} granularity={granularity} />
+      <PeriodTable rows={rows} granularity={granularity} burnsAvailable={granularity !== "daily" || dailyBurns !== null} />
 
       <LatestKick kick={latest} chain={sourceMeta.chain} />
 
@@ -559,7 +543,8 @@ function BurnChart({
   correction,
   correctionPeriods,
   effectiveFrom,
-  note,
+  onGranularityChange,
+  unavailable,
 }: {
   series: TmfPeriod[];
   granularity: TmfGranularity;
@@ -572,15 +557,19 @@ function BurnChart({
   correctionPeriods: string[];
   /** The TMF's first cast — shown to explain the split, never to recompute it. */
   effectiveFrom: string;
-  /** Why this panel is on a different granularity than the one selected. */
-  note?: string;
+  /** Updates the shared route used by both charts. */
+  onGranularityChange: (value: TmfGranularity) => void;
+  unavailable: boolean;
 }) {
   const anyOther = series.some((r) => r.sky_burn_other > 0);
   return (
     <Panel
       title="SKY burned"
-      hint={`The Smart Burn Engine's own burns: 10/55 of the SKY bought under the 55% regime, retired by the following month's spell. The engine took effect ${formatUtc(effectiveFrom)}; the API classifies every burn against that, and this chart shows only the engine's.`}
-      description={`${GRANULARITY_LABEL[granularity]} · ${formatTokens(total)} SKY burned${note ? ` · ${note}` : ""}`}
+      hint={`Actual onchain SKY burns, recorded on their execution date—not purchases or amounts earmarked for burning. The engine took effect ${formatUtc(effectiveFrom)}; supply corrections and third-party burns are excluded.`}
+      description={unavailable ? "Daily burn data unavailable" : `${GRANULARITY_LABEL[granularity]}${granularity === "daily" ? ` · last ${TMF_DAILY_WINDOW_DAYS} days · UTC` : ""} · ${formatTokens(total)} SKY burned`}
+      action={<FilterGroup value={[granularity]} onValueChange={(v) => v[0] && onGranularityChange(v[0] as TmfGranularity)} aria-label="Burn granularity">
+        {TMF_GRANULARITIES.map(g => <FilterItem key={g} value={g}>{GRANULARITY_LABEL[g]}</FilterItem>)}
+      </FilterGroup>}
       footer={
         <div className="grid gap-1 text-xs text-muted-foreground">
           {correction > 0 ? (
@@ -601,6 +590,7 @@ function BurnChart({
         </div>
       }
     >
+      {unavailable ? <p className="text-sm text-muted-foreground">Daily burn data could not be loaded. Monthly, quarterly and annual history remain available.</p> : <>
       <div className="mb-4 flex flex-wrap gap-4">
         <LegendItem color="var(--destructive)">{LABELS.sky_burn_protocol}</LegendItem>
       </div>
@@ -636,6 +626,7 @@ function BurnChart({
           </ComposedChart>
         </ChartContainer>
       </div>
+      </>}
     </Panel>
   );
 }
@@ -676,9 +667,11 @@ function BurnTooltip({
 function PeriodTable({
   rows,
   granularity,
+  burnsAvailable,
 }: {
   rows: TmfPeriod[];
   granularity: TmfGranularity;
+  burnsAvailable: boolean;
 }) {
   // Gap filling means the row count is now a span, not a count of events.
   const active = rows.filter((r) => r.kicks > 0 || r.burn_events > 0).length;
@@ -719,7 +712,7 @@ function PeriodTable({
               <Td numeric>{formatTokens(r.sky_bought)}</Td>
               <Td numeric>{formatPrice6(r.sky_avg_price)}</Td>
               <Td numeric className={cn(r.sky_burn_engine === 0 && "text-muted-foreground")}>
-                {r.sky_burn_engine === 0 ? <Dash /> : formatTokens(r.sky_burn_engine)}
+                {!burnsAvailable ? "Unavailable" : formatTokens(r.sky_burn_engine)}
               </Td>
             </TableRow>
           ))}

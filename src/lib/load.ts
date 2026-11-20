@@ -30,9 +30,9 @@ import {
 import type { PrimeDataset } from "./prime/types";
 import type { SkyTotalDataset } from "./sky-total/types";
 import type { SsrDataset } from "./ssr/types";
-import { dailyWindowStart, fetchTmf, fetchTmfKicks } from "./tmf/api.ts";
-import { aggregateKicks, dailyPeriods } from "./tmf/domain.ts";
-import type { TmfDataset, TmfKick, TmfLoad } from "./tmf/types";
+import { dailyWindowStart, fetchTmf, fetchTmfKicks, fetchTmfBurns } from "./tmf/api.ts";
+import { aggregateKicks, dailyPeriods, dailyBurnPeriods, dailyActivityPeriods } from "./tmf/domain.ts";
+import { TMF_DAILY_WINDOW_DAYS, type TmfDataset, type TmfKick, type TmfLoad } from "./tmf/types.ts";
 import type { DrDataset } from "./dr/types";
 
 /**
@@ -102,7 +102,20 @@ export const loadTmf = cache(async (): Promise<TmfLoad> => {
     fetchTmf(),
     fetchTmfKicks(dailyWindowStart(now)),
   ]);
-  return resolveTmf(live, kicks, now);
+  const result = resolveTmf(live, kicks, now);
+  // Bound daily burns to the observed history cutoff, not unindexed wall time.
+  if (live && result.source === "api") {
+    const through = new Date(live.source.to_ts);
+    const since = new Date(now);
+    since.setUTCHours(0, 0, 0, 0);
+    since.setUTCDate(since.getUTCDate() - (TMF_DAILY_WINDOW_DAYS - 1));
+    if (through >= since) {
+      const burns = await fetchTmfBurns(since, through);
+      result.dailyBurns = burns === null ? null : dailyBurnPeriods(burns, since, through);
+      if (kicks !== null) result.daily = dailyActivityPeriods(kicks, burns, since, through);
+    }
+  }
+  return result;
 });
 
 /**
@@ -137,7 +150,7 @@ export function resolveTmf(
       )
     : null;
 
-  const base = { daily, last24h, fetchedAt: now.toISOString() };
+  const base = { daily, dailyBurns: null, last24h, fetchedAt: now.toISOString() };
   if (live && usable(live)) {
     return { ...base, data: live, source: "api" };
   }
