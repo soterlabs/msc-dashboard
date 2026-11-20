@@ -125,6 +125,12 @@ export interface TmfRun {
  * the endpoint keeps full precision where the aggregates are quantized — so
  * they are parsed on the way in.
  */
+export interface TmfBurn {
+  ts: string;
+  sky_amount: number;
+  kind: "engine" | "supply_correction" | "third_party";
+}
+
 export interface TmfKick {
   ts: string;
   usds_total: number;
@@ -180,6 +186,8 @@ export interface TmfLoad {
    * an empty chart.
    */
   daily: TmfPeriod[];
+  /** Null means unavailable; an empty event response produces zero-valued days. */
+  dailyBurns: TmfPeriod[] | null;
   /** The last 24 hours, or null when the per-kick endpoint was unreachable. */
   last24h: TmfPeriod | null;
 }

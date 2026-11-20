@@ -5,7 +5,7 @@
  * without rendering: turning per-kick rows into daily aggregates, and putting
  * back the periods the published document leaves out.
  */
-import type { TmfGranularity, TmfKick, TmfPeriod } from "./types";
+import type { TmfGranularity, TmfKick, TmfPeriod, TmfBurn } from "./types";
 
 /**
  * Whether a published note has been overtaken by the data it describes.
@@ -147,4 +147,28 @@ export function fillGaps(rows: TmfPeriod[], granularity: TmfGranularity): TmfPer
     out.push(byIndex.get(i) ?? zeroPeriod(fromIndex(i, granularity)));
   }
   return out;
+}
+
+/** Calendar-day burns, including zero days through the history's observed cutoff. */
+export function dailyBurnPeriods(burns: TmfBurn[], since: Date, through: Date): TmfPeriod[] {
+  const days = new Map<string, TmfPeriod>();
+  const start = Date.parse(since.toISOString().slice(0, 10) + "T00:00:00Z");
+  for (let t = start; t <= through.getTime(); t += 86400000) {
+    const day = new Date(t).toISOString().slice(0, 10);
+    days.set(day, zeroPeriod(day));
+  }
+  for (const burn of burns) {
+    const row = days.get(burn.ts.slice(0, 10));
+    if (!row) continue;
+    row.burn_events++;
+    if (burn.kind === "engine") row.sky_burn_engine += burn.sky_amount;
+    else if (burn.kind === "supply_correction") row.sky_burn_supply_correction += burn.sky_amount;
+    else row.sky_burn_other += burn.sky_amount;
+  }
+  return [...days.values()].map(row => ({ ...row,
+    sky_burn_engine: round2(row.sky_burn_engine),
+    sky_burn_supply_correction: round2(row.sky_burn_supply_correction),
+    sky_burn_protocol: round2(row.sky_burn_engine + row.sky_burn_supply_correction),
+    sky_burn_other: round2(row.sky_burn_other),
+  }));
 }

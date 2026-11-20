@@ -17,7 +17,7 @@
  * outage — from taking the page down.
  */
 import { validateTmf } from "../dataset-schema.ts";
-import { TMF_DAILY_WINDOW_DAYS, type TmfDataset, type TmfKick } from "./types.ts";
+import { TMF_DAILY_WINDOW_DAYS, type TmfDataset, type TmfBurn, type TmfKick } from "./types.ts";
 
 const DEFAULT_API_URL = "https://settle-api-production.up.railway.app";
 
@@ -216,4 +216,29 @@ export function dailyWindowStart(now: Date): Date {
 function warn(reason: string, consequence: string): null {
   console.warn(`[tmf] ${consequence}: ${reason}`);
   return null;
+}
+
+/** Actual burn events, classified by the API. Never infer burns from purchases. */
+export async function fetchTmfBurns(since: Date, through: Date): Promise<TmfBurn[] | null> {
+  const url = `${SETTLE_API_URL}/v1/tmf/burns?from=${since.toISOString()}&to=${through.toISOString()}&limit=10000`;
+  try {
+    const response = await fetch(url, { ...NO_STORE, signal: AbortSignal.timeout(TIMEOUT_MS), headers: { accept: "application/json" } });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const body = await response.json();
+    if (!Array.isArray(body.burns) || body.burns.length >= 10000) throw new Error("Missing or potentially truncated burn events");
+    const rows: TmfBurn[] = [];
+    for (const row of body.burns) {
+      const value = amount(row?.sky_amount);
+      const timestamp = typeof row?.ts === "string" ? Date.parse(row.ts) : NaN;
+      if (!Number.isFinite(timestamp) || value === null || value < 0 ||
+          !["engine", "supply_correction", "third_party"].includes(row?.kind)) {
+        throw new Error("Invalid burn event; refusing to undercount");
+      }
+      if (timestamp < since.getTime() || timestamp > through.getTime()) throw new Error("Burn outside requested window");
+      rows.push({ ts: new Date(timestamp).toISOString(), sky_amount: value, kind: row.kind });
+    }
+    return rows;
+  } catch (error) {
+    return warn(String(error), "daily burns unavailable; monthly history remains available");
+  }
 }

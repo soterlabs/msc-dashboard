@@ -62,6 +62,7 @@ export default async function Page({
         source={tmf.source}
         fetchedAt={tmf.fetchedAt}
         daily={tmf.daily}
+        dailyBurns={tmf.dailyBurns}
         last24h={tmf.last24h}
       />
     </TmfProvider>
