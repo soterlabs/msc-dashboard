@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { dailyBurnPeriods } from '../src/lib/tmf/domain.ts';
+import { dailyBurnPeriods, dailyActivityPeriods } from '../src/lib/tmf/domain.ts';
 import { fetchTmfBurns } from '../src/lib/tmf/api.ts';
 const since = new Date('2026-11-01T00:00:00Z');
 const through = new Date('2026-11-03T08:40:59Z');
@@ -45,4 +45,17 @@ test('burn fetch validates events and distinguishes empty data from failure',asy
   globalThis.fetch=async()=>({ok:true,json:async()=>({burns:[{ts:'2026-11-02T01:00:00+01:00',sky_amount:'42.25',kind:'engine'}]})});
   assert.deepEqual(await fetchTmfBurns(since,through),[{ts:'2026-11-02T00:00:00.000Z',sky_amount:42.25,kind:'engine'}]);
  } finally {globalThis.fetch=original;}
+});
+
+test('daily buyback and burn graphs share dates/cutoff; the table retains burn-only days', () => {
+ const kick = ts => ({ts, usds_total:6000, usds_buyback:3300, usds_to_stakers:2700, sky_bought:100});
+ const burns = [{ts:'2026-11-02T01:00:00Z', sky_amount:42, kind:'engine'}];
+ const rows = dailyActivityPeriods([
+   kick('2026-10-31T23:59:59Z'), kick('2026-11-01T01:00:00Z'), kick('2026-11-03T09:00:00Z'),
+ ], burns, since, through);
+ assert.deepEqual(rows.map(r=>r.period),dailyBurnPeriods(burns,since,through).map(r=>r.period));
+ assert.deepEqual(rows.map(r=>r.kicks),[1,0,0]);
+ assert.deepEqual(rows.map(r=>r.sky_burn_engine),[0,42,0]);
+ assert.equal(rows[1].burn_events,1);
+ assert.equal(rows[0].usds_buyback,3300);
 });

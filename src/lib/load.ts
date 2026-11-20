@@ -31,7 +31,7 @@ import type { PrimeDataset } from "./prime/types";
 import type { SkyTotalDataset } from "./sky-total/types";
 import type { SsrDataset } from "./ssr/types";
 import { dailyWindowStart, fetchTmf, fetchTmfKicks, fetchTmfBurns } from "./tmf/api.ts";
-import { aggregateKicks, dailyPeriods, dailyBurnPeriods } from "./tmf/domain.ts";
+import { aggregateKicks, dailyPeriods, dailyBurnPeriods, dailyActivityPeriods } from "./tmf/domain.ts";
 import { TMF_DAILY_WINDOW_DAYS, type TmfDataset, type TmfKick, type TmfLoad } from "./tmf/types.ts";
 import type { DrDataset } from "./dr/types";
 
@@ -112,6 +112,7 @@ export const loadTmf = cache(async (): Promise<TmfLoad> => {
     if (through >= since) {
       const burns = await fetchTmfBurns(since, through);
       result.dailyBurns = burns === null ? null : dailyBurnPeriods(burns, since, through);
+      if (kicks !== null) result.daily = dailyActivityPeriods(kicks, burns, since, through);
     }
   }
   return result;

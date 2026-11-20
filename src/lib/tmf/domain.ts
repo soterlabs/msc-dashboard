@@ -172,3 +172,21 @@ export function dailyBurnPeriods(burns: TmfBurn[], since: Date, through: Date): 
     sky_burn_other: round2(row.sky_burn_other),
   }));
 }
+
+/** Match the buyback chart/table to the burn chart's UTC window and observed cutoff. */
+export function dailyActivityPeriods(kicks: TmfKick[], burns: TmfBurn[] | null, since: Date, through: Date): TmfPeriod[] {
+  const buys = new Map(dailyPeriods(kicks.filter(k => {
+    const ts = Date.parse(k.ts);
+    return ts >= since.getTime() && ts <= through.getTime();
+  })).map(row => [row.period, row]));
+  return dailyBurnPeriods(burns ?? [], since, through).map(burn => {
+    const buy = buys.get(burn.period);
+    return buy ? { ...buy,
+      sky_burn_engine: burn.sky_burn_engine,
+      sky_burn_supply_correction: burn.sky_burn_supply_correction,
+      sky_burn_protocol: burn.sky_burn_protocol,
+      sky_burn_other: burn.sky_burn_other,
+      burn_events: burn.burn_events,
+    } : burn;
+  });
+}
