@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { validateMonthly, parseMonthlyRoute, percent, costReason, monthlyUsd, overviewYields } from "./model.ts";
+import { validateMonthly, parseMonthlyRoute, yieldMonthsNewestFirst, completedMonths, percent, costReason, monthlyUsd, overviewYields } from "./model.ts";
 import { createRevenueClient } from "../daily-revenue/api.ts";
 const fixture = (name = "spark-S18") => JSON.parse(readFileSync(`schema/fixtures/monthly-allocations/${name}.json`, "utf8"));
 
@@ -93,11 +93,22 @@ test("a failed monthly refresh retains only the same verified selection and labe
 
 test("venue yields live under Prime Agent Revenues with a September default", async () => {
   const { paths, sectionFromPath } = await import("../routes.ts");
-  assert.equal(paths.monthlyAllocations(), "/prime-agent-revenues/yields/2026-09");
+  assert.equal(paths.monthlyAllocations(), "/prime-agent-revenues/yields");
   const path = paths.monthlyAllocations("2026-09", "grove", "E10");
   assert.equal(path, "/prime-agent-revenues/yields/2026-09/grove/E10");
   assert.equal(sectionFromPath(path)?.key, "ssr");
-  assert.equal(parseMonthlyRoute([], new Date("2026-10-29T00:00:00Z"))?.month, "2026-09");
+  // The bare route has no fixed month: the page resolves the newest publication.
+  assert.equal(parseMonthlyRoute([], new Date("2026-10-29T00:00:00Z")), null);
+});
+
+test("bare yields route probes completed months newest first from September 2026", () => {
+  assert.deepEqual(yieldMonthsNewestFirst(new Date("2026-11-23T00:00:00Z")), ["2026-10", "2026-09"]);
+  assert.deepEqual(yieldMonthsNewestFirst(new Date("2026-12-01T00:00:00Z")), ["2026-11", "2026-10", "2026-09"]);
+  assert.deepEqual(yieldMonthsNewestFirst(new Date("2027-01-02T00:00:00Z")).slice(0, 2), ["2026-12", "2026-11"]);
+  assert.deepEqual(completedMonths(new Date("2026-11-23T00:00:00Z")).slice(-2), ["2026-09", "2026-10"]);
+  // October is a valid completed month in November; November is not yet.
+  assert.deepEqual(parseMonthlyRoute(["2026-10", "spark"], new Date("2026-11-23T00:00:00Z")), { month: "2026-10", prime: "spark" });
+  assert.equal(parseMonthlyRoute(["2026-11"], new Date("2026-11-23T00:00:00Z")), null);
 });
 
 test("Osero and Obex September API yields retain costs, negative returns and idle exemptions", async () => {

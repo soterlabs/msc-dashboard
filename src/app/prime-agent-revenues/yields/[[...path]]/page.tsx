@@ -6,22 +6,34 @@ import { CopyLink } from "@/components/daily-revenue/copy-link";
 import { revenueClient, REVENUE_PUBLIC_URL } from "@/lib/daily-revenue/api";
 import { addMoney, compareMoney } from "@/lib/daily-revenue/decimal";
 import { DAILY_PRIMES, primeName } from "@/lib/daily-revenue/types";
-import { completedMonth, costReason, monthlyUsd, overviewYields, parseMonthlyRoute, percent, type MonthlyAllocation } from "@/lib/monthly-allocations/model";
+import { FIRST_YIELD_MONTH, yieldMonthsNewestFirst, completedMonths, costReason, monthlyUsd, overviewYields, parseMonthlyRoute, percent, type MonthlyAllocation } from "@/lib/monthly-allocations/model";
 import { paths } from "@/lib/routes";
 
 export const dynamic = "force-dynamic";
+/** Newest completed month with at least one prime's verified publication;
+ * the newest completed month when none is reachable, which then renders the
+ * explicit missing/unavailable state rather than an older month's data. */
+async function newestPublishedMonth(): Promise<string> {
+  const candidates = yieldMonthsNewestFirst();
+  for (const month of candidates) {
+    const reads = await Promise.all(DAILY_PRIMES.map(p => revenueClient.monthly(p, month)));
+    if (reads.some(r => r.data)) return month;
+    if (reads.every(r => r.source === "unavailable")) break;
+  }
+  return candidates[0] ?? FIRST_YIELD_MONTH;
+}
 const knownCosts = (rows: MonthlyAllocation[]) => rows.filter(r => r.borrowing_cost_usd !== null);
 
 export default async function Page({ params }: { params: Promise<{ path?: string[] }> }) {
   const { path = [] } = await params;
+  if (!path.length) redirect(paths.monthlyAllocations(await newestPublishedMonth()));
   const route = parseMonthlyRoute(path);
   if (!route) notFound();
-  if (!path.length) redirect(paths.monthlyAllocations());
   const { month, prime, venue } = route;
   const selected = prime ? [prime] : [...DAILY_PRIMES];
   const reads = await Promise.all(selected.map(p => revenueClient.monthly(p, month)));
   const monthLabel = new Date(`${month}-01T00:00:00Z`).toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" });
-  const months = Array.from({ length: 12 }, (_, i) => `2026-${String(i + 1).padStart(2, "0")}`).filter(m => completedMonth(m));
+  const months = completedMonths();
   const doc = reads[0].data;
   const allocation = venue && doc ? doc.allocations.find(r => r.venue_id === venue) : undefined;
   if (venue && doc && !allocation && !reads[0].error) notFound();

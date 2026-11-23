@@ -12,6 +12,7 @@
  * keystroke is worse than one that does not.
  */
 import { FLAGS, type Flags } from "./flags.ts";
+import { latestDailyMonth } from "./daily-revenue/calendar.ts";
 
 export type Section = "daily-revenue" | "ssr" | "sky-total" | "buybacks" | "prime";
 
@@ -102,14 +103,17 @@ export const paths = {
       ? `/${slugOf("buybacks")}/${granularity}`
       : `/${slugOf("buybacks")}`,
 
-  /** Fixed-month allocation revenue drill-down. */
-  dailyRevenue: (month = "2026-10", prime?: string, allocation?: string) =>
+  /** Allocation revenue drill-down; without a month, the latest daily month. */
+  dailyRevenue: (month: string = latestDailyMonth(), prime?: string, allocation?: string) =>
     `/${slugOf("daily-revenue")}/${encodeURIComponent(month)}` +
     (prime ? `/${encodeURIComponent(prime)}` : "") +
     (prime && allocation ? `/${encodeURIComponent(allocation)}` : ""),
 
-  monthlyAllocations: (month = "2026-09", prime?: string, venue?: string) =>
-    `/prime-agent-revenues/yields/${encodeURIComponent(month)}` +
+  /** Monthly venue yields; without a month, the bare route resolves the newest
+   * completed month that has a publication (server side). */
+  monthlyAllocations: (month?: string, prime?: string, venue?: string) =>
+    `/prime-agent-revenues/yields` +
+    (month ? `/${encodeURIComponent(month)}` : "") +
     (prime ? `/${encodeURIComponent(prime)}` : "") +
     (prime && venue ? `/${encodeURIComponent(venue)}` : ""),
 

@@ -39,6 +39,7 @@
  *   pnpm refresh:prime              prime.json only, from the local CSVs (offline)
  */
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -340,6 +341,100 @@ function drL2Addresses() {
   }));
 }
 
+/**
+ * Finalized DR month snapshots, settlement-cycle data/distribution_rewards/<YYYY-MM>/.
+ *
+ * settlement-cycle's DR loader (src/settle/load/dr_rewards.py → dr_snapshot.py)
+ * gives these precedence over the pinned workbook: the upstream comparison
+ * workbook can lag a settled month (October 2026 was settled from settle-dr-dune
+ * #34's CSVs while its workbook still ended in September). Reading the same
+ * snapshots, with the same hash and reconciliation guards, keeps DR on the
+ * dashboard equal to the DR the settlement actually used.
+ *
+ * Returns [{ month, refCodes: Map<code, {value, notes}>, tokens: Map<"code|token", value> }].
+ */
+function drFinalizedSnapshots(cycleDir) {
+  const base = path.join(cycleDir, "data", "distribution_rewards");
+  if (!fs.existsSync(base)) return [];
+  const sha256 = (file) => createHash("sha256").update(fs.readFileSync(file)).digest("hex");
+  const out = [];
+  for (const month of fs.readdirSync(base).filter((m) => /^\d{4}-\d{2}$/.test(m)).sort()) {
+    const dir = path.join(base, month);
+    const rel = path.relative(cycleDir, dir);
+    const manifest = JSON.parse(fs.readFileSync(path.join(dir, "manifest.json"), "utf8"));
+    if (manifest.month !== month) throw new Error(`${rel}/manifest.json is for ${manifest.month}`);
+    for (const name of ["accrual.csv", "finalized.xlsx"]) {
+      if (sha256(path.join(dir, name)) !== manifest.files?.[name]) {
+        throw new Error(`${rel}/${name} does not match its manifest checksum`);
+      }
+    }
+
+    // Finalized workbook: ref-code aggregate rounded to cents (what is paid).
+    const wb = XLSX.read(fs.readFileSync(path.join(dir, "finalized.xlsx")));
+    if (!wb.Sheets["Soter by Ref Code"]) throw new Error(`${rel}/finalized.xlsx has no "Soter by Ref Code" sheet`);
+    const sheet = rows(wb.Sheets["Soter by Ref Code"]);
+    const header = sheet[0].map(str);
+    const col = header.indexOf(month);
+    const notesCol = header.indexOf("notes");
+    if (header[0] !== "ref_code" || col === -1) {
+      throw new Error(`${rel}/finalized.xlsx "Soter by Ref Code" format changed — header: ${header.join(", ")}`);
+    }
+    const refCodes = new Map();
+    for (const r of sheet.slice(1)) {
+      const code = str(r[0]);
+      if (!code || code.toLowerCase() === "total") continue;
+      refCodes.set(code, { value: num(r[col]) ?? 0, notes: notesCol === -1 ? "" : str(r[notesCol]) });
+    }
+
+    // Companion CSV: full precision per chain × token × ref code.
+    const csvRel = `${rel}/accrual.csv`;
+    const { header: csvHeader, rows: csvRows } = fromCsv(fs.readFileSync(path.join(dir, "accrual.csv"), "utf8"), {
+      file: csvRel,
+    });
+    for (const c of ["month", "blockchain", "token", "ref_code", "dr_usd", "source"]) {
+      if (!csvHeader.includes(c)) throw new Error(`${csvRel} is missing column ${c}`);
+    }
+    const byCode = new Map();
+    const tokens = new Map();
+    for (const r of csvRows) {
+      const amount = Number(r.dr_usd);
+      if (r.month !== `${month}-01` || !Number.isFinite(amount)) {
+        throw new Error(`${csvRel}: invalid row ${JSON.stringify(r)}`);
+      }
+      byCode.set(r.ref_code, (byCode.get(r.ref_code) ?? 0) + amount);
+      const key = `${r.ref_code}|${r.token}`;
+      tokens.set(key, (tokens.get(key) ?? 0) + amount);
+    }
+    // Same reconciliation as dr_snapshot.py: CSV per code within half a cent.
+    for (const code of new Set([...byCode.keys(), ...refCodes.keys()])) {
+      const a = byCode.get(code) ?? 0;
+      const b = refCodes.get(code)?.value ?? 0;
+      if (Math.abs(a - b) > 0.00500001) {
+        throw new Error(`${rel}: ref code ${code} CSV ${a} does not reconcile to finalized ${b}`);
+      }
+    }
+    // The settlement imports the CSV's codes only (dr_snapshot.snapshot_rows);
+    // a zero-valued workbook row with no CSV accrual (e.g. 2018 in 2026-10)
+    // was never part of it, so it is not part of the dashboard either.
+    // The comparison workbook leaves a month blank when a code's amount rounds
+    // to zero cents (it never writes 0.00); the finalized snapshot writes 0.
+    // Drop those so a snapshot month reads like a workbook month — sub-cent
+    // dust stays out of the ledger instead of showing as a "reported zero".
+    // This also covers zero rows with no CSV accrual at all (e.g. 2018 in
+    // 2026-10), which the settlement's snapshot import never saw.
+    for (const [code, { value }] of refCodes) {
+      if (value === 0) refCodes.delete(code);
+    }
+    for (const [k, v] of tokens) {
+      const cents = round(v, 2);
+      if (cents === 0) tokens.delete(k);
+      else tokens.set(k, cents);
+    }
+    out.push({ month, refCodes, tokens });
+  }
+  return out;
+}
+
 function generateDr(drDir, cycleDir) {
   const wbRel = path.join(...DR_WORKBOOK);
   const wb = XLSX.read(fs.readFileSync(path.join(drDir, wbRel)));
@@ -374,6 +469,48 @@ function generateDr(drDir, cycleDir) {
       tokens: str(r[totalIdx + 1]) ? str(r[totalIdx + 1]).split(", ") : [],
       notes: str(r[totalIdx + 2]),
     }));
+
+  // Finalized month snapshots take precedence, as in the settlement's loader.
+  const snapshots = drFinalizedSnapshots(cycleDir);
+  for (const snap of snapshots) {
+    const appended = !reportMonths.includes(snap.month);
+    if (appended) {
+      if (snap.month < reportMonths[reportMonths.length - 1]) {
+        throw new Error(`DR snapshot ${snap.month} falls inside the workbook window but is missing from it`);
+      }
+      reportMonths.push(snap.month);
+    }
+    const byCode = new Map(refCodeRows.map((r) => [r.refCode, r]));
+    for (const [code, { value, notes }] of snap.refCodes) {
+      let row = byCode.get(code);
+      if (!row) {
+        row = {
+          refCode: code,
+          group: groupOf.get(code) ?? null,
+          monthly: Object.fromEntries(reportMonths.map((m) => [m, null])),
+          total: 0,
+          tokens: [],
+          notes,
+        };
+        refCodeRows.push(row);
+      }
+      const previous = row.monthly[snap.month] ?? 0;
+      row.monthly[snap.month] = value;
+      row.total = round((row.total ?? 0) - previous + value, 2);
+    }
+    for (const row of refCodeRows) {
+      if (!(snap.month in row.monthly)) row.monthly[snap.month] = null;
+      if (!snap.refCodes.has(row.refCode) && !appended && row.monthly[snap.month]) {
+        // A snapshot that drops a code the workbook pays for that month is a
+        // disagreement between sources, not something to paper over.
+        throw new Error(`DR snapshot ${snap.month} omits ref code ${row.refCode} carried by the workbook`);
+      }
+      const snapTokens = [...snap.tokens.keys()]
+        .filter((k) => k.startsWith(`${row.refCode}|`))
+        .map((k) => k.slice(row.refCode.length + 1));
+      row.tokens = [...new Set([...row.tokens, ...snapTokens])];
+    }
+  }
 
   // A code the config does not know is a settlement question, not a display
   // one: it would either land in the wrong prime's revenue or vanish from the
@@ -429,6 +566,26 @@ function generateDr(drDir, cycleDir) {
           : round(Object.values(monthly).reduce((a, v) => a + (v ?? 0), 0), 2);
       return { refCode: str(r[0]), token: str(r[1]), monthly, total };
     });
+
+  // Snapshot months beyond the workbook extend the per-token history too.
+  for (const snap of snapshots) {
+    if (historyMonths.includes(snap.month)) continue;
+    historyMonths.push(snap.month);
+    const byKey = new Map(refCodeTokenSeries.map((s) => [`${s.refCode}|${s.token}`, s]));
+    for (const [key, value] of snap.tokens) {
+      let series = byKey.get(key);
+      if (!series) {
+        const [refCode, token] = [key.slice(0, key.indexOf("|")), key.slice(key.indexOf("|") + 1)];
+        series = { refCode, token, monthly: Object.fromEntries(historyMonths.map((m) => [m, null])), total: 0 };
+        refCodeTokenSeries.push(series);
+      }
+      series.monthly[snap.month] = value;
+      series.total = round((series.total ?? 0) + value, 2);
+    }
+    for (const series of refCodeTokenSeries) {
+      if (!(snap.month in series.monthly)) series.monthly[snap.month] = null;
+    }
+  }
 
   // Rates as they stood at the end of the reporting window.
   const lastMonth = reportMonths[reportMonths.length - 1];
@@ -578,6 +735,49 @@ function parseReconciliationMd(partner, month, md) {
     };
   }
 
+  if (partner === "grove" && month === "2026-10") {
+    return {
+      summary: "January–September corrections and partner rebates booked once in October.",
+      items: [
+        {
+          label: "Historical reconciliation · Sky",
+          value: reconciliationAmount(md, "Jan–September reconciliation, net of previously booked credits", 1),
+          detail: "Sky adjustment, net of credits booked in earlier settlements.",
+        },
+        {
+          label: "Historical reconciliation · Grove",
+          value: reconciliationAmount(md, "Jan–September reconciliation, net of previously booked credits", 2),
+          detail: "Grove supply adjustment, net of earlier credits.",
+        },
+        {
+          label: "Total MSC adjustments · Sky",
+          value: reconciliationAmount(md, "Total MSC adjustments", 1),
+          detail: "Historical reconciliation plus JAAA/JTRSY partner rebates.",
+        },
+        {
+          label: "Total MSC adjustments · Grove",
+          value: reconciliationAmount(md, "Total MSC adjustments", 2),
+          detail: "Historical reconciliation plus JAAA partner rebates.",
+        },
+      ],
+      note: "Adjustments change the October payment instructions only; ordinary October venue revenue is unchanged and published January–September reports are not rewritten.",
+    };
+  }
+
+  if (partner === "osero" && month === "2026-10") {
+    return {
+      summary: "Refund of the July–September supply shortfall withheld twice.",
+      items: [
+        {
+          label: "Send-only reimbursement",
+          value: reconciliationAmount(md, "Total (USDS)", 4),
+          detail: "Added to Osero's October payment without minting debt.",
+        },
+      ],
+      note: "The refund reduces Sky's MSC net revenue by the same amount; ordinary October results are unchanged.",
+    };
+  }
+
   throw new Error(`unsupported reconciliation.md for ${partner}/${month} — add an explicit parser`);
 }
 
@@ -677,6 +877,22 @@ function parseSummaryMd(md) {
       // Informational cash-settlement audit table. Its variances are already
       // included in the venue revenue table and must not be counted twice.
       continue;
+    } else if (t.header.join("|") === "Venue|Label|value_som|value_eom|Revenue|Receipts") {
+      /* "Reporting-only holdings" (from the 2026-10 reports): the position-only
+         table plus the income the report tracks for those holdings. The report
+         states that income is EXCLUDED from MSC settlement totals, so it is
+         carried as reporting-only and never folded into venue revenue. Matched
+         on the exact header so a renamed column fails below instead. */
+      for (const r of t.rows) {
+        excludedVenues.push({
+          id: r[0],
+          label: r[1],
+          valueSom: money(r[2]) ?? 0,
+          valueEom: money(r[3]) ?? 0,
+          reportedRevenue: money(r[4]),
+          receipts: money(r[5]),
+        });
+      }
     } else if (t.header[0] === "Venue" && t.header.length === 4) {
       /* "Off-protocol holdings" / "Position-only venues" — Venue, Label and the
          two value columns, nothing else. Told apart by that arity rather than

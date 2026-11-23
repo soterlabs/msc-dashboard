@@ -4,8 +4,8 @@ import { DataTable, Panel, TableBody, TableHeader, TableRow, Td, Th } from "@/co
 import { paths } from "@/lib/routes";
 import { latestValue } from "@/lib/daily-revenue/domain";
 import { compareMoney, usd } from "@/lib/daily-revenue/decimal";
-import { primeName, DAILY_MONTHS, type DailyMonth, type AllocationSeries, type DailyPrime, type PrimeSeries, type ReadResult, type RevenuePoint } from "@/lib/daily-revenue/types";
-import { monthLabel } from "@/lib/daily-revenue/calendar";
+import { primeName, type DailyMonth, type AllocationSeries, type DailyPrime, type PrimeSeries, type ReadResult, type RevenuePoint } from "@/lib/daily-revenue/types";
+import { dailyMonths, monthLabel } from "@/lib/daily-revenue/calendar";
 import { CopyLink } from "./copy-link";
 
 function LinkAffordance({ className = "" }: { className?: string }) {
@@ -106,7 +106,7 @@ export function DailyValues({ allocation }: { allocation: AllocationSeries }) {
 
 export function MonthNavigation({ month, prime, allocation }: { month: DailyMonth; prime?: DailyPrime; allocation?: string }) {
   return <nav aria-label="Daily revenue month" className="flex flex-wrap gap-2">
-    {DAILY_MONTHS.map((value) => <Link key={value} href={paths.dailyRevenue(value, prime, allocation)} aria-current={value === month ? "page" : undefined}
+    {dailyMonths().map((value) => <Link key={value} href={paths.dailyRevenue(value, prime, allocation)} aria-current={value === month ? "page" : undefined}
       className={`rounded-md border px-3 py-2 text-sm ${value === month ? "bg-muted font-semibold" : "hover:bg-muted/50"}`}>{monthLabel(value)}</Link>)}
   </nav>;
 }

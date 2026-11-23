@@ -134,7 +134,7 @@ export function SupplySideRevenues({
 
       <nav aria-label="Prime revenue views" className="flex gap-4 text-sm">
         <span aria-current="page" className="font-semibold">Settlement reports</span>
-        <Link className="underline" href={paths.monthlyAllocations(month ?? "2026-09", openPartner ?? undefined)}>Yields per venue</Link>
+        <Link className="underline" href={month ? paths.monthlyAllocations(month, openPartner ?? undefined) : paths.monthlyAllocations()}>Yields per venue</Link>
       </nav>
       {openPartner ? (
         <PartnerBreakdown
@@ -843,10 +843,17 @@ function SkyDirectSection({ rows }: { rows: SsrSkyDirectExposure[] }) {
 }
 
 function ExcludedSection({ rows }: { rows: SsrExcludedVenue[] }) {
+  // From 2026-10 the report also tracks income for these holdings, stated as
+  // excluded from MSC settlement totals; older months carry positions only.
+  const withIncome = rows.some((v) => v.reportedRevenue !== undefined || v.receipts !== undefined);
   return (
     <Panel
-      title="Excluded holdings"
-      hint="Tracked for NAV only — not counted in prime or sky revenue."
+      title={withIncome ? "Reporting-only holdings" : "Excluded holdings"}
+      hint={
+        withIncome
+          ? "Tracked for reporting only — income shown here is excluded from MSC settlement totals. Negative balances are prepaid rewards."
+          : "Tracked for NAV only — not counted in prime or sky revenue."
+      }
       flush
     >
       <DataTable>
@@ -856,6 +863,8 @@ function ExcludedSection({ rows }: { rows: SsrExcludedVenue[] }) {
             <Th className="min-w-[260px]">Label</Th>
             <Th numeric>AUM · som</Th>
             <Th numeric>AUM · eom</Th>
+            {withIncome ? <Th numeric>Reported income</Th> : null}
+            {withIncome ? <Th numeric>Receipts</Th> : null}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -869,6 +878,16 @@ function ExcludedSection({ rows }: { rows: SsrExcludedVenue[] }) {
               <Td numeric className="text-muted-foreground">
                 {formatCompactUSD(v.valueEom)}
               </Td>
+              {withIncome ? (
+                <Td numeric className="text-muted-foreground">
+                  {v.reportedRevenue == null ? "—" : formatCompactUSD(v.reportedRevenue)}
+                </Td>
+              ) : null}
+              {withIncome ? (
+                <Td numeric className="text-muted-foreground">
+                  {v.receipts == null ? "—" : formatCompactUSD(v.receipts)}
+                </Td>
+              ) : null}
             </TableRow>
           ))}
         </TableBody>

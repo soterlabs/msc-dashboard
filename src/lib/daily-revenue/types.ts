@@ -1,11 +1,14 @@
+import { dailyMonths } from "./calendar.ts";
+
 export const DAILY_PRIMES = ["spark", "grove", "obex", "keel", "skybase", "osero"] as const;
 export type DailyPrime = (typeof DAILY_PRIMES)[number];
 export const primeName = (prime: DailyPrime) => prime[0].toUpperCase() + prime.slice(1);
 export const isDailyPrime = (value: string): value is DailyPrime => (DAILY_PRIMES as readonly string[]).includes(value);
 
-export const DAILY_MONTHS = ["2026-09", "2026-10"] as const;
-export type DailyMonth = (typeof DAILY_MONTHS)[number];
-export const isDailyMonth = (value: unknown): value is DailyMonth => typeof value === "string" && (DAILY_MONTHS as readonly string[]).includes(value);
+/** A `YYYY-MM` inside the daily calendar window (see calendar.ts dailyMonths). */
+export type DailyMonth = string;
+export const isDailyMonth = (value: unknown, now: Date = new Date()): value is DailyMonth =>
+  typeof value === "string" && dailyMonths(now).includes(value);
 
 export interface Allocation {
   venue_id: string;
