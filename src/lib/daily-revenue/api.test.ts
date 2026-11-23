@@ -99,3 +99,20 @@ test("a transport failure and a rejected payload are logged and worded different
   assert.doesNotMatch(read.error!, /unexpected response/);
   assert.deepEqual(logged.map((m) => m.includes("read failed")), [true]);
 });
+
+test("a confirmed 404 is remembered for one minute, then a new publication shows", async () => {
+  let time = 0, calls = 0, published = false;
+  const client = createRevenueClient(async () => { calls++; return published ? response(fixture()) : response({}, 404); }, () => time, undefined, silent);
+  assert.equal((await client.latest("grove")).source, "missing");
+  assert.equal((await client.latest("grove")).source, "missing");
+  assert.equal(calls, 1);
+  published = true; time = 59_000;
+  assert.equal((await client.latest("grove")).source, "missing"); // still inside the window
+  time = 61_000;
+  const fresh = await client.latest("grove");
+  assert.equal(fresh.source, "api"); assert.equal(calls, 2);
+  // An outage is never remembered as "missing".
+  const outage = createRevenueClient(async () => { calls++; return response({}, 503); }, () => 0, undefined, silent);
+  assert.equal((await outage.latest("grove")).source, "unavailable");
+  const before = calls; await outage.latest("grove"); assert.equal(calls, before + 1);
+});

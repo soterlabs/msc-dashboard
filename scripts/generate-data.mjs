@@ -341,6 +341,43 @@ function drL2Addresses() {
   }));
 }
 
+/**
+ * DR months already published in the committed data/generated/dr.json are
+ * settled: their payments were made from the DR the dashboard showed. The DR
+ * pipeline later restates history in place (e.g. settle-dr-dune #20/#28 raised
+ * Skybase January–August), while settlements book such corrections as separate
+ * true-ups in a later month. So a refresh keeps every already-published month
+ * exactly as published and takes only NEW months from the sources; the DR tab
+ * then keeps agreeing with the settled amounts. To restate deliberately, run
+ * with DR_RESTATE_SETTLED=1 and review the resulting diff.
+ */
+function settledDrBaseline() {
+  if (process.env.DR_RESTATE_SETTLED === "1") return null;
+  const file = path.join(ROOT, "data", "generated", "dr.json");
+  if (!fs.existsSync(file)) return null;
+  return JSON.parse(fs.readFileSync(file, "utf8"));
+}
+
+/** Rows keyed by `key`; for `frozen` months every value comes from the
+ * baseline (null where the baseline had none). Baseline-only rows are kept. */
+function freezeMonths(rows, baselineRows, frozen, key, makeRow) {
+  const byKey = new Map(baselineRows.map((r) => [key(r), r]));
+  const seen = new Set();
+  for (const row of rows) {
+    const old = byKey.get(key(row));
+    seen.add(key(row));
+    let added = 0;
+    for (const [m, v] of Object.entries(row.monthly)) if (!frozen.has(m)) added += v ?? 0;
+    for (const m of frozen) row.monthly[m] = old?.monthly[m] ?? null;
+    // Published totals are kept as published, plus the new months.
+    row.total = round((old ? old.total ?? 0 : 0) + added, 2);
+  }
+  for (const old of baselineRows) {
+    if (seen.has(key(old))) continue;
+    rows.push(makeRow(old));
+  }
+}
+
 function generateDr(drDir, cycleDir) {
   const wbRel = path.join(...DR_WORKBOOK);
   const wb = XLSX.read(fs.readFileSync(path.join(drDir, wbRel)));
@@ -433,6 +470,22 @@ function generateDr(drDir, cycleDir) {
     );
   }
 
+  const baseline = settledDrBaseline();
+  if (baseline) {
+    const frozen = new Set(baseline.reportMonths);
+    freezeMonths(refCodeRows, baseline.refCodeRows, frozen, (r) => r.refCode, (old) => ({
+      ...old,
+      group: groupOf.get(old.refCode) ?? old.group,
+      monthly: { ...old.monthly },
+    }));
+    for (const m of frozen) if (!reportMonths.includes(m)) reportMonths.push(m);
+    reportMonths.sort();
+    for (const row of refCodeRows) {
+      for (const m of reportMonths) if (!(m in row.monthly)) row.monthly[m] = null;
+      row.monthly = Object.fromEntries(reportMonths.map((m) => [m, row.monthly[m]]));
+    }
+  }
+
   // Group rollups, in config order: the retired Summary tab's per-group Total
   // rows, re-derived. Summing the codes is what settlement-cycle's own DR
   // loader does (src/settle/load/dr_rewards.py), so the two agree by
@@ -475,7 +528,17 @@ function generateDr(drDir, cycleDir) {
 
   // Snapshot months beyond the workbook extend the per-token history too.
   for (const snap of snapshots) {
-    if (historyMonths.includes(snap.month)) continue;
+    if (historyMonths.includes(snap.month)) {
+      // Month already in the workbook: both sources must agree per token.
+      const keys = new Set([...snap.tokens.keys(), ...refCodeTokenSeries.map((s) => `${s.refCode}|${s.token}`)]);
+      for (const key of keys) {
+        const wb = refCodeTokenSeries.find((s) => `${s.refCode}|${s.token}` === key)?.monthly[snap.month] ?? 0;
+        if (Math.abs(wb - (snap.tokens.get(key) ?? 0)) > 0.011) {
+          throw new Error(`DR ${snap.month} ${key}: workbook ${wb} disagrees with the finalized snapshot ${snap.tokens.get(key) ?? 0}`);
+        }
+      }
+      continue;
+    }
     historyMonths.push(snap.month);
     const byKey = new Map(refCodeTokenSeries.map((s) => [`${s.refCode}|${s.token}`, s]));
     for (const [key, value] of snap.tokens) {
@@ -490,6 +553,17 @@ function generateDr(drDir, cycleDir) {
     }
     for (const series of refCodeTokenSeries) {
       if (!(snap.month in series.monthly)) series.monthly[snap.month] = null;
+    }
+  }
+
+  if (baseline) {
+    const frozen = new Set(baseline.historyMonths);
+    freezeMonths(refCodeTokenSeries, baseline.refCodeTokenSeries, frozen, (r) => `${r.refCode}|${r.token}`,
+      (old) => ({ ...old, monthly: { ...old.monthly } }));
+    for (const m of frozen) if (!historyMonths.includes(m)) historyMonths.push(m);
+    historyMonths.sort();
+    for (const series of refCodeTokenSeries) {
+      series.monthly = Object.fromEntries(historyMonths.map((m) => [m, series.monthly[m] ?? null]));
     }
   }
 

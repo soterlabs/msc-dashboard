@@ -50,3 +50,17 @@ test("October reconciliations are parsed from their explicit layouts", () => {
   const osero = ssr.reports.find((r) => r.partner === "osero" && r.month === "2026-10")!.reconciliation!;
   assert.equal(osero.items[0].value, 5514);
 });
+
+test("the DR tab keeps agreeing with settled DR in every month, history included", () => {
+  // Settled months are frozen at their published DR; the DR pipeline's later
+  // in-place restatements are booked by settlements as separate true-ups.
+  for (const [partner, group] of [["spark", "Spark"], ["grove", "Grove"], ["osero", "Osero"], ["skybase", "Skybase"]]) {
+    for (const month of dr.reportMonths) {
+      const settled = ssr.reports.find((r) => r.partner === partner && r.month === month)?.headline.distributionRewards;
+      const tab = dr.summaryGroups.find((g) => g.group === group)?.monthly[month];
+      if (settled == null || tab == null) continue;
+      assert.ok(Math.abs(settled - tab) <= 0.05, `${partner} ${month}: settled ${settled} vs tab ${tab}`);
+    }
+  }
+  assert.equal(dr.historyMonths[0], "2024-09");
+});
