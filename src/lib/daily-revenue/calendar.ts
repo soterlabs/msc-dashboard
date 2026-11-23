@@ -36,7 +36,8 @@ export function dailyMonths(now: Date = new Date()): string[] {
   for (let month = FIRST_DAILY_MONTH; month <= last; month = nextMonth(month)) out.push(month);
   return out;
 }
-/** The default daily month: the one holding the latest completed UTC day. */
-export const latestDailyMonth = (now: Date = new Date()) => dailyMonths(now).at(-1) ?? FIRST_DAILY_MONTH;
+/** The default daily month: the one holding the latest completed UTC day;
+ * undefined before the first daily month has a completed day. */
+export const latestDailyMonth = (now: Date = new Date()): string | undefined => dailyMonths(now).at(-1);
 
 export const monthLabel = (month: string) => new Intl.DateTimeFormat("en", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${month}-01T00:00:00Z`));

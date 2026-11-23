@@ -8,7 +8,9 @@ import { dailyMonths, latestDailyMonth } from "./calendar.ts";
 const OCT = new Date("2026-10-29T12:00:00Z");
 
 test("canonical daily revenue paths carry month, prime and venue ID", () => {
-  assert.equal(paths.dailyRevenue(), `/daily-revenue/${latestDailyMonth()}`);
+  // No month in a link: bare path; the server picks the latest month.
+  assert.equal(paths.dailyRevenue(), "/daily-revenue");
+  assert.equal(paths.dailyRevenue(undefined, "spark"), "/daily-revenue/spark");
   assert.equal(paths.dailyRevenue("2026-09", "spark"), "/daily-revenue/2026-09/spark");
   assert.equal(paths.dailyRevenue("2026-09", "spark", "S1/a"), "/daily-revenue/2026-09/spark/S1%2Fa");
   assert.deepEqual(parseDailyRoute(["2026-09"], undefined, OCT), { month: "2026-09", prime: undefined, allocation: undefined });
@@ -40,8 +42,11 @@ test("months advance with completed UTC days, never ahead of them", () => {
   assert.equal(latestDailyMonth(new Date("2026-11-23T12:00:00Z")), "2026-11");
   // Year boundary: December then January, from the calendar rule alone.
   assert.deepEqual(dailyMonths(new Date("2027-01-05T00:00:00Z")).slice(-2), ["2026-12", "2027-01"]);
+  // Before the first daily month has a completed day there is no month at
+  // all, and the bare route 404s instead of redirecting to an invalid month.
   assert.deepEqual(dailyMonths(new Date("2026-09-01T12:00:00Z")), []);
-  assert.equal(latestDailyMonth(new Date("2026-09-01T12:00:00Z")), "2026-09");
+  assert.equal(latestDailyMonth(new Date("2026-09-01T12:00:00Z")), undefined);
+  assert.equal(parseDailyRoute([], undefined, new Date("2026-09-01T12:00:00Z")), null);
 });
 
 test("November routes resolve, reset to November and reject future months", () => {

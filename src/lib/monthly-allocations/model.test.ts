@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { validateMonthly, parseMonthlyRoute, yieldMonthsNewestFirst, completedMonths, percent, costReason, monthlyUsd, overviewYields } from "./model.ts";
+import { validateMonthly, parseMonthlyRoute, yieldMonthsNewestFirst, completedMonths, newestPublishedMonth, percent, costReason, monthlyUsd, overviewYields } from "./model.ts";
 import { createRevenueClient } from "../daily-revenue/api.ts";
 const fixture = (name = "spark-S18") => JSON.parse(readFileSync(`schema/fixtures/monthly-allocations/${name}.json`, "utf8"));
 
@@ -164,4 +164,24 @@ test("yield page links to the same reporting revision that its client reads", ()
   const page = readFileSync('src/app/prime-agent-revenues/yields/[[...path]]/page.tsx', 'utf8');
   assert.match(page, /v3\/reporting\/allocation-yields\?prime=/);
   assert.doesNotMatch(page, /v1\/revenue\/.*monthly/);
+});
+
+test("bare yields route steps back only when every prime definitely has no publication", async () => {
+  const NOV = new Date("2026-11-23T00:00:00Z");
+  type Read = { data: unknown; source: string };
+  const reader = (table: Record<string, (prime: string) => Read>) => async (prime: string, month: string) =>
+    (table[month] ?? (() => ({ data: null, source: "missing" })))(prime);
+  const published = (): Read => ({ data: { ok: true }, source: "api" });
+  const missing = (): Read => ({ data: null, source: "missing" });
+  const down = (): Read => ({ data: null, source: "unavailable" });
+  // October published for one prime only: October.
+  assert.equal(await newestPublishedMonth(reader({ "2026-10": (p) => p === "osero" ? published() : missing(), "2026-09": published }), NOV), "2026-10");
+  // October not yet published anywhere: September.
+  assert.equal(await newestPublishedMonth(reader({ "2026-10": missing, "2026-09": published }), NOV), "2026-09");
+  // Partial outage while October is unpublished for the reachable primes:
+  // stay on October and show the outage, never silently fall back.
+  assert.equal(await newestPublishedMonth(reader({ "2026-10": (p) => p === "keel" ? missing() : down(), "2026-09": published }), NOV), "2026-10");
+  assert.equal(await newestPublishedMonth(reader({ "2026-10": down, "2026-09": published }), NOV), "2026-10");
+  // Nothing published at all: the newest completed month (explicit missing state).
+  assert.equal(await newestPublishedMonth(reader({}), NOV), "2026-10");
 });

@@ -6,27 +6,15 @@ import { CopyLink } from "@/components/daily-revenue/copy-link";
 import { revenueClient, REVENUE_PUBLIC_URL } from "@/lib/daily-revenue/api";
 import { addMoney, compareMoney } from "@/lib/daily-revenue/decimal";
 import { DAILY_PRIMES, primeName } from "@/lib/daily-revenue/types";
-import { FIRST_YIELD_MONTH, yieldMonthsNewestFirst, completedMonths, costReason, monthlyUsd, overviewYields, parseMonthlyRoute, percent, type MonthlyAllocation } from "@/lib/monthly-allocations/model";
+import { newestPublishedMonth, completedMonths, costReason, monthlyUsd, overviewYields, parseMonthlyRoute, percent, type MonthlyAllocation } from "@/lib/monthly-allocations/model";
 import { paths } from "@/lib/routes";
 
 export const dynamic = "force-dynamic";
-/** Newest completed month with at least one prime's verified publication;
- * the newest completed month when none is reachable, which then renders the
- * explicit missing/unavailable state rather than an older month's data. */
-async function newestPublishedMonth(): Promise<string> {
-  const candidates = yieldMonthsNewestFirst();
-  for (const month of candidates) {
-    const reads = await Promise.all(DAILY_PRIMES.map(p => revenueClient.monthly(p, month)));
-    if (reads.some(r => r.data)) return month;
-    if (reads.every(r => r.source === "unavailable")) break;
-  }
-  return candidates[0] ?? FIRST_YIELD_MONTH;
-}
 const knownCosts = (rows: MonthlyAllocation[]) => rows.filter(r => r.borrowing_cost_usd !== null);
 
 export default async function Page({ params }: { params: Promise<{ path?: string[] }> }) {
   const { path = [] } = await params;
-  if (!path.length) redirect(paths.monthlyAllocations(await newestPublishedMonth()));
+  if (!path.length) redirect(paths.monthlyAllocations(await newestPublishedMonth((p, m) => revenueClient.monthly(p, m))));
   const route = parseMonthlyRoute(path);
   if (!route) notFound();
   const { month, prime, venue } = route;

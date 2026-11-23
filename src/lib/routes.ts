@@ -12,7 +12,6 @@
  * keystroke is worse than one that does not.
  */
 import { FLAGS, type Flags } from "./flags.ts";
-import { latestDailyMonth } from "./daily-revenue/calendar.ts";
 
 export type Section = "daily-revenue" | "ssr" | "sky-total" | "buybacks" | "prime";
 
@@ -103,11 +102,15 @@ export const paths = {
       ? `/${slugOf("buybacks")}/${granularity}`
       : `/${slugOf("buybacks")}`,
 
-  /** Allocation revenue drill-down; without a month, the latest daily month. */
-  dailyRevenue: (month: string = latestDailyMonth(), prime?: string, allocation?: string) =>
-    `/${slugOf("daily-revenue")}/${encodeURIComponent(month)}` +
-    (prime ? `/${encodeURIComponent(prime)}` : "") +
-    (prime && allocation ? `/${encodeURIComponent(allocation)}` : ""),
+  /** Allocation revenue drill-down. Without a month the link is bare (with an
+   * optional prime) and the server redirects to the latest daily month, so a
+   * prerendered or client-rendered link never freezes a month in its href. */
+  dailyRevenue: (month?: string, prime?: string, allocation?: string) =>
+    month
+      ? `/${slugOf("daily-revenue")}/${encodeURIComponent(month)}` +
+        (prime ? `/${encodeURIComponent(prime)}` : "") +
+        (prime && allocation ? `/${encodeURIComponent(allocation)}` : "")
+      : `/${slugOf("daily-revenue")}` + (prime ? `/${encodeURIComponent(prime)}` : ""),
 
   /** Monthly venue yields; without a month, the bare route resolves the newest
    * completed month that has a publication (server side). */

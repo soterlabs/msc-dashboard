@@ -7,6 +7,7 @@ export type DailyRoute = { redirectTo: string } | { month: DailyMonth; prime?: D
 export function parseDailyRoute(path: string[], legacyMonth?: unknown, now: Date = new Date()): DailyRoute | null {
   if (legacyMonth !== undefined && !isDailyMonth(legacyMonth, now)) return null;
   const month = (legacyMonth as DailyMonth | undefined) ?? latestDailyMonth(now);
+  if (!month) return null;
   if (path.length === 0) return { redirectTo: paths.dailyRevenue(month) };
   if (isDailyPrime(path[0]) && path.length === 1) return { redirectTo: paths.dailyRevenue(month, path[0]) };
   if (isDailyPrime(path[0]) && isDailyMonth(path[1], now) && path.length === 2) {

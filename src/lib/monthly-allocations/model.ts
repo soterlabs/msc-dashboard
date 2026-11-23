@@ -1,6 +1,6 @@
 import { Decimal } from "decimal.js";
 import { decimal, usd } from "../daily-revenue/decimal.ts";
-import { isDailyPrime, type DailyPrime } from "../daily-revenue/types.ts";
+import { DAILY_PRIMES, isDailyPrime, type DailyPrime } from "../daily-revenue/types.ts";
 
 /** First month with published monthly allocation analytics. */
 export const FIRST_YIELD_MONTH = "2026-09";
@@ -36,6 +36,24 @@ export function completedMonth(month: string, now = new Date()): boolean {
  * bare route, which selects the newest one with a publication. */
 export function yieldMonthsNewestFirst(now = new Date()): string[] {
   return completedMonths(now).filter(m => m >= FIRST_YIELD_MONTH).reverse();
+}
+/**
+ * The bare route's month: the newest completed month in which any prime has a
+ * verified publication. It steps back to an older month only when every prime
+ * DEFINITELY has none (404); if a read failed, that month is kept so the page
+ * shows the outage instead of quietly serving an older month's data.
+ */
+export async function newestPublishedMonth(
+  read: (prime: DailyPrime, month: string) => Promise<{ data: unknown; source: string }>,
+  now = new Date(),
+): Promise<string> {
+  const candidates = yieldMonthsNewestFirst(now);
+  for (const month of candidates) {
+    const reads = await Promise.all(DAILY_PRIMES.map(p => read(p, month)));
+    if (reads.some(r => r.data)) return month;
+    if (!reads.every(r => r.source === "missing")) return month;
+  }
+  return candidates[0] ?? FIRST_YIELD_MONTH;
 }
 /** Every selectable completed month, oldest first (the month navigation). */
 export function completedMonths(now = new Date()): string[] {
