@@ -377,9 +377,13 @@ function freezeMonths(rows, baselineRows, frozen, key, makeRow) {
     seen.add(key(row));
     let added = 0;
     for (const [m, v] of Object.entries(row.monthly)) if (!frozen.has(m)) added += v ?? 0;
+    // Months of the published total that are being replaced (restate only).
+    let replaced = 0;
+    for (const [m, v] of Object.entries(old?.monthly ?? {})) if (!frozen.has(m)) replaced += v ?? 0;
     for (const m of frozen) row.monthly[m] = old?.monthly[m] ?? null;
-    // Published totals are kept as published, plus the new months.
-    row.total = round((old ? old.total ?? 0 : 0) + added, 2);
+    // Published totals are kept as published (their own rounding included),
+    // less any months being restated, plus the months taken from the sources.
+    row.total = round((old ? old.total ?? 0 : 0) - replaced + added, 2);
   }
   for (const old of baselineRows) {
     if (seen.has(key(old))) continue;
