@@ -92,6 +92,10 @@ export function AppShell({ children, primes }: { children: React.ReactNode; prim
 function AppSidebar({ section, primes }: { section?: Section; primes: PrimeLink[] }) {
   const pathname = usePathname();
   const pathMonth = pathname.startsWith("/daily-revenue/") ? pathname.split("/")[2] : undefined;
+  // Keep the month of the daily page being shown; anything outside the daily
+  // calendar (a 404 page) falls back to the bare link, which the server
+  // resolves. Never compute a "latest" month here: it would be frozen into
+  // prerendered HTML.
   const dailyMonth = isDailyMonth(pathMonth) ? pathMonth : undefined;
   const { setOpenMobile } = useSidebar();
   const [expanded, setExpanded] = React.useState<Record<"ssr" | "daily-revenue", boolean>>({

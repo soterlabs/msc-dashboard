@@ -8,7 +8,8 @@
     "2026-06",
     "2026-07",
     "2026-08",
-    "2026-09"
+    "2026-09",
+    "2026-10"
   ],
   "monthLabels": {
     "2026-01": "Jan",
@@ -19,7 +20,8 @@
     "2026-06": "Jun",
     "2026-07": "Jul",
     "2026-08": "Aug",
-    "2026-09": "Sep"
+    "2026-09": "Sep",
+    "2026-10": "Oct"
   },
   "reports": [
     {
@@ -6396,6 +6398,814 @@
       }
     },
     {
+      "partner": "grove",
+      "month": "2026-10",
+      "periodDays": 31,
+      "headline": {
+        "agentRate": 87849.81,
+        "distributionRewards": 22572.85,
+        "chroniclePoints": 12439.99,
+        "demandSideRevenue": 122862.65,
+        "primeSupplySideRevenue": 1225694.88,
+        "primeCostOfFunds": 4435995.5,
+        "skyDirectExposure": 1246963.82,
+        "skyRevenue": 5682959.32,
+        "primeAgentProfit": 1348557.53
+      },
+      "venues": [
+        {
+          "id": "E1",
+          "label": "Aave Horizon RWA RLUSD (aToken)",
+          "valueSom": 0.01,
+          "valueEom": 0.01,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E2",
+          "label": "Aave Horizon RWA USDC (aToken)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E3",
+          "label": "Aave Ethereum RLUSD (aToken)",
+          "valueSom": 0.37,
+          "valueEom": 0.37,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E4",
+          "label": "Grove x Steakhouse USDC (Morpho 4626)",
+          "valueSom": 20033806.09,
+          "valueEom": 16837902.54,
+          "periodInflow": -3252691.38,
+          "actualRev": 56787.83,
+          "revenue": 56787.83,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E5",
+          "label": "Grove x Steakhouse USDC High Yield (Morpho 4626)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E6",
+          "label": "Grove x Steakhouse AUSD (Morpho 4626)",
+          "valueSom": 0.03,
+          "valueEom": 0.03,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E7",
+          "label": "Securitize Tokenized AAA CLO Fund (STAC)",
+          "valueSom": 103405568.8,
+          "valueEom": 103832936,
+          "periodInflow": 0,
+          "actualRev": 427367.2,
+          "revenue": 427367.2,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E8",
+          "label": "Janus Henderson Anemoy AAA CLO (JAAA)",
+          "valueSom": 131081648.69,
+          "valueEom": 131599815.97,
+          "periodInflow": 0,
+          "actualRev": 518167.28,
+          "revenue": 518167.28,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E9",
+          "label": "Janus Henderson Anemoy Treasury Fund (JTRSY)",
+          "valueSom": 309460827.19,
+          "valueEom": 75027357.47,
+          "periodInflow": -235315891.4,
+          "actualRev": 882421.68,
+          "revenue": 0,
+          "sdRevenue": 882421.68,
+          "sdShare": 1,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E10",
+          "label": "BlackRock USD Institutional Digital Liquidity Fund (BUIDL-I)",
+          "valueSom": 119263243.9,
+          "valueEom": 74982745.6,
+          "periodInflow": -44645040.81,
+          "actualRev": 364542.14,
+          "revenue": 0,
+          "sdRevenue": 364542.14,
+          "sdShare": 1,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E11",
+          "label": "Curve AUSD/USDC stableswap LP",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E12",
+          "label": "Uniswap V3 AUSD/USDC pool (NFT positions)",
+          "valueSom": 10002041.44,
+          "valueEom": 0,
+          "periodInflow": -10010155.17,
+          "actualRev": 8113.73,
+          "revenue": 8113.73,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E13",
+          "label": "RLUSD raw (ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E15",
+          "label": "USDC raw (ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E16",
+          "label": "DAI raw (ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E17",
+          "label": "USDS raw / POL (ALM idle — already netted out of utilized)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E18",
+          "label": "sUSDS raw / POL (ALM idle — Cat B 4626)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E19",
+          "label": "Grove x Steakhouse USDC High Yield (Base, Morpho 4626)",
+          "valueSom": 103325743.29,
+          "valueEom": 0,
+          "periodInflow": -103473218.76,
+          "actualRev": 147475.47,
+          "revenue": 147475.47,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E20",
+          "label": "Janus Henderson Anemoy AAA CLO (JAAA-avalanche)",
+          "valueSom": 262568675.09,
+          "valueEom": 263606612.11,
+          "periodInflow": 0,
+          "actualRev": 1037937.02,
+          "revenue": 1037937.02,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E21",
+          "label": "Galaxy Arch CLO Token (GACLO-1)",
+          "valueSom": 17907834.79,
+          "valueEom": 17907834.79,
+          "periodInflow": 0,
+          "actualRev": 142165.55,
+          "revenue": 142165.55,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E22",
+          "label": "Anemoy Tokenized Apollo Diversified Credit Fund (ACRDX)",
+          "valueSom": 20599353.69,
+          "valueEom": 20628739.48,
+          "periodInflow": 0,
+          "actualRev": 29385.8,
+          "revenue": 29385.8,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E23",
+          "label": "Steakhouse Prime Instant (Base, Morpho V2)",
+          "valueSom": 165760956.73,
+          "valueEom": 0,
+          "periodInflow": -165858216.26,
+          "actualRev": 97259.53,
+          "revenue": 97259.53,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E24",
+          "label": "Steakhouse High Yield PYUSD (Morpho 4626)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E26",
+          "label": "PYUSD raw (ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E27",
+          "label": "USDC raw on Base (ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E30",
+          "label": "Uniswap V3 AUSD/USDC pool (NFT positions — alt holder)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E31",
+          "label": "AUSD raw (alt holder idle)",
+          "valueSom": 10068.98,
+          "valueEom": 0,
+          "periodInflow": -10068.98,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E32",
+          "label": "USDC raw (alt holder idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E37",
+          "label": "Maple syrupUSDC (ERC-4626)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E38",
+          "label": "Agora AUSD incentives (cash distribution to Grove Eth ALM)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E40",
+          "label": "USDS raw (Diamond PAU ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E41",
+          "label": "JTRSY Basin escrow — USDS pending subscription (Diamond PAU)",
+          "valueSom": 100000000,
+          "valueEom": 100000000,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E42",
+          "label": "Galaxy Warehouse (off-chain facility — cash distribution to Grove Eth ALM)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 1894876.53,
+          "revenue": 1894876.53,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E43",
+          "label": "Grove x Steakhouse USDC (Base, ERC-4626)",
+          "valueSom": 45007605.86,
+          "valueEom": 495667861.87,
+          "periodInflow": 449362247.85,
+          "actualRev": 1298008.15,
+          "revenue": 1298008.15,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "E44",
+          "label": "Uniswap V3 AUSD/USDC pool (NFT positions — Diamond PAU)",
+          "valueSom": 20002378.41,
+          "valueEom": 30009488.92,
+          "periodInflow": 10002964.2,
+          "actualRev": 4146.3,
+          "revenue": 4146.3,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        }
+      ],
+      "refCodes": [
+        {
+          "refCode": "2001",
+          "dr": 57.75,
+          "notes": "farms / ethereum / USDS-GROVE"
+        },
+        {
+          "refCode": "2009",
+          "dr": 1596.61,
+          "notes": "farms / ethereum / USDS-GROVE"
+        },
+        {
+          "refCode": "2000",
+          "dr": 0,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "2001",
+          "dr": 40.57,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "2002",
+          "dr": 0,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "2005",
+          "dr": 9132.6,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "2008",
+          "dr": 8633.2,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "2012",
+          "dr": 3112.11,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "2222",
+          "dr": 0,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "2002",
+          "dr": 0,
+          "notes": "stusds / ethereum / stUSDS"
+        }
+      ],
+      "rateBuild": {
+        "timeWeightedUtilized": 1344477142.692447,
+        "baseRate": 0.03899161454955988,
+        "referenceRate": 0.03896129032258065,
+        "referenceRateKind": "tbill_3m→sofr@2026-07-23",
+        "subsidisedRate": 0.03878631988039914,
+        "effectiveRate": 0.03884801603801751,
+        "diffVsBaseBps": -1.43598511542375,
+        "subsidyBenefit": 16397.29427751993,
+        "cofAtFullBase": 4452392.794726803,
+        "cofOnUtilized": 4435995.500449283,
+        "skyDirectComponent": 1246963.819436235,
+        "skyRevenueMax": 6081897.411478891,
+        "subsidyEnabled": true,
+        "capUsd": 1000000000
+      },
+      "skyDirect": [
+        {
+          "id": "E10",
+          "kind": "fixed",
+          "cap": null,
+          "start": "2025-10-30",
+          "end": "—",
+          "active": true,
+          "source": "Atlas A.2.2.9.1.1.1.1.1 — Treasury Bills",
+          "label": "BUIDL on Eth",
+          "actualRevenue": 364542.140066,
+          "sdRevenue": 364542.140066
+        },
+        {
+          "id": "E9",
+          "kind": "fixed",
+          "cap": null,
+          "start": "2025-10-30",
+          "end": "—",
+          "active": true,
+          "source": "Atlas A.2.2.9.1.1.1.1.1 — Treasury Bills",
+          "label": "JTRSY on Eth",
+          "actualRevenue": 882421.6793702351,
+          "sdRevenue": 882421.6793702351
+        },
+        {
+          "id": "E8",
+          "kind": "capped",
+          "cap": 325000000,
+          "start": "2025-10-23",
+          "end": "2026-03-12",
+          "active": false,
+          "source": "Atlas A.2.2.9.1.1.1.1.3.0.6.1 — Historical SDE",
+          "label": "JAAA on Eth (≤ $325M)",
+          "actualRevenue": 518167.279519029,
+          "sdRevenue": 0
+        }
+      ],
+      "debtDaily": [
+        {
+          "date": "2026-10-01",
+          "cumDebt": 1821601767,
+          "utilized": 1292822405,
+          "dailySkyCharge": 132538.44
+        },
+        {
+          "date": "2026-10-02",
+          "cumDebt": 1840064869,
+          "utilized": 1311224943,
+          "dailySkyCharge": 134425.05
+        },
+        {
+          "date": "2026-10-03",
+          "cumDebt": 1834703722,
+          "utilized": 1305863796,
+          "dailySkyCharge": 133875.43
+        },
+        {
+          "date": "2026-10-04",
+          "cumDebt": 1826649930,
+          "utilized": 1297810003,
+          "dailySkyCharge": 133049.77
+        },
+        {
+          "date": "2026-10-05",
+          "cumDebt": 1824877913,
+          "utilized": 1295905550,
+          "dailySkyCharge": 132854.52
+        },
+        {
+          "date": "2026-10-06",
+          "cumDebt": 1828752764,
+          "utilized": 1299743985,
+          "dailySkyCharge": 133248.03
+        },
+        {
+          "date": "2026-10-07",
+          "cumDebt": 1829102741,
+          "utilized": 1300049719,
+          "dailySkyCharge": 139221.29
+        },
+        {
+          "date": "2026-10-08",
+          "cumDebt": 1830055046,
+          "utilized": 1300959323,
+          "dailySkyCharge": 139148.13
+        },
+        {
+          "date": "2026-10-09",
+          "cumDebt": 1826388676,
+          "utilized": 1297251563,
+          "dailySkyCharge": 138748.37
+        },
+        {
+          "date": "2026-10-10",
+          "cumDebt": 1827357097,
+          "utilized": 1298219984,
+          "dailySkyCharge": 138852.78
+        },
+        {
+          "date": "2026-10-11",
+          "cumDebt": 1828406679,
+          "utilized": 1299154965,
+          "dailySkyCharge": 138953.59
+        },
+        {
+          "date": "2026-10-12",
+          "cumDebt": 1834313856,
+          "utilized": 1305062142,
+          "dailySkyCharge": 139590.49
+        },
+        {
+          "date": "2026-10-13",
+          "cumDebt": 1835400313,
+          "utilized": 1306091518,
+          "dailySkyCharge": 140043.95
+        },
+        {
+          "date": "2026-10-14",
+          "cumDebt": 1812083443,
+          "utilized": 1282733522,
+          "dailySkyCharge": 137354.29
+        },
+        {
+          "date": "2026-10-15",
+          "cumDebt": 1827819270,
+          "utilized": 1298444861,
+          "dailySkyCharge": 139219.49
+        },
+        {
+          "date": "2026-10-16",
+          "cumDebt": 1849529512,
+          "utilized": 1320132869,
+          "dailySkyCharge": 141386.63
+        },
+        {
+          "date": "2026-10-17",
+          "cumDebt": 1866461551,
+          "utilized": 1337064907,
+          "dailySkyCharge": 143212.22
+        },
+        {
+          "date": "2026-10-18",
+          "cumDebt": 1886549136,
+          "utilized": 1357152492,
+          "dailySkyCharge": 145378.04
+        },
+        {
+          "date": "2026-10-19",
+          "cumDebt": 1902313114,
+          "utilized": 1372792566,
+          "dailySkyCharge": 146893.1
+        },
+        {
+          "date": "2026-10-20",
+          "cumDebt": 1892491850,
+          "utilized": 1362944350,
+          "dailySkyCharge": 146002.51
+        },
+        {
+          "date": "2026-10-21",
+          "cumDebt": 1894344369,
+          "utilized": 1364747401,
+          "dailySkyCharge": 146196.91
+        },
+        {
+          "date": "2026-10-22",
+          "cumDebt": 1902605213,
+          "utilized": 1372960284,
+          "dailySkyCharge": 147424.88
+        },
+        {
+          "date": "2026-10-23",
+          "cumDebt": 1907576280,
+          "utilized": 1377874166,
+          "dailySkyCharge": 148297.15
+        },
+        {
+          "date": "2026-10-24",
+          "cumDebt": 1919601576,
+          "utilized": 1389899462,
+          "dailySkyCharge": 149593.7
+        },
+        {
+          "date": "2026-10-25",
+          "cumDebt": 1921291376,
+          "utilized": 1391589262,
+          "dailySkyCharge": 149775.89
+        },
+        {
+          "date": "2026-10-26",
+          "cumDebt": 1929103206,
+          "utilized": 1399268054,
+          "dailySkyCharge": 150775.04
+        },
+        {
+          "date": "2026-10-27",
+          "cumDebt": 1882115532,
+          "utilized": 1402246365,
+          "dailySkyCharge": 151188.29
+        },
+        {
+          "date": "2026-10-28",
+          "cumDebt": 1829087506,
+          "utilized": 1399184713,
+          "dailySkyCharge": 150858.18
+        },
+        {
+          "date": "2026-10-29",
+          "cumDebt": 1673717861,
+          "utilized": 1423736572,
+          "dailySkyCharge": 153505.33
+        },
+        {
+          "date": "2026-10-30",
+          "cumDebt": 1702939942,
+          "utilized": 1452929840,
+          "dailySkyCharge": 156652.91
+        },
+        {
+          "date": "2026-10-31",
+          "cumDebt": 1712939942,
+          "utilized": 1462929840,
+          "dailySkyCharge": 157731.1
+        }
+      ],
+      "excludedVenues": [
+        {
+          "id": "E14",
+          "label": "AUSD raw (ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "reportedRevenue": 0,
+          "receipts": 0
+        },
+        {
+          "id": "E25",
+          "label": "Grove x Steakhouse High Yield AUSD (Monad, Morpho 4626)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "reportedRevenue": 0,
+          "receipts": 0
+        },
+        {
+          "id": "E33",
+          "label": "Uniswap V3 AUSD/USDC pool (Monad, NFT positions)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "reportedRevenue": 0,
+          "receipts": 0
+        },
+        {
+          "id": "E34",
+          "label": "AUSD raw (Monad, alt holder idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "reportedRevenue": 0,
+          "receipts": 0
+        },
+        {
+          "id": "E35",
+          "label": "USDC raw (Monad, alt holder idle)",
+          "valueSom": 152288.13,
+          "valueEom": 0,
+          "reportedRevenue": 0,
+          "receipts": 0
+        },
+        {
+          "id": "E36",
+          "label": "OOB principal via 0xd94f (relay to Monad ALM EOA → AUSD acquisition)",
+          "valueSom": -119746.47,
+          "valueEom": -119746.47,
+          "reportedRevenue": 0,
+          "receipts": 0
+        }
+      ],
+      "reconciliation": {
+        "summary": "January–September corrections and partner rebates booked once in October.",
+        "items": [
+          {
+            "label": "Historical reconciliation · Sky",
+            "value": -110419.56,
+            "detail": "Sky adjustment, net of credits booked in earlier settlements."
+          },
+          {
+            "label": "Historical reconciliation · Grove",
+            "value": 11554.74,
+            "detail": "Grove supply adjustment, net of earlier credits."
+          },
+          {
+            "label": "Total MSC adjustments · Sky",
+            "value": 1135869.94,
+            "detail": "Historical reconciliation plus JAAA/JTRSY partner rebates."
+          },
+          {
+            "label": "Total MSC adjustments · Grove",
+            "value": 822268.24,
+            "detail": "Historical reconciliation plus JAAA partner rebates."
+          }
+        ],
+        "note": "Adjustments change the October payment instructions only; ordinary October venue revenue is unchanged and published January–September reports are not rewritten."
+      }
+    },
+    {
       "partner": "keel",
       "month": "2026-01",
       "periodDays": 31,
@@ -6790,6 +7600,44 @@
         "skyDirectExposure": 0,
         "skyRevenue": 0,
         "primeAgentProfit": 31472.19
+      },
+      "venues": [],
+      "refCodes": [],
+      "rateBuild": {
+        "timeWeightedUtilized": null,
+        "baseRate": null,
+        "referenceRate": null,
+        "referenceRateKind": null,
+        "subsidisedRate": null,
+        "effectiveRate": null,
+        "diffVsBaseBps": null,
+        "subsidyBenefit": null,
+        "cofAtFullBase": null,
+        "cofOnUtilized": 0,
+        "skyDirectComponent": 0,
+        "skyRevenueMax": null,
+        "subsidyEnabled": null,
+        "capUsd": null
+      },
+      "skyDirect": [],
+      "debtDaily": [],
+      "excludedVenues": [],
+      "reconciliation": null
+    },
+    {
+      "partner": "keel",
+      "month": "2026-10",
+      "periodDays": 31,
+      "headline": {
+        "agentRate": 34033.81,
+        "distributionRewards": 0,
+        "chroniclePoints": null,
+        "demandSideRevenue": 34033.81,
+        "primeSupplySideRevenue": 0,
+        "primeCostOfFunds": 0,
+        "skyDirectExposure": 0,
+        "skyRevenue": 0,
+        "primeAgentProfit": 34033.81
       },
       "venues": [],
       "refCodes": [],
@@ -8921,6 +9769,244 @@
       "reconciliation": null
     },
     {
+      "partner": "obex",
+      "month": "2026-10",
+      "periodDays": 31,
+      "headline": {
+        "agentRate": 84247.44,
+        "distributionRewards": 0,
+        "chroniclePoints": null,
+        "demandSideRevenue": 84247.44,
+        "primeSupplySideRevenue": 395168.02,
+        "primeCostOfFunds": 1341558.34,
+        "skyDirectExposure": 0,
+        "skyRevenue": 1341558.34,
+        "primeAgentProfit": 479415.46
+      },
+      "venues": [
+        {
+          "id": "V1",
+          "label": "Maple syrupUSDC (Category B — ERC-4626 vault)",
+          "valueSom": 405536548.59,
+          "valueEom": 407273274.95,
+          "periodInflow": 0,
+          "actualRev": 1736726.36,
+          "revenue": 1736726.36,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        }
+      ],
+      "refCodes": [],
+      "rateBuild": {
+        "timeWeightedUtilized": null,
+        "baseRate": null,
+        "referenceRate": null,
+        "referenceRateKind": null,
+        "subsidisedRate": null,
+        "effectiveRate": null,
+        "diffVsBaseBps": null,
+        "subsidyBenefit": null,
+        "cofAtFullBase": null,
+        "cofOnUtilized": 1341558.335404871,
+        "skyDirectComponent": 0,
+        "skyRevenueMax": 1341558.335404871,
+        "subsidyEnabled": null,
+        "capUsd": null
+      },
+      "skyDirect": [],
+      "debtDaily": [
+        {
+          "date": "2026-10-01",
+          "cumDebt": 404163469,
+          "utilized": 404163469,
+          "dailySkyCharge": 41434.3
+        },
+        {
+          "date": "2026-10-02",
+          "cumDebt": 404163469,
+          "utilized": 404163469,
+          "dailySkyCharge": 41434.3
+        },
+        {
+          "date": "2026-10-03",
+          "cumDebt": 404163469,
+          "utilized": 404163469,
+          "dailySkyCharge": 41434.3
+        },
+        {
+          "date": "2026-10-04",
+          "cumDebt": 404163469,
+          "utilized": 404163469,
+          "dailySkyCharge": 41434.3
+        },
+        {
+          "date": "2026-10-05",
+          "cumDebt": 404163469,
+          "utilized": 404163469,
+          "dailySkyCharge": 41434.3
+        },
+        {
+          "date": "2026-10-06",
+          "cumDebt": 404163469,
+          "utilized": 404163469,
+          "dailySkyCharge": 41434.3
+        },
+        {
+          "date": "2026-10-07",
+          "cumDebt": 404163469,
+          "utilized": 404163469,
+          "dailySkyCharge": 43576.35
+        },
+        {
+          "date": "2026-10-08",
+          "cumDebt": 404163469,
+          "utilized": 404163469,
+          "dailySkyCharge": 43576.35
+        },
+        {
+          "date": "2026-10-09",
+          "cumDebt": 404163469,
+          "utilized": 404163469,
+          "dailySkyCharge": 43576.35
+        },
+        {
+          "date": "2026-10-10",
+          "cumDebt": 404163469,
+          "utilized": 404163469,
+          "dailySkyCharge": 43576.35
+        },
+        {
+          "date": "2026-10-11",
+          "cumDebt": 404163469,
+          "utilized": 404163469,
+          "dailySkyCharge": 43576.35
+        },
+        {
+          "date": "2026-10-12",
+          "cumDebt": 405806827,
+          "utilized": 405806827,
+          "dailySkyCharge": 43753.54
+        },
+        {
+          "date": "2026-10-13",
+          "cumDebt": 405806827,
+          "utilized": 405806827,
+          "dailySkyCharge": 43753.54
+        },
+        {
+          "date": "2026-10-14",
+          "cumDebt": 405806827,
+          "utilized": 405806827,
+          "dailySkyCharge": 43753.54
+        },
+        {
+          "date": "2026-10-15",
+          "cumDebt": 405806827,
+          "utilized": 405806827,
+          "dailySkyCharge": 43753.54
+        },
+        {
+          "date": "2026-10-16",
+          "cumDebt": 405806827,
+          "utilized": 405806827,
+          "dailySkyCharge": 43753.54
+        },
+        {
+          "date": "2026-10-17",
+          "cumDebt": 405806827,
+          "utilized": 405806827,
+          "dailySkyCharge": 43753.54
+        },
+        {
+          "date": "2026-10-18",
+          "cumDebt": 405806827,
+          "utilized": 405806827,
+          "dailySkyCharge": 43753.54
+        },
+        {
+          "date": "2026-10-19",
+          "cumDebt": 405806827,
+          "utilized": 405806827,
+          "dailySkyCharge": 43753.54
+        },
+        {
+          "date": "2026-10-20",
+          "cumDebt": 405806827,
+          "utilized": 405806827,
+          "dailySkyCharge": 43753.54
+        },
+        {
+          "date": "2026-10-21",
+          "cumDebt": 405806827,
+          "utilized": 405806827,
+          "dailySkyCharge": 43753.54
+        },
+        {
+          "date": "2026-10-22",
+          "cumDebt": 405806827,
+          "utilized": 405806827,
+          "dailySkyCharge": 43753.54
+        },
+        {
+          "date": "2026-10-23",
+          "cumDebt": 405806827,
+          "utilized": 405806827,
+          "dailySkyCharge": 43753.54
+        },
+        {
+          "date": "2026-10-24",
+          "cumDebt": 405806827,
+          "utilized": 405806827,
+          "dailySkyCharge": 43753.54
+        },
+        {
+          "date": "2026-10-25",
+          "cumDebt": 405806827,
+          "utilized": 405806827,
+          "dailySkyCharge": 43753.54
+        },
+        {
+          "date": "2026-10-26",
+          "cumDebt": 405806827,
+          "utilized": 405806827,
+          "dailySkyCharge": 43753.54
+        },
+        {
+          "date": "2026-10-27",
+          "cumDebt": 405806827,
+          "utilized": 405806827,
+          "dailySkyCharge": 43753.54
+        },
+        {
+          "date": "2026-10-28",
+          "cumDebt": 405806827,
+          "utilized": 405806827,
+          "dailySkyCharge": 43753.54
+        },
+        {
+          "date": "2026-10-29",
+          "cumDebt": 405806827,
+          "utilized": 405806827,
+          "dailySkyCharge": 43753.54
+        },
+        {
+          "date": "2026-10-30",
+          "cumDebt": 405806827,
+          "utilized": 405806827,
+          "dailySkyCharge": 43753.54
+        },
+        {
+          "date": "2026-10-31",
+          "cumDebt": 405806827,
+          "utilized": 405806827,
+          "dailySkyCharge": 43753.54
+        }
+      ],
+      "excludedVenues": [],
+      "reconciliation": null
+    },
+    {
       "partner": "osero",
       "month": "2026-07",
       "periodDays": 31,
@@ -9786,6 +10872,379 @@
       ],
       "excludedVenues": [],
       "reconciliation": null
+    },
+    {
+      "partner": "osero",
+      "month": "2026-10",
+      "periodDays": 31,
+      "headline": {
+        "agentRate": 33305.13,
+        "distributionRewards": 1228.31,
+        "chroniclePoints": null,
+        "demandSideRevenue": 34533.44,
+        "primeSupplySideRevenue": 2348.19,
+        "primeCostOfFunds": 13463.65,
+        "skyDirectExposure": 0,
+        "skyRevenue": 13463.65,
+        "primeAgentProfit": 36881.63
+      },
+      "venues": [
+        {
+          "id": "O1",
+          "label": "Spark USDS (SparkLend spToken)",
+          "valueSom": 50078586.4,
+          "valueEom": 0,
+          "periodInflow": -50083791.64,
+          "actualRev": 5205.25,
+          "revenue": 5205.25,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "O2",
+          "label": "USDS raw (Diamond PAU ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0.68,
+          "periodInflow": 0.68,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "O3",
+          "label": "Osero x Gauntlet USDC Prime (ERC-4626)",
+          "valueSom": 0,
+          "valueEom": 5010818.88,
+          "periodInflow": 5000212.28,
+          "actualRev": 10606.6,
+          "revenue": 10606.6,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        }
+      ],
+      "refCodes": [
+        {
+          "refCode": "3006",
+          "dr": 0,
+          "notes": "susds_susdc / arbitrum / sUSDC"
+        },
+        {
+          "refCode": "3000",
+          "dr": 0.84,
+          "notes": "psm3 / arbitrum / sUSDS"
+        },
+        {
+          "refCode": "3333",
+          "dr": 0,
+          "notes": "psm3 / arbitrum / sUSDS"
+        },
+        {
+          "refCode": "3006",
+          "dr": 0,
+          "notes": "susds_susdc / base / sUSDC"
+        },
+        {
+          "refCode": "3000",
+          "dr": 18.32,
+          "notes": "psm3 / base / sUSDS"
+        },
+        {
+          "refCode": "3001",
+          "dr": 0,
+          "notes": "psm3 / base / sUSDS"
+        },
+        {
+          "refCode": "3014",
+          "dr": 0,
+          "notes": "psm3 / base / sUSDS"
+        },
+        {
+          "refCode": "3333",
+          "dr": 0,
+          "notes": "psm3 / base / sUSDS"
+        },
+        {
+          "refCode": "3000",
+          "dr": 1071.07,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "3002",
+          "dr": 0,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "3006",
+          "dr": 1.23,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "3007",
+          "dr": 0.31,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "3008",
+          "dr": 42.41,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "3009",
+          "dr": 94.06,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "3900",
+          "dr": 0,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "3007",
+          "dr": 0,
+          "notes": "stusds / ethereum / stUSDS"
+        },
+        {
+          "refCode": "3006",
+          "dr": 0,
+          "notes": "susds_susdc / optimism / sUSDC"
+        },
+        {
+          "refCode": "3000",
+          "dr": 0.03,
+          "notes": "psm3 / optimism / sUSDS"
+        },
+        {
+          "refCode": "3001",
+          "dr": 0,
+          "notes": "psm3 / optimism / sUSDS"
+        },
+        {
+          "refCode": "3000",
+          "dr": 0.02,
+          "notes": "psm3 / unichain / sUSDS"
+        }
+      ],
+      "rateBuild": {
+        "timeWeightedUtilized": null,
+        "baseRate": null,
+        "referenceRate": null,
+        "referenceRateKind": null,
+        "subsidisedRate": null,
+        "effectiveRate": null,
+        "diffVsBaseBps": null,
+        "subsidyBenefit": null,
+        "cofAtFullBase": null,
+        "cofOnUtilized": 13463.64986742352,
+        "skyDirectComponent": 0,
+        "skyRevenueMax": 15062.60822204845,
+        "subsidyEnabled": null,
+        "capUsd": null
+      },
+      "skyDirect": [],
+      "debtDaily": [
+        {
+          "date": "2026-10-01",
+          "cumDebt": 50007006,
+          "utilized": 34459712,
+          "dailySkyCharge": 3532.76
+        },
+        {
+          "date": "2026-10-02",
+          "cumDebt": 0,
+          "utilized": -23817,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-10-03",
+          "cumDebt": 0,
+          "utilized": -23819,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-10-04",
+          "cumDebt": 0,
+          "utilized": -23821,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-10-05",
+          "cumDebt": 0,
+          "utilized": -23822,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-10-06",
+          "cumDebt": 0,
+          "utilized": -23824,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-10-07",
+          "cumDebt": 0,
+          "utilized": -23498,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-10-08",
+          "cumDebt": 0,
+          "utilized": -23499,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-10-09",
+          "cumDebt": 0,
+          "utilized": -23501,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-10-10",
+          "cumDebt": 0,
+          "utilized": -23503,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-10-11",
+          "cumDebt": 0,
+          "utilized": -23504,
+          "dailySkyCharge": 0
+        },
+        {
+          "date": "2026-10-12",
+          "cumDebt": 1076824,
+          "utilized": 1053318,
+          "dailySkyCharge": 113.57
+        },
+        {
+          "date": "2026-10-13",
+          "cumDebt": 1076824,
+          "utilized": 1053316,
+          "dailySkyCharge": 113.57
+        },
+        {
+          "date": "2026-10-14",
+          "cumDebt": 5000039,
+          "utilized": 5000038,
+          "dailySkyCharge": 539.1
+        },
+        {
+          "date": "2026-10-15",
+          "cumDebt": 5000039,
+          "utilized": 5000038,
+          "dailySkyCharge": 539.1
+        },
+        {
+          "date": "2026-10-16",
+          "cumDebt": 5000039,
+          "utilized": 5000038,
+          "dailySkyCharge": 539.1
+        },
+        {
+          "date": "2026-10-17",
+          "cumDebt": 5000039,
+          "utilized": 5000038,
+          "dailySkyCharge": 539.1
+        },
+        {
+          "date": "2026-10-18",
+          "cumDebt": 5000039,
+          "utilized": 5000038,
+          "dailySkyCharge": 539.1
+        },
+        {
+          "date": "2026-10-19",
+          "cumDebt": 5000039,
+          "utilized": 5000038,
+          "dailySkyCharge": 539.1
+        },
+        {
+          "date": "2026-10-20",
+          "cumDebt": 5000039,
+          "utilized": 5000038,
+          "dailySkyCharge": 539.1
+        },
+        {
+          "date": "2026-10-21",
+          "cumDebt": 5000039,
+          "utilized": 5000038,
+          "dailySkyCharge": 539.1
+        },
+        {
+          "date": "2026-10-22",
+          "cumDebt": 5000039,
+          "utilized": 5000038,
+          "dailySkyCharge": 539.1
+        },
+        {
+          "date": "2026-10-23",
+          "cumDebt": 5000039,
+          "utilized": 5000038,
+          "dailySkyCharge": 539.1
+        },
+        {
+          "date": "2026-10-24",
+          "cumDebt": 5000039,
+          "utilized": 5000038,
+          "dailySkyCharge": 539.1
+        },
+        {
+          "date": "2026-10-25",
+          "cumDebt": 5000039,
+          "utilized": 5000038,
+          "dailySkyCharge": 539.1
+        },
+        {
+          "date": "2026-10-26",
+          "cumDebt": 5000039,
+          "utilized": 5000038,
+          "dailySkyCharge": 539.1
+        },
+        {
+          "date": "2026-10-27",
+          "cumDebt": 5000039,
+          "utilized": 5000038,
+          "dailySkyCharge": 539.1
+        },
+        {
+          "date": "2026-10-28",
+          "cumDebt": 5000039,
+          "utilized": 5000038,
+          "dailySkyCharge": 539.1
+        },
+        {
+          "date": "2026-10-29",
+          "cumDebt": 5000039,
+          "utilized": 5000038,
+          "dailySkyCharge": 539.1
+        },
+        {
+          "date": "2026-10-30",
+          "cumDebt": 5000039,
+          "utilized": 5000038,
+          "dailySkyCharge": 539.1
+        },
+        {
+          "date": "2026-10-31",
+          "cumDebt": 5000039,
+          "utilized": 5000038,
+          "dailySkyCharge": 539.1
+        }
+      ],
+      "excludedVenues": [],
+      "reconciliation": {
+        "summary": "Refund of the July–September supply shortfall withheld twice.",
+        "items": [
+          {
+            "label": "Send-only reimbursement",
+            "value": 5514,
+            "detail": "Added to Osero's October payment without minting debt."
+          }
+        ],
+        "note": "The refund reduces Sky's MSC net revenue by the same amount; ordinary October results are unchanged."
+      }
     },
     {
       "partner": "skybase",
@@ -10762,6 +12221,280 @@
         ],
         "note": "The consolidated preview rounds normal September accrual to whole USDS; historical true-ups retain six-decimal precision."
       }
+    },
+    {
+      "partner": "skybase",
+      "month": "2026-10",
+      "periodDays": 31,
+      "headline": {
+        "agentRate": 42447.11,
+        "distributionRewards": 102991.76,
+        "chroniclePoints": null,
+        "demandSideRevenue": 145438.86,
+        "primeSupplySideRevenue": 0,
+        "primeCostOfFunds": 0,
+        "skyDirectExposure": 0,
+        "skyRevenue": 0,
+        "primeAgentProfit": 145438.86
+      },
+      "venues": [],
+      "refCodes": [
+        {
+          "refCode": "0",
+          "dr": 0,
+          "notes": "susds_susdc / arbitrum / sUSDC"
+        },
+        {
+          "refCode": "1004",
+          "dr": 0,
+          "notes": "susds_susdc / arbitrum / sUSDC"
+        },
+        {
+          "refCode": "1017",
+          "dr": 0.09,
+          "notes": "susds_susdc / arbitrum / sUSDC"
+        },
+        {
+          "refCode": "1",
+          "dr": 709.47,
+          "notes": "psm3 / arbitrum / sUSDS"
+        },
+        {
+          "refCode": "0",
+          "dr": 0.04,
+          "notes": "susds_susdc / base / sUSDC"
+        },
+        {
+          "refCode": "1004",
+          "dr": 0,
+          "notes": "susds_susdc / base / sUSDC"
+        },
+        {
+          "refCode": "1017",
+          "dr": 0.08,
+          "notes": "susds_susdc / base / sUSDC"
+        },
+        {
+          "refCode": "1",
+          "dr": 362.55,
+          "notes": "psm3 / base / sUSDS"
+        },
+        {
+          "refCode": "1015",
+          "dr": 0,
+          "notes": "psm3 / base / sUSDS"
+        },
+        {
+          "refCode": "1017",
+          "dr": 0.01,
+          "notes": "psm3 / base / sUSDS"
+        },
+        {
+          "refCode": "1998",
+          "dr": 5695.14,
+          "notes": "skybase_flagship / ethereum / USDS"
+        },
+        {
+          "refCode": "1999",
+          "dr": 20.55,
+          "notes": "skybase_risk_capital / ethereum / USDS"
+        },
+        {
+          "refCode": "0",
+          "dr": 0.72,
+          "notes": "farms / ethereum / USDS-CLE"
+        },
+        {
+          "refCode": "1",
+          "dr": 2130.95,
+          "notes": "farms / ethereum / USDS-CLE"
+        },
+        {
+          "refCode": "1001",
+          "dr": 8.11,
+          "notes": "farms / ethereum / USDS-CLE"
+        },
+        {
+          "refCode": "1002",
+          "dr": 7.41,
+          "notes": "farms / ethereum / USDS-CLE"
+        },
+        {
+          "refCode": "1",
+          "dr": 22946.22,
+          "notes": "farms / ethereum / USDS-GROVE"
+        },
+        {
+          "refCode": "1002",
+          "dr": 138.6,
+          "notes": "farms / ethereum / USDS-GROVE"
+        },
+        {
+          "refCode": "0",
+          "dr": 0.08,
+          "notes": "farms / ethereum / USDS-SKY"
+        },
+        {
+          "refCode": "1",
+          "dr": 185.51,
+          "notes": "farms / ethereum / USDS-SKY"
+        },
+        {
+          "refCode": "1001",
+          "dr": 4.52,
+          "notes": "farms / ethereum / USDS-SKY"
+        },
+        {
+          "refCode": "1002",
+          "dr": 0,
+          "notes": "farms / ethereum / USDS-SKY"
+        },
+        {
+          "refCode": "1007",
+          "dr": 0.19,
+          "notes": "farms / ethereum / USDS-SKY"
+        },
+        {
+          "refCode": "0",
+          "dr": 6.01,
+          "notes": "farms / ethereum / USDS-SPK"
+        },
+        {
+          "refCode": "1",
+          "dr": 632.44,
+          "notes": "farms / ethereum / USDS-SPK"
+        },
+        {
+          "refCode": "1002",
+          "dr": 0,
+          "notes": "farms / ethereum / USDS-SPK"
+        },
+        {
+          "refCode": "0",
+          "dr": 6.95,
+          "notes": "susds_susdc / ethereum / sUSDC"
+        },
+        {
+          "refCode": "1017",
+          "dr": 2.48,
+          "notes": "susds_susdc / ethereum / sUSDC"
+        },
+        {
+          "refCode": "0",
+          "dr": 1183.45,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "1",
+          "dr": 27863,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "1001",
+          "dr": 263.16,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "1002",
+          "dr": 14493.7,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "1003",
+          "dr": 8490.91,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "1004",
+          "dr": 281.41,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "1015",
+          "dr": 0,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "1020",
+          "dr": 78.01,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "1997",
+          "dr": 14901.41,
+          "notes": "skybase_pendle / ethereum / sUSDS"
+        },
+        {
+          "refCode": "0",
+          "dr": 3.36,
+          "notes": "sp / ethereum / spUSDC"
+        },
+        {
+          "refCode": "1017",
+          "dr": 0,
+          "notes": "sp / ethereum / spUSDC"
+        },
+        {
+          "refCode": "0",
+          "dr": 0.01,
+          "notes": "stusds / ethereum / stUSDS"
+        },
+        {
+          "refCode": "1",
+          "dr": 2514.81,
+          "notes": "stusds / ethereum / stUSDS"
+        },
+        {
+          "refCode": "0",
+          "dr": 0,
+          "notes": "susds_susdc / optimism / sUSDC"
+        },
+        {
+          "refCode": "1017",
+          "dr": 0,
+          "notes": "susds_susdc / optimism / sUSDC"
+        },
+        {
+          "refCode": "1",
+          "dr": 60.17,
+          "notes": "psm3 / optimism / sUSDS"
+        },
+        {
+          "refCode": "0",
+          "dr": 0,
+          "notes": "susds_susdc / unichain / sUSDC"
+        },
+        {
+          "refCode": "1017",
+          "dr": 0,
+          "notes": "susds_susdc / unichain / sUSDC"
+        },
+        {
+          "refCode": "1",
+          "dr": 0.22,
+          "notes": "psm3 / unichain / sUSDS"
+        }
+      ],
+      "rateBuild": {
+        "timeWeightedUtilized": null,
+        "baseRate": null,
+        "referenceRate": null,
+        "referenceRateKind": null,
+        "subsidisedRate": null,
+        "effectiveRate": null,
+        "diffVsBaseBps": null,
+        "subsidyBenefit": null,
+        "cofAtFullBase": null,
+        "cofOnUtilized": 0,
+        "skyDirectComponent": 0,
+        "skyRevenueMax": null,
+        "subsidyEnabled": null,
+        "capUsd": null
+      },
+      "skyDirect": [],
+      "debtDaily": [],
+      "excludedVenues": [],
+      "reconciliation": null
     },
     {
       "partner": "spark",
@@ -20972,6 +22705,1522 @@
         ],
         "note": "The true-up increases MSC debt and send-to-prime equally, so Sky's net revenue is unchanged."
       }
+    },
+    {
+      "partner": "spark",
+      "month": "2026-10",
+      "periodDays": 31,
+      "headline": {
+        "agentRate": 161064.42,
+        "distributionRewards": 739155.52,
+        "chroniclePoints": null,
+        "demandSideRevenue": 900219.94,
+        "primeSupplySideRevenue": 3038737.81,
+        "primeCostOfFunds": 10215829.41,
+        "skyDirectExposure": 8887.41,
+        "skyRevenue": 10224716.81,
+        "primeAgentProfit": 3938957.75
+      },
+      "venues": [
+        {
+          "id": "S1",
+          "label": "Spark USDS (SparkLend spToken)",
+          "valueSom": 1334095102.95,
+          "valueEom": 1212644510.17,
+          "periodInflow": -124452933.21,
+          "actualRev": 3002340.43,
+          "revenue": 3334150.46,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S2",
+          "label": "Spark USDC (SparkLend spToken)",
+          "valueSom": 26311446.79,
+          "valueEom": 40269686.76,
+          "periodInflow": 13852264.25,
+          "actualRev": 105975.72,
+          "revenue": 121490.43,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S3",
+          "label": "Spark USDT (SparkLend spToken)",
+          "valueSom": 290670918.98,
+          "valueEom": 272825127.7,
+          "periodInflow": -18729721.71,
+          "actualRev": 883930.44,
+          "revenue": 994009.22,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S4",
+          "label": "Spark DAI (SparkLend spToken)",
+          "valueSom": 273954224.29,
+          "valueEom": 260648690.02,
+          "periodInflow": -13897976.53,
+          "actualRev": 592442.26,
+          "revenue": 662859.68,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S5",
+          "label": "Spark PYUSD (SparkLend spToken)",
+          "valueSom": 143845442.72,
+          "valueEom": 100000029.98,
+          "periodInflow": -43929770.76,
+          "actualRev": 84358.02,
+          "revenue": 94611.85,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S6",
+          "label": "Aave Ethereum Lido USDS (aToken)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S7",
+          "label": "Aave Ethereum USDS (aToken)",
+          "valueSom": 0.01,
+          "valueEom": 0.01,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S8",
+          "label": "Aave Ethereum USDC (aToken)",
+          "valueSom": 0.06,
+          "valueEom": 0.06,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S9",
+          "label": "Aave Ethereum USDT (aToken)",
+          "valueSom": 5.97,
+          "valueEom": 5.99,
+          "periodInflow": 0,
+          "actualRev": 0.02,
+          "revenue": 0.02,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S10",
+          "label": "Spark Blue Chip USDC Vault (Morpho)",
+          "valueSom": 39487388.54,
+          "valueEom": 997427.14,
+          "periodInflow": -38537264.72,
+          "actualRev": 47303.32,
+          "revenue": 47303.32,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S11",
+          "label": "Spark Blue Chip USDT Vault (Morpho — pre-2026-06 deployment)",
+          "valueSom": 1.77,
+          "valueEom": 1.77,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S12",
+          "label": "Spark DAI Vault (Morpho)",
+          "valueSom": 1091.22,
+          "valueEom": 1318.49,
+          "periodInflow": 0,
+          "actualRev": 227.27,
+          "revenue": 227.27,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S13",
+          "label": "Spark USDS Vault (Morpho)",
+          "valueSom": 22.17,
+          "valueEom": 22.17,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S14",
+          "label": "Maple syrupUSDC (ERC-4626)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S15",
+          "label": "Maple syrupUSDT (ERC-4626)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S16",
+          "label": "Ethena Staked USDe (sUSDe)",
+          "valueSom": 101.2,
+          "valueEom": 101.62,
+          "periodInflow": 0,
+          "actualRev": 0.42,
+          "revenue": 0.42,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S17",
+          "label": "Fluid Savings USDS (fsUSDS)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S18",
+          "label": "Arkis Spark Prime USDC 1 (ERC-4626)",
+          "valueSom": 20424971.86,
+          "valueEom": 20530282.47,
+          "periodInflow": 0,
+          "actualRev": 105310.6,
+          "revenue": 105310.6,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S19",
+          "label": "BlackRock USD Institutional Digital Liquidity Fund (BUIDL-I)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S20",
+          "label": "Janus Henderson Anemoy Treasury Fund (JTRSY)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S21",
+          "label": "Superstate Short Duration US Government Securities Fund (USTB)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 1,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S22",
+          "label": "Superstate Crypto Carry Fund (USCC)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S23",
+          "label": "Anchorage tri-party loan",
+          "valueSom": 1.37,
+          "valueEom": 1.37,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S24",
+          "label": "Spark.fi USDT Reserve Curve (sUSDS/USDT)",
+          "valueSom": 0.84,
+          "valueEom": 0.84,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 1,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S25",
+          "label": "Spark.fi PYUSD Reserve Curve (PYUSD/USDS)",
+          "valueSom": 3.88,
+          "valueEom": 3.89,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S26",
+          "label": "USDC raw (ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": -967807,
+          "actualRev": 967807,
+          "revenue": 967807,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S27",
+          "label": "USDT raw (ALM idle — $442M as of 2026-04)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S28",
+          "label": "PYUSD raw (ALM idle — $677M as of 2026-04)",
+          "valueSom": 197178528.75,
+          "valueEom": 242552946.58,
+          "periodInflow": 43943567.89,
+          "actualRev": 1430849.95,
+          "revenue": 1430849.95,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S29",
+          "label": "DAI raw (ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S30",
+          "label": "USDe raw (ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S31",
+          "label": "USDS raw / POL (ALM idle — already netted out of utilized)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S32",
+          "label": "sUSDS raw / POL (ALM — Cat B 4626, demand-side spread)",
+          "valueSom": 771008383.08,
+          "valueEom": 721771471.72,
+          "periodInflow": -52136055.66,
+          "actualRev": 1983181.11,
+          "revenue": 1983181.11,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S34",
+          "label": "Spark USDC Vault (Morpho, Base)",
+          "valueSom": 318369377.91,
+          "valueEom": 445000201.61,
+          "periodInflow": 125106953.4,
+          "actualRev": 1523870.3,
+          "revenue": 1523870.3,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S35",
+          "label": "Aave Base USDC (aBasUSDC)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S36",
+          "label": "Fluid Savings USDS (fsUSDS, Base)",
+          "valueSom": 283.9,
+          "valueEom": 283.9,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S37",
+          "label": "Savings USDS / sUSDS proxy (Base — POL)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S38",
+          "label": "USDS raw (Base — POL)",
+          "valueSom": 1778866.82,
+          "valueEom": 1778866.82,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S39",
+          "label": "USDC raw (Base — ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S41",
+          "label": "Aave Arbitrum USDCn (aArbUSDCn)",
+          "valueSom": 0.01,
+          "valueEom": 0.01,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S42",
+          "label": "Fluid Savings USDS (fsUSDS, Arbitrum)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S43",
+          "label": "Savings USDS / sUSDS proxy (Arbitrum — POL)",
+          "valueSom": 0.71,
+          "valueEom": 111477024.45,
+          "periodInflow": 111454244.57,
+          "actualRev": 22779.17,
+          "revenue": 22779.17,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 1832.12
+        },
+        {
+          "id": "S44",
+          "label": "USDS raw (Arbitrum — POL)",
+          "valueSom": 99326272.78,
+          "valueEom": 0,
+          "periodInflow": -99326272.78,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S45",
+          "label": "USDC raw (Arbitrum — ALM idle)",
+          "valueSom": 2.03,
+          "valueEom": 0,
+          "periodInflow": -2.03,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S47",
+          "label": "Savings USDS / sUSDS proxy (Optimism — POL)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S48",
+          "label": "USDS raw (Optimism — POL)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S49",
+          "label": "USDC raw (Optimism — ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S51",
+          "label": "Savings USDS / sUSDS proxy (Unichain — POL)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S52",
+          "label": "USDS raw (Unichain — POL)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S53",
+          "label": "USDC raw (Unichain — ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S54",
+          "label": "Aave Avalanche USDC (aAvaUSDC)",
+          "valueSom": 0.16,
+          "valueEom": 0.16,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S55",
+          "label": "USDC raw (Avalanche-C — ALM idle)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "periodInflow": 0,
+          "actualRev": 0,
+          "revenue": 0,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S61",
+          "label": "Spark.fi PYUSD Reserve Uniswap V4 (PYUSD/USDS)",
+          "valueSom": 100119291.45,
+          "valueEom": 100118960.35,
+          "periodInflow": 55.72,
+          "actualRev": -386.81,
+          "revenue": -386.81,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S62",
+          "label": "Spark.fi USDT Reserve Uniswap V4 (USDT/USDS)",
+          "valueSom": 50000220.37,
+          "valueEom": 54999314.73,
+          "periodInflow": 4990206.95,
+          "actualRev": 8887.4,
+          "revenue": 0,
+          "sdRevenue": 8887.4,
+          "sdShare": 1,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S64",
+          "label": "RLUSD raw (ALM idle — $251.7M as of 2026-08)",
+          "valueSom": 96353734.96,
+          "valueEom": 30788493.12,
+          "periodInflow": -67153531.84,
+          "actualRev": 1588290,
+          "revenue": 1588290,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S65",
+          "label": "Spark Blue Chip USDT Vault (Morpho — 2026-06 redeployment)",
+          "valueSom": 77975823.36,
+          "valueEom": 36077539.19,
+          "periodInflow": -42069362.18,
+          "actualRev": 171078.01,
+          "revenue": 171078.01,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S66",
+          "label": "Spark.fi RLUSD Reserve Uniswap V4 (RLUSD/USDS)",
+          "valueSom": 19999614.05,
+          "valueEom": 0,
+          "periodInflow": -20007198.69,
+          "actualRev": 7584.64,
+          "revenue": 7584.64,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S70",
+          "label": "Spark RLUSD (SparkLend spToken)",
+          "valueSom": 10000313.31,
+          "valueEom": 30000056.88,
+          "periodInflow": 19957526.71,
+          "actualRev": 42216.86,
+          "revenue": 46457.48,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        },
+        {
+          "id": "S72",
+          "label": "Sentora RLUSD vault (Morpho)",
+          "valueSom": 250000309.62,
+          "valueEom": 499999831.31,
+          "periodInflow": 249959346.94,
+          "actualRev": 40174.75,
+          "revenue": 40174.75,
+          "sdRevenue": 0,
+          "sdShare": 0,
+          "spreadReimb": 0
+        }
+      ],
+      "refCodes": [
+        {
+          "refCode": "127",
+          "dr": 152.33,
+          "notes": "susds_susdc / arbitrum / sUSDC"
+        },
+        {
+          "refCode": "128",
+          "dr": 52329.47,
+          "notes": "susds_susdc / arbitrum / sUSDC"
+        },
+        {
+          "refCode": "182",
+          "dr": 0,
+          "notes": "susds_susdc / arbitrum / sUSDC"
+        },
+        {
+          "refCode": "190",
+          "dr": 0,
+          "notes": "susds_susdc / arbitrum / sUSDC"
+        },
+        {
+          "refCode": "194",
+          "dr": 1.53,
+          "notes": "susds_susdc / arbitrum / sUSDC"
+        },
+        {
+          "refCode": "196",
+          "dr": 0.1,
+          "notes": "susds_susdc / arbitrum / sUSDC"
+        },
+        {
+          "refCode": "200",
+          "dr": 0,
+          "notes": "susds_susdc / arbitrum / sUSDC"
+        },
+        {
+          "refCode": "204",
+          "dr": 0,
+          "notes": "susds_susdc / arbitrum / sUSDC"
+        },
+        {
+          "refCode": "555",
+          "dr": 0,
+          "notes": "susds_susdc / arbitrum / sUSDC"
+        },
+        {
+          "refCode": "2",
+          "dr": 0,
+          "notes": "psm3 / arbitrum / sUSDS"
+        },
+        {
+          "refCode": "128",
+          "dr": 2547.44,
+          "notes": "psm3 / arbitrum / sUSDS"
+        },
+        {
+          "refCode": "171",
+          "dr": 0,
+          "notes": "psm3 / arbitrum / sUSDS"
+        },
+        {
+          "refCode": "184",
+          "dr": 0,
+          "notes": "psm3 / arbitrum / sUSDS"
+        },
+        {
+          "refCode": "128",
+          "dr": 353.23,
+          "notes": "sp / avalanche_c / spUSDC"
+        },
+        {
+          "refCode": "131",
+          "dr": 0.03,
+          "notes": "sp / avalanche_c / spUSDC"
+        },
+        {
+          "refCode": "190",
+          "dr": 0,
+          "notes": "sp / avalanche_c / spUSDC"
+        },
+        {
+          "refCode": "191",
+          "dr": 16.55,
+          "notes": "sp / avalanche_c / spUSDC"
+        },
+        {
+          "refCode": "198",
+          "dr": 0,
+          "notes": "sp / avalanche_c / spUSDC"
+        },
+        {
+          "refCode": "127",
+          "dr": 72.28,
+          "notes": "susds_susdc / base / sUSDC"
+        },
+        {
+          "refCode": "128",
+          "dr": 889.39,
+          "notes": "susds_susdc / base / sUSDC"
+        },
+        {
+          "refCode": "129",
+          "dr": 30.98,
+          "notes": "susds_susdc / base / sUSDC"
+        },
+        {
+          "refCode": "182",
+          "dr": 0.01,
+          "notes": "susds_susdc / base / sUSDC"
+        },
+        {
+          "refCode": "200",
+          "dr": 0,
+          "notes": "susds_susdc / base / sUSDC"
+        },
+        {
+          "refCode": "204",
+          "dr": 0.03,
+          "notes": "susds_susdc / base / sUSDC"
+        },
+        {
+          "refCode": "206",
+          "dr": 0,
+          "notes": "susds_susdc / base / sUSDC"
+        },
+        {
+          "refCode": "2",
+          "dr": 0,
+          "notes": "psm3 / base / sUSDS"
+        },
+        {
+          "refCode": "128",
+          "dr": 349.98,
+          "notes": "psm3 / base / sUSDS"
+        },
+        {
+          "refCode": "129",
+          "dr": 0.04,
+          "notes": "psm3 / base / sUSDS"
+        },
+        {
+          "refCode": "170",
+          "dr": 0,
+          "notes": "psm3 / base / sUSDS"
+        },
+        {
+          "refCode": "171",
+          "dr": 0,
+          "notes": "psm3 / base / sUSDS"
+        },
+        {
+          "refCode": "184",
+          "dr": 0,
+          "notes": "psm3 / base / sUSDS"
+        },
+        {
+          "refCode": "200",
+          "dr": 0,
+          "notes": "psm3 / base / sUSDS"
+        },
+        {
+          "refCode": "204",
+          "dr": 0.04,
+          "notes": "psm3 / base / sUSDS"
+        },
+        {
+          "refCode": "9001",
+          "dr": 1029.96,
+          "notes": "usds_aave / ethereum / USDS"
+        },
+        {
+          "refCode": "128",
+          "dr": 507.3,
+          "notes": "farms / ethereum / USDS-CLE"
+        },
+        {
+          "refCode": "128",
+          "dr": 40.26,
+          "notes": "farms / ethereum / USDS-SKY"
+        },
+        {
+          "refCode": "128",
+          "dr": 93716.56,
+          "notes": "farms / ethereum / USDS-SPK"
+        },
+        {
+          "refCode": "224",
+          "dr": 206.62,
+          "notes": "farms / ethereum / USDS-SPK"
+        },
+        {
+          "refCode": "127",
+          "dr": 8918.58,
+          "notes": "susds_susdc / ethereum / sUSDC"
+        },
+        {
+          "refCode": "128",
+          "dr": 9573.53,
+          "notes": "susds_susdc / ethereum / sUSDC"
+        },
+        {
+          "refCode": "186",
+          "dr": 121.77,
+          "notes": "susds_susdc / ethereum / sUSDC"
+        },
+        {
+          "refCode": "188",
+          "dr": 28.6,
+          "notes": "susds_susdc / ethereum / sUSDC"
+        },
+        {
+          "refCode": "190",
+          "dr": 0,
+          "notes": "susds_susdc / ethereum / sUSDC"
+        },
+        {
+          "refCode": "191",
+          "dr": 513.59,
+          "notes": "susds_susdc / ethereum / sUSDC"
+        },
+        {
+          "refCode": "192",
+          "dr": 9892.1,
+          "notes": "susds_susdc / ethereum / sUSDC"
+        },
+        {
+          "refCode": "194",
+          "dr": 0.13,
+          "notes": "susds_susdc / ethereum / sUSDC"
+        },
+        {
+          "refCode": "195",
+          "dr": 262.59,
+          "notes": "susds_susdc / ethereum / sUSDC"
+        },
+        {
+          "refCode": "204",
+          "dr": 0,
+          "notes": "susds_susdc / ethereum / sUSDC"
+        },
+        {
+          "refCode": "216",
+          "dr": 179.9,
+          "notes": "susds_susdc / ethereum / sUSDC"
+        },
+        {
+          "refCode": "100",
+          "dr": 0,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "128",
+          "dr": 379942.83,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "183",
+          "dr": 6928.26,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "186",
+          "dr": 0,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "188",
+          "dr": 119.12,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "200",
+          "dr": 6199.6,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "204",
+          "dr": 0,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "224",
+          "dr": 667.35,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "303",
+          "dr": 0,
+          "notes": "susds_susdc / ethereum / sUSDS"
+        },
+        {
+          "refCode": "128",
+          "dr": 4.24,
+          "notes": "sp / ethereum / spPYUSD"
+        },
+        {
+          "refCode": "132",
+          "dr": 0,
+          "notes": "sp / ethereum / spPYUSD"
+        },
+        {
+          "refCode": "128",
+          "dr": 44487.59,
+          "notes": "sp / ethereum / spUSDC"
+        },
+        {
+          "refCode": "131",
+          "dr": 3619.68,
+          "notes": "sp / ethereum / spUSDC"
+        },
+        {
+          "refCode": "184",
+          "dr": 0,
+          "notes": "sp / ethereum / spUSDC"
+        },
+        {
+          "refCode": "186",
+          "dr": 551.8,
+          "notes": "sp / ethereum / spUSDC"
+        },
+        {
+          "refCode": "190",
+          "dr": 221.23,
+          "notes": "sp / ethereum / spUSDC"
+        },
+        {
+          "refCode": "198",
+          "dr": 0,
+          "notes": "sp / ethereum / spUSDC"
+        },
+        {
+          "refCode": "200",
+          "dr": 0.02,
+          "notes": "sp / ethereum / spUSDC"
+        },
+        {
+          "refCode": "202",
+          "dr": 8.86,
+          "notes": "sp / ethereum / spUSDC"
+        },
+        {
+          "refCode": "204",
+          "dr": 0,
+          "notes": "sp / ethereum / spUSDC"
+        },
+        {
+          "refCode": "205",
+          "dr": 0.21,
+          "notes": "sp / ethereum / spUSDC"
+        },
+        {
+          "refCode": "214",
+          "dr": 57.28,
+          "notes": "sp / ethereum / spUSDC"
+        },
+        {
+          "refCode": "217",
+          "dr": 622.44,
+          "notes": "sp / ethereum / spUSDC"
+        },
+        {
+          "refCode": "223",
+          "dr": 0,
+          "notes": "sp / ethereum / spUSDC"
+        },
+        {
+          "refCode": "128",
+          "dr": 74804.59,
+          "notes": "sp / ethereum / spUSDT"
+        },
+        {
+          "refCode": "130",
+          "dr": 3246.42,
+          "notes": "sp / ethereum / spUSDT"
+        },
+        {
+          "refCode": "186",
+          "dr": 106.29,
+          "notes": "sp / ethereum / spUSDT"
+        },
+        {
+          "refCode": "188",
+          "dr": 4087.71,
+          "notes": "sp / ethereum / spUSDT"
+        },
+        {
+          "refCode": "190",
+          "dr": 36.67,
+          "notes": "sp / ethereum / spUSDT"
+        },
+        {
+          "refCode": "191",
+          "dr": 18318.42,
+          "notes": "sp / ethereum / spUSDT"
+        },
+        {
+          "refCode": "198",
+          "dr": 0,
+          "notes": "sp / ethereum / spUSDT"
+        },
+        {
+          "refCode": "200",
+          "dr": 207.42,
+          "notes": "sp / ethereum / spUSDT"
+        },
+        {
+          "refCode": "202",
+          "dr": 20.96,
+          "notes": "sp / ethereum / spUSDT"
+        },
+        {
+          "refCode": "214",
+          "dr": 6.05,
+          "notes": "sp / ethereum / spUSDT"
+        },
+        {
+          "refCode": "217",
+          "dr": 1371.1,
+          "notes": "sp / ethereum / spUSDT"
+        },
+        {
+          "refCode": "223",
+          "dr": 0,
+          "notes": "sp / ethereum / spUSDT"
+        },
+        {
+          "refCode": "999",
+          "dr": 0,
+          "notes": "sp / ethereum / spUSDT"
+        },
+        {
+          "refCode": "197",
+          "dr": 11204.75,
+          "notes": "stusds / ethereum / stUSDS"
+        },
+        {
+          "refCode": "127",
+          "dr": 15.71,
+          "notes": "susds_susdc / optimism / sUSDC"
+        },
+        {
+          "refCode": "128",
+          "dr": 429.84,
+          "notes": "susds_susdc / optimism / sUSDC"
+        },
+        {
+          "refCode": "200",
+          "dr": 0,
+          "notes": "susds_susdc / optimism / sUSDC"
+        },
+        {
+          "refCode": "204",
+          "dr": 0.02,
+          "notes": "susds_susdc / optimism / sUSDC"
+        },
+        {
+          "refCode": "128",
+          "dr": 112.53,
+          "notes": "psm3 / optimism / sUSDS"
+        },
+        {
+          "refCode": "127",
+          "dr": 0.65,
+          "notes": "susds_susdc / unichain / sUSDC"
+        },
+        {
+          "refCode": "128",
+          "dr": 20.74,
+          "notes": "susds_susdc / unichain / sUSDC"
+        },
+        {
+          "refCode": "128",
+          "dr": 0.22,
+          "notes": "psm3 / unichain / sUSDS"
+        }
+      ],
+      "rateBuild": {
+        "timeWeightedUtilized": 3092068753.737554,
+        "baseRate": 0.03899328456900743,
+        "referenceRate": 0.03896129032258065,
+        "referenceRateKind": "tbill_3m→sofr@2026-07-23",
+        "subsidisedRate": 0.03878631988039914,
+        "effectiveRate": 0.03893084581622744,
+        "diffVsBaseBps": -0.6243875277999962,
+        "subsidyBenefit": 16397.2942775201,
+        "cofAtFullBase": 10240184.71634017,
+        "cofOnUtilized": 10215829.4059697,
+        "skyDirectComponent": 8887.407197823202,
+        "skyRevenueMax": 12380374.30006554,
+        "subsidyEnabled": true,
+        "capUsd": 1000000000
+      },
+      "skyDirect": [
+        {
+          "id": "S21",
+          "kind": "fixed",
+          "cap": null,
+          "start": "2025-10-30",
+          "end": "—",
+          "active": true,
+          "source": "Atlas A.2.2.9.1.1.1.1.1 — Treasury Bills",
+          "label": "USTB on Eth",
+          "actualRevenue": 0,
+          "sdRevenue": 0
+        },
+        {
+          "id": "S24",
+          "kind": "fixed",
+          "cap": null,
+          "start": "2025-11-13",
+          "end": "—",
+          "active": true,
+          "source": "Atlas A.2.2.9.1.1.1.1.3 — Curve Pools",
+          "label": "USDT in sUSDS/USDT Curve",
+          "actualRevenue": 0.002927741235654335,
+          "sdRevenue": 0.002927741235654335
+        },
+        {
+          "id": "S62",
+          "kind": "fixed",
+          "cap": null,
+          "start": "2026-02-01",
+          "end": "—",
+          "active": true,
+          "source": "Atlas — Uniswap Pools (designated 2026-05-26): \"Investments by Spark in USDT in USDS/USDT Uniswap pools\" — https://sky-atlas.io/#5f368e33-7a82-4244-a9ba-f285193ec043",
+          "label": "USDT in USDT/USDS Uniswap V4",
+          "actualRevenue": 8887.404270081966,
+          "sdRevenue": 8887.404270081966
+        }
+      ],
+      "debtDaily": [
+        {
+          "date": "2026-10-01",
+          "cumDebt": 3685005951,
+          "utilized": 2962862214,
+          "dailySkyCharge": 303748.72
+        },
+        {
+          "date": "2026-10-02",
+          "cumDebt": 3693778480,
+          "utilized": 2974063808,
+          "dailySkyCharge": 304897.09
+        },
+        {
+          "date": "2026-10-03",
+          "cumDebt": 3690782418,
+          "utilized": 2971865584,
+          "dailySkyCharge": 304671.73
+        },
+        {
+          "date": "2026-10-04",
+          "cumDebt": 3680919305,
+          "utilized": 2961458337,
+          "dailySkyCharge": 303604.79
+        },
+        {
+          "date": "2026-10-05",
+          "cumDebt": 3715609428,
+          "utilized": 2995544056,
+          "dailySkyCharge": 307099.22
+        },
+        {
+          "date": "2026-10-06",
+          "cumDebt": 3712796794,
+          "utilized": 2997881474,
+          "dailySkyCharge": 307338.84
+        },
+        {
+          "date": "2026-10-07",
+          "cumDebt": 3742358971,
+          "utilized": 3040714945,
+          "dailySkyCharge": 326897.44
+        },
+        {
+          "date": "2026-10-08",
+          "cumDebt": 3618604285,
+          "utilized": 2941700401,
+          "dailySkyCharge": 316050.59
+        },
+        {
+          "date": "2026-10-09",
+          "cumDebt": 3593545228,
+          "utilized": 2931078836,
+          "dailySkyCharge": 314905.39
+        },
+        {
+          "date": "2026-10-10",
+          "cumDebt": 3613074953,
+          "utilized": 2946410525,
+          "dailySkyCharge": 316558.43
+        },
+        {
+          "date": "2026-10-11",
+          "cumDebt": 3670090537,
+          "utilized": 3014247953,
+          "dailySkyCharge": 323872.57
+        },
+        {
+          "date": "2026-10-12",
+          "cumDebt": 3853368686,
+          "utilized": 3154681817,
+          "dailySkyCharge": 339013.96
+        },
+        {
+          "date": "2026-10-13",
+          "cumDebt": 3834116281,
+          "utilized": 3134127215,
+          "dailySkyCharge": 337140.26
+        },
+        {
+          "date": "2026-10-14",
+          "cumDebt": 3860209298,
+          "utilized": 3151211778,
+          "dailySkyCharge": 338811.06
+        },
+        {
+          "date": "2026-10-15",
+          "cumDebt": 3860299368,
+          "utilized": 3151792273,
+          "dailySkyCharge": 339044.88
+        },
+        {
+          "date": "2026-10-16",
+          "cumDebt": 3839355417,
+          "utilized": 3146744589,
+          "dailySkyCharge": 338329.41
+        },
+        {
+          "date": "2026-10-17",
+          "cumDebt": 3824494967,
+          "utilized": 3132566117,
+          "dailySkyCharge": 336800.71
+        },
+        {
+          "date": "2026-10-18",
+          "cumDebt": 3776821410,
+          "utilized": 3085620763,
+          "dailySkyCharge": 331739.12
+        },
+        {
+          "date": "2026-10-19",
+          "cumDebt": 3638398516,
+          "utilized": 3047268239,
+          "dailySkyCharge": 327432.77
+        },
+        {
+          "date": "2026-10-20",
+          "cumDebt": 3605736156,
+          "utilized": 3007551871,
+          "dailySkyCharge": 323321.84
+        },
+        {
+          "date": "2026-10-21",
+          "cumDebt": 3650086690,
+          "utilized": 3047689552,
+          "dailySkyCharge": 327649.43
+        },
+        {
+          "date": "2026-10-22",
+          "cumDebt": 3653437832,
+          "utilized": 3054357721,
+          "dailySkyCharge": 328710.85
+        },
+        {
+          "date": "2026-10-23",
+          "cumDebt": 3622238554,
+          "utilized": 3026615084,
+          "dailySkyCharge": 326062.14
+        },
+        {
+          "date": "2026-10-24",
+          "cumDebt": 3631923891,
+          "utilized": 3041271197,
+          "dailySkyCharge": 327642.34
+        },
+        {
+          "date": "2026-10-25",
+          "cumDebt": 3711209232,
+          "utilized": 3120880869,
+          "dailySkyCharge": 336225.75
+        },
+        {
+          "date": "2026-10-26",
+          "cumDebt": 3836159255,
+          "utilized": 3238661204,
+          "dailySkyCharge": 349095.9
+        },
+        {
+          "date": "2026-10-27",
+          "cumDebt": 3877270100,
+          "utilized": 3281439630,
+          "dailySkyCharge": 353800.33
+        },
+        {
+          "date": "2026-10-28",
+          "cumDebt": 3834595030,
+          "utilized": 3216514522,
+          "dailySkyCharge": 346800.2
+        },
+        {
+          "date": "2026-10-29",
+          "cumDebt": 3961204175,
+          "utilized": 3356242392,
+          "dailySkyCharge": 361865.47
+        },
+        {
+          "date": "2026-10-30",
+          "cumDebt": 3927985697,
+          "utilized": 3379251989,
+          "dailySkyCharge": 364346.33
+        },
+        {
+          "date": "2026-10-31",
+          "cumDebt": 3852761031,
+          "utilized": 3341814409,
+          "dailySkyCharge": 360309.86
+        }
+      ],
+      "excludedVenues": [
+        {
+          "id": "S56",
+          "label": "Spark Savings V2 — spUSDC vault",
+          "valueSom": 300586529.59,
+          "valueEom": 276753335.03,
+          "reportedRevenue": 0,
+          "receipts": 0
+        },
+        {
+          "id": "S57",
+          "label": "Spark Savings V2 — spUSDT vault",
+          "valueSom": 447000057.62,
+          "valueEom": 423856998.82,
+          "reportedRevenue": 0,
+          "receipts": 0
+        },
+        {
+          "id": "S58",
+          "label": "Spark Savings V2 — spETH vault",
+          "valueSom": 56940668.21,
+          "valueEom": 54951447.79,
+          "reportedRevenue": 0,
+          "receipts": 0
+        },
+        {
+          "id": "S59",
+          "label": "Spark Savings V2 — spPYUSD vault",
+          "valueSom": 31037.03,
+          "valueEom": 23900.23,
+          "reportedRevenue": 0,
+          "receipts": 0
+        },
+        {
+          "id": "S60",
+          "label": "Spark Savings V2 — spUSDC vault (Avalanche-C, CREATE2 same address)",
+          "valueSom": 8678568.64,
+          "valueEom": 988130.88,
+          "reportedRevenue": 0,
+          "receipts": 0
+        },
+        {
+          "id": "S63",
+          "label": "Spark Savings V2 — spUSDG vault (Robinhood Chain)",
+          "valueSom": 14005861.83,
+          "valueEom": 12796735.14,
+          "reportedRevenue": 0,
+          "receipts": 0
+        },
+        {
+          "id": "S67",
+          "label": "RLUSD issuer incentives — accrued / prepaid",
+          "valueSom": -49108.44,
+          "valueEom": -188166.69,
+          "reportedRevenue": 1449231.75,
+          "receipts": 1588290
+        },
+        {
+          "id": "S68",
+          "label": "PYUSD issuer incentives — accrued / prepaid",
+          "valueSom": -1920787.4,
+          "valueEom": -1823484.08,
+          "reportedRevenue": 1528153.27,
+          "receipts": 1430849.95
+        },
+        {
+          "id": "S69",
+          "label": "USDG issuer incentives — receipts (8-hour payments)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "reportedRevenue": 31503.19,
+          "receipts": 31503.19
+        },
+        {
+          "id": "S71",
+          "label": "Spark USDG (SparkLend spToken — reporting only)",
+          "valueSom": 0,
+          "valueEom": 0,
+          "reportedRevenue": 0,
+          "receipts": 0
+        }
+      ],
+      "reconciliation": null
     }
   ]
 }

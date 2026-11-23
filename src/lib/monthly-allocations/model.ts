@@ -1,8 +1,9 @@
 import { Decimal } from "decimal.js";
 import { decimal, usd } from "../daily-revenue/decimal.ts";
-import { isDailyPrime, type DailyPrime } from "../daily-revenue/types.ts";
+import { DAILY_PRIMES, isDailyPrime, type DailyPrime } from "../daily-revenue/types.ts";
 
-export const INITIAL_MONTH = "2026-09";
+/** First month with published monthly allocation analytics. */
+export const FIRST_YIELD_MONTH = "2026-09";
 export interface MonthlyAllocation {
   venue_id: string; label: string;
   borrowing_cost_usd: string | null; borrowing_cost_status: string;
@@ -29,11 +30,47 @@ const text = (v: unknown): string => {
 };
 const nullable = (v: unknown) => v === null ? null : decimal(v);
 export function completedMonth(month: string, now = new Date()): boolean {
-  return /^2026-(0[1-9]|1[0-2])$/.test(month) && month < now.toISOString().slice(0, 7);
+  return /^20\d{2}-(0[1-9]|1[0-2])$/.test(month) && month >= "2026-01" && month < now.toISOString().slice(0, 7);
 }
+/** Completed months that can carry yields, newest first: candidates for the
+ * bare route, which selects the newest one with a publication. */
+export function yieldMonthsNewestFirst(now = new Date()): string[] {
+  return completedMonths(now).filter(m => m >= FIRST_YIELD_MONTH).reverse();
+}
+/**
+ * The bare route's month: the newest completed month in which any prime has a
+ * verified publication. It steps back to an older month only when every prime
+ * DEFINITELY has none (404); if a read failed, that month is kept so the page
+ * shows the outage instead of quietly serving an older month's data.
+ */
+export async function newestPublishedMonth(
+  read: (prime: DailyPrime, month: string) => Promise<{ data: unknown; source: string }>,
+  now = new Date(),
+): Promise<string> {
+  const candidates = yieldMonthsNewestFirst(now);
+  for (const month of candidates) {
+    const reads = await Promise.all(DAILY_PRIMES.map(p => read(p, month)));
+    if (reads.some(r => r.data)) return month;
+    if (!reads.every(r => r.source === "missing")) return month;
+  }
+  return candidates[0] ?? FIRST_YIELD_MONTH;
+}
+/** Every selectable completed month, oldest first (the month navigation). */
+export function completedMonths(now = new Date()): string[] {
+  const out: string[] = [];
+  for (let y = 2026; y <= Number(now.toISOString().slice(0, 4)); y++) {
+    for (let m = 1; m <= 12; m++) {
+      const month = `${y}-${String(m).padStart(2, "0")}`;
+      if (completedMonth(month, now)) out.push(month);
+    }
+  }
+  return out;
+}
+/** The bare route (no month) is resolved by the page from publications, so an
+ * empty path returns no month rather than a hard-coded default. */
 export function parseMonthlyRoute(path: string[], now = new Date()): { month: string; prime?: DailyPrime; venue?: string } | null {
-  const [month = INITIAL_MONTH, prime, venue] = path;
-  if (path.length > 3 || !completedMonth(month, now) || (prime !== undefined && !isDailyPrime(prime)) ||
+  const [month, prime, venue] = path;
+  if (month === undefined || path.length > 3 || !completedMonth(month, now) || (prime !== undefined && !isDailyPrime(prime)) ||
       (venue !== undefined && !/^[A-Za-z0-9_-]{1,80}$/.test(venue))) return null;
   return { month, ...(prime ? { prime: prime as DailyPrime } : {}), ...(venue ? { venue } : {}) };
 }

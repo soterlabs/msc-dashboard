@@ -18,4 +18,26 @@ export function monthWindow(month: string, now: Date): { start: string; end: str
  * these are pipeline times, read against a cutoff that is itself UTC. */
 export const utcStamp = (value: string) => `${new Date(value).toISOString().slice(0, 19).replace("T", " ")} UTC`;
 
+/** First month with daily month-to-date publications. */
+export const FIRST_DAILY_MONTH = "2026-09";
+const nextMonth = (month: string) => {
+  const y = Number(month.slice(0, 4)), m = Number(month.slice(5, 7));
+  return m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, "0")}`;
+};
+/**
+ * Months the daily view offers: from the first published month through the
+ * month of the latest completed UTC day. A month appears once its first day
+ * has closed (on November 1 UTC, November has no completed day yet), so new
+ * months arrive without a code change and future months stay unselectable.
+ */
+export function dailyMonths(now: Date = new Date()): string[] {
+  const last = yesterday(now).slice(0, 7);
+  const out: string[] = [];
+  for (let month = FIRST_DAILY_MONTH; month <= last; month = nextMonth(month)) out.push(month);
+  return out;
+}
+/** The default daily month: the one holding the latest completed UTC day;
+ * undefined before the first daily month has a completed day. */
+export const latestDailyMonth = (now: Date = new Date()): string | undefined => dailyMonths(now).at(-1);
+
 export const monthLabel = (month: string) => new Intl.DateTimeFormat("en", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${month}-01T00:00:00Z`));

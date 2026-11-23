@@ -8,7 +8,8 @@
     "2026-06",
     "2026-07",
     "2026-08",
-    "2026-09"
+    "2026-09",
+    "2026-10"
   ],
   "monthLabels": {
     "2026-01": "Jan",
@@ -19,7 +20,8 @@
     "2026-06": "Jun",
     "2026-07": "Jul",
     "2026-08": "Aug",
-    "2026-09": "Sep"
+    "2026-09": "Sep",
+    "2026-10": "Oct"
   },
   "reports": [
     {
@@ -607,6 +609,64 @@
       "belowTheLine": null,
       "notes": [
         "⚠ msc_preview: 2026-09 contains adjustments or partial pins, but not published mint/send figures for every prime. Unpinned amounts are DERIVED from monthly reports; this is not a fully reconciled MSC preview."
+      ]
+    },
+    {
+      "month": "2026-10",
+      "basis": "accrual",
+      "blocks": [],
+      "primes": [
+        {
+          "key": "spark",
+          "label": "Spark",
+          "minted": 14048690,
+          "sent": -4188099
+        },
+        {
+          "key": "grove",
+          "label": "Grove",
+          "minted": 8866792,
+          "sent": -2170826
+        },
+        {
+          "key": "obex",
+          "label": "Obex",
+          "minted": 1463217,
+          "sent": -205907
+        },
+        {
+          "key": "osero",
+          "label": "Osero",
+          "minted": 15812,
+          "sent": -42396
+        },
+        {
+          "key": "keel",
+          "label": "Keel",
+          "minted": 0,
+          "sent": -34034
+        },
+        {
+          "key": "skybase",
+          "label": "Skybase",
+          "minted": 0,
+          "sent": -145439
+        }
+      ],
+      "mintedTotal": 24394511,
+      "sentTotal": -6786701,
+      "historicalPayments": [],
+      "historicalPaymentsTotal": 0,
+      "mscNet": 17607810,
+      "nonMscIncome": 17179738.09,
+      "nonMscExpense": -16187136.18,
+      "nonMscNet": 992601.91,
+      "demandSideBuffer": null,
+      "skyNetRevenue": 18600411.91,
+      "belowTheLine": null,
+      "notes": [
+        "⚠ msc_preview: 2026-10 contains adjustments or partial pins, but not published mint/send figures for every prime. Unpinned amounts are DERIVED from monthly reports; this is not a fully reconciled MSC preview.",
+        "⚠ non_msc: RWA jar void booked 2,204,040.84 — the legacy-RWA jar tripwire fired (normally $0). Confirm the deal/attribution."
       ]
     }
   ]

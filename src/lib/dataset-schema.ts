@@ -342,6 +342,9 @@ export function validateSsr(data: unknown): SsrDataset {
       str(p, `${vat}.label`, v.label);
       num(p, `${vat}.valueSom`, v.valueSom);
       num(p, `${vat}.valueEom`, v.valueEom);
+      // Reporting-only income (2026-10 onward): optional, null when unpublished.
+      if ("reportedRevenue" in v) num(p, `${vat}.reportedRevenue`, v.reportedRevenue, true);
+      if ("receipts" in v) num(p, `${vat}.receipts`, v.receipts, true);
     });
   });
 

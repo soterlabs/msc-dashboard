@@ -6,7 +6,7 @@ import { CopyLink } from "@/components/daily-revenue/copy-link";
 import { revenueClient, REVENUE_PUBLIC_URL } from "@/lib/daily-revenue/api";
 import { addMoney, compareMoney } from "@/lib/daily-revenue/decimal";
 import { DAILY_PRIMES, primeName } from "@/lib/daily-revenue/types";
-import { completedMonth, costReason, monthlyUsd, overviewYields, parseMonthlyRoute, percent, type MonthlyAllocation } from "@/lib/monthly-allocations/model";
+import { newestPublishedMonth, completedMonths, costReason, monthlyUsd, overviewYields, parseMonthlyRoute, percent, type MonthlyAllocation } from "@/lib/monthly-allocations/model";
 import { paths } from "@/lib/routes";
 
 export const dynamic = "force-dynamic";
@@ -14,14 +14,14 @@ const knownCosts = (rows: MonthlyAllocation[]) => rows.filter(r => r.borrowing_c
 
 export default async function Page({ params }: { params: Promise<{ path?: string[] }> }) {
   const { path = [] } = await params;
+  if (!path.length) redirect(paths.monthlyAllocations(await newestPublishedMonth((p, m) => revenueClient.monthly(p, m))));
   const route = parseMonthlyRoute(path);
   if (!route) notFound();
-  if (!path.length) redirect(paths.monthlyAllocations());
   const { month, prime, venue } = route;
   const selected = prime ? [prime] : [...DAILY_PRIMES];
   const reads = await Promise.all(selected.map(p => revenueClient.monthly(p, month)));
   const monthLabel = new Date(`${month}-01T00:00:00Z`).toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" });
-  const months = Array.from({ length: 12 }, (_, i) => `2026-${String(i + 1).padStart(2, "0")}`).filter(m => completedMonth(m));
+  const months = completedMonths();
   const doc = reads[0].data;
   const allocation = venue && doc ? doc.allocations.find(r => r.venue_id === venue) : undefined;
   if (venue && doc && !allocation && !reads[0].error) notFound();

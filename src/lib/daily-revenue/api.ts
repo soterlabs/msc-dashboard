@@ -36,10 +36,19 @@ export function createRevenueClient(fetcher: typeof fetch = fetch, now: () => nu
   const entries = new Map<string, Entry>();
   const historyFallbacks = new Map<string, Entry>();
   const pending = new Map<string, Promise<ReadResult<unknown>>>();
+  /** A confirmed "nothing published" (404) is remembered briefly so routes that
+   * probe several selections do not re-ask on every request. Short on purpose:
+   * a new publication appears within MISSING_TTL_MS, well inside the 300 s bound. */
+  const missing = new Map<string, { until: number; verifiedAt: string }>();
+  const MISSING_TTL_MS = 60_000;
   async function request<T>(path: string, validate: (value: unknown) => T, options: RequestOptions<T> = {}): Promise<ReadResult<T>> {
     const { cache = true, statusEndpoint = false, fallback, onVerified } = options;
     const previous = entries.get(path);
     if (previous && previous.expires > now()) return { data: previous.data as T, source: "cache", verifiedAt: previous.verifiedAt, error: null };
+    const known = missing.get(path);
+    if (!previous && !fallback && cache && known && known.until > now()) {
+      return { data: null, source: "missing", verifiedAt: known.verifiedAt, error: "No published estimate for this selection." };
+    }
     if (pending.has(path)) return pending.get(path)! as Promise<ReadResult<T>>;
     const work = (async (): Promise<ReadResult<T>> => {
       try {
@@ -51,7 +60,12 @@ export function createRevenueClient(fetcher: typeof fetch = fetch, now: () => nu
           const retained = previous ?? fallback;
           if (retained) return { data: retained.data as T, source: "cache", verifiedAt: retained.verifiedAt,
             error: "Live API returned no publication; showing the last successfully verified response." };
-          return { data: null, source: "missing", verifiedAt: new Date(now()).toISOString(), error: "No published estimate for this selection." };
+          const verifiedAt = new Date(now()).toISOString();
+          if (cache) {
+            missing.set(path, { until: now() + MISSING_TTL_MS, verifiedAt });
+            if (missing.size > 96) missing.delete(missing.keys().next().value!);
+          }
+          return { data: null, source: "missing", verifiedAt, error: "No published estimate for this selection." };
         }
         const notModified = response.status === 304 && previous;
         if (!notModified && !response.ok && !(statusEndpoint && response.status === 503)) throw new Error(`API returned ${response.status}`);
@@ -75,6 +89,7 @@ export function createRevenueClient(fetcher: typeof fetch = fetch, now: () => nu
             if (entries.size > 96) entries.delete(entries.keys().next().value!);
           } else entries.delete(path);
         }
+        missing.delete(path);
         onVerified?.(verified, data);
         return { data, source: "api", verifiedAt, error: null };
       } catch (cause) {
