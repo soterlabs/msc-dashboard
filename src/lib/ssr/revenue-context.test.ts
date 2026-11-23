@@ -104,7 +104,7 @@ test("Skybase has a complete demand-side history for its bare prime page", () =>
   const months = revenueMonths(ssr, dr, "skybase", "Skybase");
   assert.deepEqual(months, [
     "2026-01", "2026-02", "2026-03", "2026-04", "2026-05",
-    "2026-06", "2026-07", "2026-08", "2026-09",
+    "2026-06", "2026-07", "2026-08", "2026-09", "2026-10",
   ]);
 
   const reports = ssr.reports.filter((r) => r.partner === "skybase");

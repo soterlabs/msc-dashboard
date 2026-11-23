@@ -46,6 +46,7 @@ import * as XLSX from "xlsx";
 import * as YAML from "yaml";
 
 import { fromCsv } from "./lib/csv.mjs";
+import { drFinalizedSnapshots } from "./lib/dr-snapshots.mjs";
 import { readPrimePayments } from "./lib/prime-payments.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -340,6 +341,56 @@ function drL2Addresses() {
   }));
 }
 
+/**
+ * DR months already published in the committed data/generated/dr.json are
+ * settled: their payments were made from the DR the dashboard showed. The DR
+ * pipeline later restates history in place (e.g. settle-dr-dune #20/#28 raised
+ * Skybase January–August), while settlements book such corrections as separate
+ * true-ups in a later month. So a refresh keeps every already-published month
+ * exactly as published and takes only NEW months from the sources; the DR tab
+ * then keeps agreeing with the settled amounts. To restate deliberately, run
+ * with DR_RESTATE_SETTLED=1 and review the resulting diff: months the sources
+ * carry are then replaced, and months only the committed file has (such as the
+ * pre-2026 per-token history the current workbook no longer carries) are kept.
+ *
+ * A finalized snapshot that disagrees with a frozen month, or a ref code with
+ * frozen amounts moving to another group, fails the refresh instead of being
+ * silently overridden; source differences the freeze discards are printed.
+ */
+const DR_RESTATE = process.env.DR_RESTATE_SETTLED === "1";
+function settledDrBaseline() {
+  const file = path.join(ROOT, "data", "generated", "dr.json");
+  if (!fs.existsSync(file)) return null;
+  return JSON.parse(fs.readFileSync(file, "utf8"));
+}
+
+/** Sum of a month across rows (null as 0), cents. */
+const monthSum = (rows, m) => round(rows.reduce((a, r) => a + (r.monthly[m] ?? 0), 0), 2);
+
+/** Rows keyed by `key`; for `frozen` months every value comes from the
+ * baseline (null where the baseline had none). Baseline-only rows are kept. */
+function freezeMonths(rows, baselineRows, frozen, key, makeRow) {
+  const byKey = new Map(baselineRows.map((r) => [key(r), r]));
+  const seen = new Set();
+  for (const row of rows) {
+    const old = byKey.get(key(row));
+    seen.add(key(row));
+    let added = 0;
+    for (const [m, v] of Object.entries(row.monthly)) if (!frozen.has(m)) added += v ?? 0;
+    // Months of the published total that are being replaced (restate only).
+    let replaced = 0;
+    for (const [m, v] of Object.entries(old?.monthly ?? {})) if (!frozen.has(m)) replaced += v ?? 0;
+    for (const m of frozen) row.monthly[m] = old?.monthly[m] ?? null;
+    // Published totals are kept as published (their own rounding included),
+    // less any months being restated, plus the months taken from the sources.
+    row.total = round((old ? old.total ?? 0 : 0) - replaced + added, 2);
+  }
+  for (const old of baselineRows) {
+    if (seen.has(key(old))) continue;
+    rows.push(makeRow(old));
+  }
+}
+
 function generateDr(drDir, cycleDir) {
   const wbRel = path.join(...DR_WORKBOOK);
   const wb = XLSX.read(fs.readFileSync(path.join(drDir, wbRel)));
@@ -375,6 +426,48 @@ function generateDr(drDir, cycleDir) {
       notes: str(r[totalIdx + 2]),
     }));
 
+  // Finalized month snapshots take precedence, as in the settlement's loader.
+  const snapshots = drFinalizedSnapshots(cycleDir);
+  for (const snap of snapshots) {
+    const appended = !reportMonths.includes(snap.month);
+    if (appended) {
+      if (snap.month < reportMonths[reportMonths.length - 1]) {
+        throw new Error(`DR snapshot ${snap.month} falls inside the workbook window but is missing from it`);
+      }
+      reportMonths.push(snap.month);
+    }
+    const byCode = new Map(refCodeRows.map((r) => [r.refCode, r]));
+    for (const [code, { value, notes }] of snap.refCodes) {
+      let row = byCode.get(code);
+      if (!row) {
+        row = {
+          refCode: code,
+          group: groupOf.get(code) ?? null,
+          monthly: Object.fromEntries(reportMonths.map((m) => [m, null])),
+          total: 0,
+          tokens: [],
+          notes,
+        };
+        refCodeRows.push(row);
+      }
+      const previous = row.monthly[snap.month] ?? 0;
+      row.monthly[snap.month] = value;
+      row.total = round((row.total ?? 0) - previous + value, 2);
+    }
+    for (const row of refCodeRows) {
+      if (!(snap.month in row.monthly)) row.monthly[snap.month] = null;
+      if (!snap.refCodes.has(row.refCode) && !appended && row.monthly[snap.month]) {
+        // A snapshot that drops a code the workbook pays for that month is a
+        // disagreement between sources, not something to paper over.
+        throw new Error(`DR snapshot ${snap.month} omits ref code ${row.refCode} carried by the workbook`);
+      }
+      const snapTokens = [...snap.tokens.keys()]
+        .filter((k) => k.startsWith(`${row.refCode}|`))
+        .map((k) => k.slice(row.refCode.length + 1));
+      row.tokens = [...new Set([...row.tokens, ...snapTokens])];
+    }
+  }
+
   // A code the config does not know is a settlement question, not a display
   // one: it would either land in the wrong prime's revenue or vanish from the
   // dashboard while still being paid. Report every one of them, with amounts.
@@ -388,6 +481,56 @@ function generateDr(drDir, cycleDir) {
           .join("\n") +
         `\n  Attribute each under primes:, or list it under unattributed:.`,
     );
+  }
+
+  const baseline = settledDrBaseline();
+  if (baseline) {
+    const frozen = new Set(baseline.reportMonths.filter((m) => !DR_RESTATE || !reportMonths.includes(m)));
+    const oldRows = new Map(baseline.refCodeRows.map((r) => [r.refCode, r]));
+    if (!DR_RESTATE) {
+      // A finalized snapshot must agree with the month already published.
+      for (const snap of snapshots.filter((s) => frozen.has(s.month))) {
+        const codes = new Set([...snap.refCodes.keys(), ...baseline.refCodeRows.map((r) => r.refCode)]);
+        for (const code of codes) {
+          const published = oldRows.get(code)?.monthly[snap.month] ?? 0;
+          const finalized = snap.refCodes.get(code)?.value ?? 0;
+          if (Math.abs(published - finalized) > 0.011) {
+            throw new Error(
+              `DR ${snap.month} ref code ${code}: finalized snapshot ${finalized} differs from the published ${published}. ` +
+                `Re-run with DR_RESTATE_SETTLED=1 only if this restatement is intended.`,
+            );
+          }
+        }
+      }
+      // Frozen amounts stay with the prime they were published under.
+      for (const old of baseline.refCodeRows) {
+        const now = groupOf.get(old.refCode);
+        if (now && now !== old.group && [...frozen].some((m) => old.monthly[m] != null)) {
+          throw new Error(
+            `DR ref code ${old.refCode} moved from ${old.group} to ${now} but has published amounts; ` +
+              `re-run with DR_RESTATE_SETTLED=1 only if moving them is intended.`,
+          );
+        }
+      }
+      for (const m of [...frozen].sort()) {
+        if (!reportMonths.includes(m)) continue;
+        const diff = round(monthSum(refCodeRows, m) - monthSum(baseline.refCodeRows, m), 2);
+        if (diff !== 0) {
+          console.log(`[generate-data] DR ${m}: kept as published; sources now differ by ${diff.toFixed(2)} USD (not applied)`);
+        }
+      }
+    }
+    freezeMonths(refCodeRows, baseline.refCodeRows, frozen, (r) => r.refCode, (old) => ({
+      ...old,
+      group: groupOf.get(old.refCode) ?? old.group,
+      monthly: { ...old.monthly },
+    }));
+    for (const m of frozen) if (!reportMonths.includes(m)) reportMonths.push(m);
+    reportMonths.sort();
+    for (const row of refCodeRows) {
+      for (const m of reportMonths) if (!(m in row.monthly)) row.monthly[m] = null;
+      row.monthly = Object.fromEntries(reportMonths.map((m) => [m, row.monthly[m]]));
+    }
   }
 
   // Group rollups, in config order: the retired Summary tab's per-group Total
@@ -429,6 +572,47 @@ function generateDr(drDir, cycleDir) {
           : round(Object.values(monthly).reduce((a, v) => a + (v ?? 0), 0), 2);
       return { refCode: str(r[0]), token: str(r[1]), monthly, total };
     });
+
+  // Snapshot months beyond the workbook extend the per-token history too.
+  for (const snap of snapshots) {
+    if (historyMonths.includes(snap.month)) {
+      // Month already in the workbook: both sources must agree per token.
+      const keys = new Set([...snap.tokens.keys(), ...refCodeTokenSeries.map((s) => `${s.refCode}|${s.token}`)]);
+      for (const key of keys) {
+        const wb = refCodeTokenSeries.find((s) => `${s.refCode}|${s.token}` === key)?.monthly[snap.month] ?? 0;
+        if (Math.abs(wb - (snap.tokens.get(key) ?? 0)) > 0.011) {
+          throw new Error(`DR ${snap.month} ${key}: workbook ${wb} disagrees with the finalized snapshot ${snap.tokens.get(key) ?? 0}`);
+        }
+      }
+      continue;
+    }
+    historyMonths.push(snap.month);
+    const byKey = new Map(refCodeTokenSeries.map((s) => [`${s.refCode}|${s.token}`, s]));
+    for (const [key, value] of snap.tokens) {
+      let series = byKey.get(key);
+      if (!series) {
+        const [refCode, token] = [key.slice(0, key.indexOf("|")), key.slice(key.indexOf("|") + 1)];
+        series = { refCode, token, monthly: Object.fromEntries(historyMonths.map((m) => [m, null])), total: 0 };
+        refCodeTokenSeries.push(series);
+      }
+      series.monthly[snap.month] = value;
+      series.total = round((series.total ?? 0) + value, 2);
+    }
+    for (const series of refCodeTokenSeries) {
+      if (!(snap.month in series.monthly)) series.monthly[snap.month] = null;
+    }
+  }
+
+  if (baseline) {
+    const frozen = new Set(baseline.historyMonths.filter((m) => !DR_RESTATE || !historyMonths.includes(m)));
+    freezeMonths(refCodeTokenSeries, baseline.refCodeTokenSeries, frozen, (r) => `${r.refCode}|${r.token}`,
+      (old) => ({ ...old, monthly: { ...old.monthly } }));
+    for (const m of frozen) if (!historyMonths.includes(m)) historyMonths.push(m);
+    historyMonths.sort();
+    for (const series of refCodeTokenSeries) {
+      series.monthly = Object.fromEntries(historyMonths.map((m) => [m, series.monthly[m] ?? null]));
+    }
+  }
 
   // Rates as they stood at the end of the reporting window.
   const lastMonth = reportMonths[reportMonths.length - 1];
@@ -578,6 +762,49 @@ function parseReconciliationMd(partner, month, md) {
     };
   }
 
+  if (partner === "grove" && month === "2026-10") {
+    return {
+      summary: "January–September corrections and partner rebates booked once in October.",
+      items: [
+        {
+          label: "Historical reconciliation · Sky",
+          value: reconciliationAmount(md, "Jan–September reconciliation, net of previously booked credits", 1),
+          detail: "Sky adjustment, net of credits booked in earlier settlements.",
+        },
+        {
+          label: "Historical reconciliation · Grove",
+          value: reconciliationAmount(md, "Jan–September reconciliation, net of previously booked credits", 2),
+          detail: "Grove supply adjustment, net of earlier credits.",
+        },
+        {
+          label: "Total MSC adjustments · Sky",
+          value: reconciliationAmount(md, "Total MSC adjustments", 1),
+          detail: "Historical reconciliation plus JAAA/JTRSY partner rebates.",
+        },
+        {
+          label: "Total MSC adjustments · Grove",
+          value: reconciliationAmount(md, "Total MSC adjustments", 2),
+          detail: "Historical reconciliation plus JAAA partner rebates.",
+        },
+      ],
+      note: "Adjustments change the October payment instructions only; ordinary October venue revenue is unchanged and published January–September reports are not rewritten.",
+    };
+  }
+
+  if (partner === "osero" && month === "2026-10") {
+    return {
+      summary: "Refund of the July–September supply shortfall withheld twice.",
+      items: [
+        {
+          label: "Send-only reimbursement",
+          value: reconciliationAmount(md, "Total (USDS)", 4),
+          detail: "Added to Osero's October payment without minting debt.",
+        },
+      ],
+      note: "The refund reduces Sky's MSC net revenue by the same amount; ordinary October results are unchanged.",
+    };
+  }
+
   throw new Error(`unsupported reconciliation.md for ${partner}/${month} — add an explicit parser`);
 }
 
@@ -677,6 +904,27 @@ function parseSummaryMd(md) {
       // Informational cash-settlement audit table. Its variances are already
       // included in the venue revenue table and must not be counted twice.
       continue;
+    } else if (t.header.join("|") === "Venue|Label|value_som|value_eom|Revenue|Receipts") {
+      /* "Reporting-only holdings" (from the 2026-10 reports): the position-only
+         table plus the income the report tracks for those holdings. The report
+         states that income is EXCLUDED from MSC settlement totals, so it is
+         carried as reporting-only and never folded into venue revenue. Matched
+         on the exact header so a renamed column fails below instead. */
+      for (const r of t.rows) {
+        const [valueSom, valueEom] = [money(r[2]), money(r[3])];
+        // A blank position value is missing data, not a $0 holding.
+        if (valueSom === null || valueEom === null) {
+          throw new Error(`reporting-only holding ${r[0]} has no value_som/value_eom`);
+        }
+        excludedVenues.push({
+          id: r[0],
+          label: r[1],
+          valueSom,
+          valueEom,
+          reportedRevenue: money(r[4]),
+          receipts: money(r[5]),
+        });
+      }
     } else if (t.header[0] === "Venue" && t.header.length === 4) {
       /* "Off-protocol holdings" / "Position-only venues" — Venue, Label and the
          two value columns, nothing else. Told apart by that arity rather than

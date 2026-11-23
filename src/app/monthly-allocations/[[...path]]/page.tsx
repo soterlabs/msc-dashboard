@@ -4,7 +4,9 @@ import { paths } from "@/lib/routes";
 
 /** Preserve previously shared monthly URLs after moving the page under revenues. */
 export default async function Page({ params }: { params: Promise<{ path?: string[] }> }) {
-  const route = parseMonthlyRoute((await params).path ?? []);
+  const path = (await params).path ?? [];
+  if (!path.length) redirect(paths.monthlyAllocations());
+  const route = parseMonthlyRoute(path);
   if (!route) notFound();
   redirect(paths.monthlyAllocations(route.month, route.prime, route.venue));
 }

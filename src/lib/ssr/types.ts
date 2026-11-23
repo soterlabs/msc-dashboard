@@ -82,6 +82,12 @@ export interface SsrExcludedVenue {
   label: string;
   valueSom: number;
   valueEom: number;
+  /**
+   * Income the report tracks for a reporting-only holding (2026-10 onward).
+   * Excluded from MSC settlement totals; absent on older position-only rows.
+   */
+  reportedRevenue?: number | null;
+  receipts?: number | null;
 }
 
 export interface SsrReconciliationItem {

@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { validateMonthly, parseMonthlyRoute, percent, costReason, monthlyUsd, overviewYields } from "./model.ts";
+import { validateMonthly, parseMonthlyRoute, yieldMonthsNewestFirst, completedMonths, newestPublishedMonth, percent, costReason, monthlyUsd, overviewYields } from "./model.ts";
 import { createRevenueClient } from "../daily-revenue/api.ts";
 const fixture = (name = "spark-S18") => JSON.parse(readFileSync(`schema/fixtures/monthly-allocations/${name}.json`, "utf8"));
 
@@ -93,11 +93,22 @@ test("a failed monthly refresh retains only the same verified selection and labe
 
 test("venue yields live under Prime Agent Revenues with a September default", async () => {
   const { paths, sectionFromPath } = await import("../routes.ts");
-  assert.equal(paths.monthlyAllocations(), "/prime-agent-revenues/yields/2026-09");
+  assert.equal(paths.monthlyAllocations(), "/prime-agent-revenues/yields");
   const path = paths.monthlyAllocations("2026-09", "grove", "E10");
   assert.equal(path, "/prime-agent-revenues/yields/2026-09/grove/E10");
   assert.equal(sectionFromPath(path)?.key, "ssr");
-  assert.equal(parseMonthlyRoute([], new Date("2026-10-29T00:00:00Z"))?.month, "2026-09");
+  // The bare route has no fixed month: the page resolves the newest publication.
+  assert.equal(parseMonthlyRoute([], new Date("2026-10-29T00:00:00Z")), null);
+});
+
+test("bare yields route probes completed months newest first from September 2026", () => {
+  assert.deepEqual(yieldMonthsNewestFirst(new Date("2026-11-23T00:00:00Z")), ["2026-10", "2026-09"]);
+  assert.deepEqual(yieldMonthsNewestFirst(new Date("2026-12-01T00:00:00Z")), ["2026-11", "2026-10", "2026-09"]);
+  assert.deepEqual(yieldMonthsNewestFirst(new Date("2027-01-02T00:00:00Z")).slice(0, 2), ["2026-12", "2026-11"]);
+  assert.deepEqual(completedMonths(new Date("2026-11-23T00:00:00Z")).slice(-2), ["2026-09", "2026-10"]);
+  // October is a valid completed month in November; November is not yet.
+  assert.deepEqual(parseMonthlyRoute(["2026-10", "spark"], new Date("2026-11-23T00:00:00Z")), { month: "2026-10", prime: "spark" });
+  assert.equal(parseMonthlyRoute(["2026-11"], new Date("2026-11-23T00:00:00Z")), null);
 });
 
 test("Osero and Obex September API yields retain costs, negative returns and idle exemptions", async () => {
@@ -153,4 +164,24 @@ test("yield page links to the same reporting revision that its client reads", ()
   const page = readFileSync('src/app/prime-agent-revenues/yields/[[...path]]/page.tsx', 'utf8');
   assert.match(page, /v3\/reporting\/allocation-yields\?prime=/);
   assert.doesNotMatch(page, /v1\/revenue\/.*monthly/);
+});
+
+test("bare yields route steps back only when every prime definitely has no publication", async () => {
+  const NOV = new Date("2026-11-23T00:00:00Z");
+  type Read = { data: unknown; source: string };
+  const reader = (table: Record<string, (prime: string) => Read>) => async (prime: string, month: string) =>
+    (table[month] ?? (() => ({ data: null, source: "missing" })))(prime);
+  const published = (): Read => ({ data: { ok: true }, source: "api" });
+  const missing = (): Read => ({ data: null, source: "missing" });
+  const down = (): Read => ({ data: null, source: "unavailable" });
+  // October published for one prime only: October.
+  assert.equal(await newestPublishedMonth(reader({ "2026-10": (p) => p === "osero" ? published() : missing(), "2026-09": published }), NOV), "2026-10");
+  // October not yet published anywhere: September.
+  assert.equal(await newestPublishedMonth(reader({ "2026-10": missing, "2026-09": published }), NOV), "2026-09");
+  // Partial outage while October is unpublished for the reachable primes:
+  // stay on October and show the outage, never silently fall back.
+  assert.equal(await newestPublishedMonth(reader({ "2026-10": (p) => p === "keel" ? missing() : down(), "2026-09": published }), NOV), "2026-10");
+  assert.equal(await newestPublishedMonth(reader({ "2026-10": down, "2026-09": published }), NOV), "2026-10");
+  // Nothing published at all: the newest completed month (explicit missing state).
+  assert.equal(await newestPublishedMonth(reader({}), NOV), "2026-10");
 });

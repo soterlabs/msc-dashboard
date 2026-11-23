@@ -102,14 +102,21 @@ export const paths = {
       ? `/${slugOf("buybacks")}/${granularity}`
       : `/${slugOf("buybacks")}`,
 
-  /** Fixed-month allocation revenue drill-down. */
-  dailyRevenue: (month = "2026-10", prime?: string, allocation?: string) =>
-    `/${slugOf("daily-revenue")}/${encodeURIComponent(month)}` +
-    (prime ? `/${encodeURIComponent(prime)}` : "") +
-    (prime && allocation ? `/${encodeURIComponent(allocation)}` : ""),
+  /** Allocation revenue drill-down. Without a month the link is bare (with an
+   * optional prime) and the server redirects to the latest daily month, so a
+   * prerendered or client-rendered link never freezes a month in its href. */
+  dailyRevenue: (month?: string, prime?: string, allocation?: string) =>
+    month
+      ? `/${slugOf("daily-revenue")}/${encodeURIComponent(month)}` +
+        (prime ? `/${encodeURIComponent(prime)}` : "") +
+        (prime && allocation ? `/${encodeURIComponent(allocation)}` : "")
+      : `/${slugOf("daily-revenue")}` + (prime ? `/${encodeURIComponent(prime)}` : ""),
 
-  monthlyAllocations: (month = "2026-09", prime?: string, venue?: string) =>
-    `/prime-agent-revenues/yields/${encodeURIComponent(month)}` +
+  /** Monthly venue yields; without a month, the bare route resolves the newest
+   * completed month that has a publication (server side). */
+  monthlyAllocations: (month?: string, prime?: string, venue?: string) =>
+    `/prime-agent-revenues/yields` +
+    (month ? `/${encodeURIComponent(month)}` : "") +
     (prime ? `/${encodeURIComponent(prime)}` : "") +
     (prime && venue ? `/${encodeURIComponent(venue)}` : ""),
 
