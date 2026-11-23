@@ -349,14 +349,23 @@ function drL2Addresses() {
  * true-ups in a later month. So a refresh keeps every already-published month
  * exactly as published and takes only NEW months from the sources; the DR tab
  * then keeps agreeing with the settled amounts. To restate deliberately, run
- * with DR_RESTATE_SETTLED=1 and review the resulting diff.
+ * with DR_RESTATE_SETTLED=1 and review the resulting diff: months the sources
+ * carry are then replaced, and months only the committed file has (such as the
+ * pre-2026 per-token history the current workbook no longer carries) are kept.
+ *
+ * A finalized snapshot that disagrees with a frozen month, or a ref code with
+ * frozen amounts moving to another group, fails the refresh instead of being
+ * silently overridden; source differences the freeze discards are printed.
  */
+const DR_RESTATE = process.env.DR_RESTATE_SETTLED === "1";
 function settledDrBaseline() {
-  if (process.env.DR_RESTATE_SETTLED === "1") return null;
   const file = path.join(ROOT, "data", "generated", "dr.json");
   if (!fs.existsSync(file)) return null;
   return JSON.parse(fs.readFileSync(file, "utf8"));
 }
+
+/** Sum of a month across rows (null as 0), cents. */
+const monthSum = (rows, m) => round(rows.reduce((a, r) => a + (r.monthly[m] ?? 0), 0), 2);
 
 /** Rows keyed by `key`; for `frozen` months every value comes from the
  * baseline (null where the baseline had none). Baseline-only rows are kept. */
@@ -472,7 +481,41 @@ function generateDr(drDir, cycleDir) {
 
   const baseline = settledDrBaseline();
   if (baseline) {
-    const frozen = new Set(baseline.reportMonths);
+    const frozen = new Set(baseline.reportMonths.filter((m) => !DR_RESTATE || !reportMonths.includes(m)));
+    const oldRows = new Map(baseline.refCodeRows.map((r) => [r.refCode, r]));
+    if (!DR_RESTATE) {
+      // A finalized snapshot must agree with the month already published.
+      for (const snap of snapshots.filter((s) => frozen.has(s.month))) {
+        const codes = new Set([...snap.refCodes.keys(), ...baseline.refCodeRows.map((r) => r.refCode)]);
+        for (const code of codes) {
+          const published = oldRows.get(code)?.monthly[snap.month] ?? 0;
+          const finalized = snap.refCodes.get(code)?.value ?? 0;
+          if (Math.abs(published - finalized) > 0.011) {
+            throw new Error(
+              `DR ${snap.month} ref code ${code}: finalized snapshot ${finalized} differs from the published ${published}. ` +
+                `Re-run with DR_RESTATE_SETTLED=1 only if this restatement is intended.`,
+            );
+          }
+        }
+      }
+      // Frozen amounts stay with the prime they were published under.
+      for (const old of baseline.refCodeRows) {
+        const now = groupOf.get(old.refCode);
+        if (now && now !== old.group && [...frozen].some((m) => old.monthly[m] != null)) {
+          throw new Error(
+            `DR ref code ${old.refCode} moved from ${old.group} to ${now} but has published amounts; ` +
+              `re-run with DR_RESTATE_SETTLED=1 only if moving them is intended.`,
+          );
+        }
+      }
+      for (const m of [...frozen].sort()) {
+        if (!reportMonths.includes(m)) continue;
+        const diff = round(monthSum(refCodeRows, m) - monthSum(baseline.refCodeRows, m), 2);
+        if (diff !== 0) {
+          console.log(`[generate-data] DR ${m}: kept as published; sources now differ by ${diff.toFixed(2)} USD (not applied)`);
+        }
+      }
+    }
     freezeMonths(refCodeRows, baseline.refCodeRows, frozen, (r) => r.refCode, (old) => ({
       ...old,
       group: groupOf.get(old.refCode) ?? old.group,
@@ -557,7 +600,7 @@ function generateDr(drDir, cycleDir) {
   }
 
   if (baseline) {
-    const frozen = new Set(baseline.historyMonths);
+    const frozen = new Set(baseline.historyMonths.filter((m) => !DR_RESTATE || !historyMonths.includes(m)));
     freezeMonths(refCodeTokenSeries, baseline.refCodeTokenSeries, frozen, (r) => `${r.refCode}|${r.token}`,
       (old) => ({ ...old, monthly: { ...old.monthly } }));
     for (const m of frozen) if (!historyMonths.includes(m)) historyMonths.push(m);

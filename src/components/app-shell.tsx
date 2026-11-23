@@ -46,8 +46,7 @@ import {
   sectionFromPath,
   type Section,
 } from "@/lib/routes";
-import { DAILY_PRIMES, primeName } from "@/lib/daily-revenue/types";
-import { validMonth, yesterday } from "@/lib/daily-revenue/calendar";
+import { DAILY_PRIMES, isDailyMonth, primeName } from "@/lib/daily-revenue/types";
 import { SoterLabsMark } from "./soter-labs";
 import { ThemeToggle } from "./theme-toggle";
 
@@ -93,10 +92,11 @@ export function AppShell({ children, primes }: { children: React.ReactNode; prim
 function AppSidebar({ section, primes }: { section?: Section; primes: PrimeLink[] }) {
   const pathname = usePathname();
   const pathMonth = pathname.startsWith("/daily-revenue/") ? pathname.split("/")[2] : undefined;
-  // Shape only: the server already validated the month of the page being
-  // shown. Deciding "latest" here would freeze it into prerendered HTML.
-  // A future month (a 404 page) falls back to the bare link.
-  const dailyMonth = pathMonth && validMonth(pathMonth) && pathMonth <= yesterday(new Date()).slice(0, 7) ? pathMonth : undefined;
+  // Keep the month of the daily page being shown; anything outside the daily
+  // calendar (a 404 page) falls back to the bare link, which the server
+  // resolves. Never compute a "latest" month here: it would be frozen into
+  // prerendered HTML.
+  const dailyMonth = isDailyMonth(pathMonth) ? pathMonth : undefined;
   const { setOpenMobile } = useSidebar();
   const [expanded, setExpanded] = React.useState<Record<"ssr" | "daily-revenue", boolean>>({
     ssr: false,
